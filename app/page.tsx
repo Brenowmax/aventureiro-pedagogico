@@ -209,69 +209,203 @@ const initialQuests: Quest[] = [
   },
 ];
 
-const mockClassStudents: StudentRecord[] = [
-  { id: "s1", name: "Arthur Pendelton", avatar: "🗡️", level: 6, xp: 1850, badge: "Guardião da Luz", turma: "9º Ano A", grades: { "Matemática": ["8.5", "9.0", "8.0", ""] } },
-  { id: "s2", name: "Beatriz Oliveira", avatar: "🏹", level: 5, xp: 1420, badge: "Arquimaga das Letras", turma: "9º Ano A", grades: { "Matemática": ["9.5", "10", "9.0", ""] } },
-  { id: "s3", name: "Carlos Eduardo", avatar: "🛡️", level: 4, xp: 980, badge: "Defensor das Eras", turma: "9º Ano A", grades: { "Matemática": ["6.0", "5.5", "6.5", ""] } },
-  { id: "s4", name: "Diana Prince", avatar: "🔮", level: 7, xp: 2100, badge: "Sábia do Conhecimento", turma: "9º Ano B", grades: { "Matemática": ["10", "9.8", "9.5", ""] } },
-  { id: "s5", name: "Enzo Gabriel", avatar: "⚡", level: 3, xp: 620, badge: "Iniciante Veloz", turma: "9º Ano B", grades: { "Matemática": ["4.0", "5.0", "3.5", ""] } },
+const allCurricularSubjects = [
+  "Língua Portuguesa",
+  "Língua Inglesa",
+  "Matemática",
+  "História",
+  "Geografia",
+  "Educação Física",
+  "Artes",
+  "Ciências",
+  "Projeto de Vida",
+  "Tecnologia",
+  "Educação Financeira",
+  "Robótica",
+  "Orientação de Estudos de Português",
+  "Orientação de Estudos de Matemática",
 ];
 
+function createEmptyGrades(): Record<string, Grades> {
+  return Object.fromEntries(
+    allCurricularSubjects.map((subject) => [
+      subject,
+      ["", "", "", ""] as Grades,
+    ])
+  );
+}
+
+function createStudentGrades(
+  mathGrades: Grades = ["", "", "", ""]
+): Record<string, Grades> {
+  return {
+    ...createEmptyGrades(),
+    "Matemática": mathGrades,
+  };
+}
+
+const mockClassStudents: StudentRecord[] = [
+  {
+    id: "s1",
+    name: "Arthur Pendelton",
+    avatar: "🗡️",
+    level: 6,
+    xp: 1850,
+    badge: "Guardião da Luz",
+    turma: "9º Ano A",
+    grades: createStudentGrades(["8.5", "9.0", "8.0", ""]),
+  },
+  {
+    id: "s2",
+    name: "Beatriz Oliveira",
+    avatar: "🧝",
+    level: 5,
+    xp: 1420,
+    badge: "Arquimaga das Letras",
+    turma: "9º Ano A",
+    grades: createStudentGrades(["9.5", "10", "9.0", ""]),
+  },
+  {
+    id: "s3",
+    name: "Carlos Eduardo",
+    avatar: "🛡️",
+    level: 4,
+    xp: 980,
+    badge: "Defensor das Eras",
+    turma: "9º Ano A",
+    grades: createStudentGrades(["6.0", "5.5", "6.5", ""]),
+  },
+  {
+    id: "s4",
+    name: "Diana Prince",
+    avatar: "🔮",
+    level: 7,
+    xp: 2100,
+    badge: "Sábia do Conhecimento",
+    turma: "9º Ano B",
+    grades: createStudentGrades(["10", "9.8", "9.5", ""]),
+  },
+  {
+    id: "s5",
+    name: "Enzo Gabriel",
+    avatar: "⚡",
+    level: 3,
+    xp: 620,
+    badge: "Iniciante Veloz",
+    turma: "9º Ano B",
+    grades: createStudentGrades(["4.0", "5.0", "3.5", ""]),
+  },
+];
 /* ============================================================
    FUNÇÕES AUXILIARES DE CÁLCULO
 ============================================================ */
 
 function getPerformanceLevel(grade: number): PerformanceLevel {
-  if (Number.isNaN(grade) || grade === 0) return "Sem avaliação";
-  if (grade >= 1 && grade <= 4) return "Abaixo do Básico";
-  if (grade >= 5 && grade <= 6) return "Básico";
-  if (grade >= 7 && grade <= 8) return "Adequado";
-  if (grade >= 9 && grade <= 10) return "Avançado";
-  return "Sem avaliação";
+  if (Number.isNaN(grade)) {
+    return "Sem avaliação";
+  }
+
+  if (grade < 5) {
+    return "Abaixo do Básico";
+  }
+
+  if (grade < 7) {
+    return "Básico";
+  }
+
+  if (grade < 9) {
+    return "Adequado";
+  }
+
+  return "Avançado";
 }
 
 function getPerformanceIcon(level: PerformanceLevel) {
   switch (level) {
-    case "Abaixo do Básico": return "🔴";
-    case "Básico": return "🟠";
-    case "Adequado": return "🟢";
-    case "Avançado": return "🟣";
-    default: return "⚪";
+    case "Abaixo do Básico":
+      return "🔴";
+
+    case "Básico":
+      return "🟠";
+
+    case "Adequado":
+      return "🟢";
+
+    case "Avançado":
+      return "🟣";
+
+    default:
+      return "⚪";
   }
 }
 
 function getPerformanceClass(level: PerformanceLevel) {
   switch (level) {
-    case "Abaixo do Básico": return "border-red-900/50 bg-red-950/20 text-red-400";
-    case "Básico": return "border-orange-900/50 bg-orange-950/20 text-orange-400";
-    case "Adequado": return "border-green-900/50 bg-green-950/20 text-green-400";
-    case "Avançado": return "border-purple-900/50 bg-purple-950/20 text-purple-400";
-    default: return "border-slate-800 bg-slate-900 text-slate-500";
+    case "Abaixo do Básico":
+      return "border-red-900/50 bg-red-950/20 text-red-400";
+
+    case "Básico":
+      return "border-orange-900/50 bg-orange-950/20 text-orange-400";
+
+    case "Adequado":
+      return "border-green-900/50 bg-green-950/20 text-green-400";
+
+    case "Avançado":
+      return "border-purple-900/50 bg-purple-950/20 text-purple-400";
+
+    default:
+      return "border-slate-800 bg-slate-900 text-slate-500";
   }
 }
 
 function calculateAverage(grades: Grades) {
-  const validGrades = grades
-    .map(Number)
-    .filter((grade) => !Number.isNaN(grade) && grade >= 0);
+  const total = grades.reduce((sum, grade) => {
+    if (grade === "") {
+      return sum;
+    }
 
-  if (validGrades.length === 0) return 0;
-  const total = validGrades.reduce((sum, grade) => sum + grade, 0);
-  return total / validGrades.length;
+    const numericGrade = Number(grade);
+
+    if (Number.isNaN(numericGrade)) {
+      return sum;
+    }
+
+    return sum + numericGrade;
+  }, 0);
+
+  const hasAnyGrade = grades.some(
+    (grade) => grade !== "" && !Number.isNaN(Number(grade))
+  );
+
+  if (!hasAnyGrade) {
+    return NaN;
+  }
+
+  // IMPORTANTE:
+  // Sempre divide pelos 4 bimestres.
+  // Bimestre vazio vale 0.
+  return total / 4;
 }
 
 function calculateXP(average: number) {
+  if (Number.isNaN(average)) {
+    return 0;
+  }
+
   return Math.round(average * 100);
 }
 
 function calculateReputation(average: number) {
+  if (Number.isNaN(average)) {
+    return 0;
+  }
+
   return Math.round(average * 100);
 }
 
 /* ============================================================
    COMPONENTE DE HP / CORAÇÕES ESTILO ZELDA
 ============================================================ */
-
 function ZeldaHeartBar({ reputation }: { reputation: number }) {
   const totalHearts = 10;
   const heartValue = 100;
@@ -679,7 +813,8 @@ function TeacherPanel({
   events: EventItem[];
 }) {
   const [teacherTab, setTeacherTab] = useState<"overview" | "validation" | "grades" | "create_event" | "quests" | "enturmar">("overview");
-  const [selectedSubject, setSelectedSubject] = useState<string>("Matemática");
+  const [selectedSubject, setSelectedSubject] =
+  useState<string>("Matemática");
   const [students, setStudents] = useState<StudentRecord[]>(mockClassStudents);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -756,37 +891,48 @@ function TeacherPanel({
   function rewardStudent(studentName: string) {
     triggerToast(`✨ 100 XP e 50 Moedas concedidos a ${studentName}!`);
   }
+function handleAddStudent(e: React.FormEvent) {
+  e.preventDefault();
 
-  function handleAddStudent(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!newStudentName.trim() || !newStudentClass.trim()) {
-      triggerToast("⚠️ Preencha o nome e a turma do aluno!");
-      return;
-    }
-
-    const avatars = ["🗡️", "🏹", "🛡️", "🔮", "⚡", "🧙‍♂️", "📜"];
-    const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
-
-    const newStudent: StudentRecord = {
-      id: `s-${Date.now()}`,
-      name: newStudentName,
-      avatar: randomAvatar,
-      level: 1,
-      xp: 0,
-      badge: "Iniciante do Reino",
-      turma: newStudentClass,
-      grades: { "Matemática": ["", "", "", ""] },
-    };
-
-    setStudents([newStudent, ...students]);
-    triggerToast(`🎉 Aluno ${newStudentName} enturmado na turma ${newStudentClass}!`);
-
-    setNewStudentName("");
-    setNewStudentClass("");
+  if (!newStudentName.trim() || !newStudentClass.trim()) {
+    triggerToast("⚠️ Preencha o nome e a turma do aluno!");
+    return;
   }
 
-  function handleStartEdit(student: StudentRecord) {
+  const avatars = [
+    "🗡️",
+    "🧝",
+    "🛡️",
+    "🔮",
+    "⚡",
+    "🧙‍♂️",
+    "📜",
+  ];
+
+  const randomAvatar =
+    avatars[Math.floor(Math.random() * avatars.length)];
+
+  const newStudent: StudentRecord = {
+    id: `s-${Date.now()}`,
+    name: newStudentName.trim(),
+    avatar: randomAvatar,
+    level: 1,
+    xp: 0,
+    badge: "Iniciante do Reino",
+    turma: newStudentClass.trim(),
+    grades: createEmptyGrades(),
+  };
+
+  setStudents((prev) => [newStudent, ...prev]);
+
+  triggerToast(
+    `🎉 Aluno ${newStudentName} enturmado na turma ${newStudentClass}!`
+  );
+
+  setNewStudentName("");
+  setNewStudentClass("");
+}
+   function handleStartEdit(student: StudentRecord) {
     setEditingStudentId(student.id);
     setEditName(student.name);
     setEditClass(student.turma || "");
@@ -1171,18 +1317,24 @@ function TeacherPanel({
 
             <div className="flex items-center gap-2">
               <label className="text-xs font-bold text-slate-400">Disciplina:</label>
-              <select
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-white outline-none focus:border-purple-500"
-              >
-                {subjects.map((s) => (
-                  <option key={s.name} value={s.name}>
-                    {s.icon} {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                          </div>
+<select
+  value={selectedSubject}
+  onChange={(e) => setSelectedSubject(e.target.value)}
+  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-white outline-none focus:border-purple-500"
+>
+  {allCurricularSubjects.map((subjectName) => {
+    const subjectInfo = subjects.find(
+      (subject) => subject.name === subjectName
+    );
+
+    return (
+      <option key={subjectName} value={subjectName}>
+        {subjectInfo?.icon || "📚"} {subjectName}
+      </option>
+    );
+  })}
+</select>
           </div>
 
           <div className="overflow-x-auto">
