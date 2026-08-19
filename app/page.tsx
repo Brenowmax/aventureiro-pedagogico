@@ -33,27 +33,32 @@ type EventItem = {
   description: string;
   type: "Boss Raid" | "Maratona" | "Feira" | "Especial";
   icon: string;
-  status: "active" | "upcoming" | "ended";
-  timeLeft?: string;
-  startDate?: string;
+  periodo: string;
   rewardXp: number;
   rewardCoins: number;
   badgeReward?: string;
   color: string;
 };
 
+type QuestCategory = "Diário" | "Semanal" | "Mensal" | "Especial (Mensal)";
+
+// Estruturação dos 3 Status de Missão
+type QuestStatus = "Em andamento" | "Concluido" | "Encerrado";
+
 type Quest = {
   id: string;
   title: string;
-  category: "Diária" | "Semanal" | "Jornada";
+  category: QuestCategory;
+  periodo: string;
   description: string;
   xpReward: number;
   coinReward: number;
   progress: number;
   maxProgress: number;
-  completed: boolean;
-  claimed: boolean;
   icon: string;
+  status: QuestStatus;
+  studentId?: string;
+  studentName?: string;
 };
 
 type StudentRecord = {
@@ -92,11 +97,10 @@ const mockEvents: EventItem[] = [
   {
     id: "1",
     title: "O Desafio do Guardião da Geometria",
-    description: "Batalha especial contra o Boss das Montanhas dos Números! Complete os exercícios de Geometria para ajudar a classe a derrotar o chefão.",
+    description: "Batalha especial contra o Boss das Montanhas dos Números! Complete os exercícios para ganhar bônus de XP.",
     type: "Boss Raid",
     icon: "🐉",
-    status: "active",
-    timeLeft: "02d 14h restantes",
+    periodo: "1º Bimestre - Até 25/10",
     rewardXp: 500,
     rewardCoins: 200,
     badgeReward: "Caçador de Polígonos",
@@ -105,11 +109,10 @@ const mockEvents: EventItem[] = [
   {
     id: "2",
     title: "Maratona do Conhecimento Literário",
-    description: "Leia o livro do mês e participe do quiz de revisão de Língua Portuguesa para desbloquear multiplicadores de XP em dobro.",
+    description: "Leia o livro do mês e participe do quiz para desbloquear XP em dobro.",
     type: "Maratona",
     icon: "📜",
-    status: "active",
-    timeLeft: "05d 08h restantes",
+    periodo: "Semanal - Até sexta-feira",
     rewardXp: 350,
     rewardCoins: 150,
     color: "#d97706",
@@ -117,11 +120,10 @@ const mockEvents: EventItem[] = [
   {
     id: "3",
     title: "Feira de Inovação & Robótica 32-bits",
-    description: "Apresente seu projeto na semana tecnológica e ganhe o selo exclusivo de Mestre Inventor.",
+    description: "Apresente seu projeto na semana tecnológica e ganhe o selo exclusivo.",
     type: "Feira",
     icon: "⚙️",
-    status: "upcoming",
-    startDate: "Em 12 dias",
+    periodo: "2º Bimestre",
     rewardXp: 800,
     rewardCoins: 400,
     badgeReward: "Gênio da Tecnologia",
@@ -133,54 +135,77 @@ const initialQuests: Quest[] = [
   {
     id: "q1",
     title: "Mestre da Frequência",
-    category: "Diária",
+    category: "Diário",
+    periodo: "Diário (Hoje)",
     description: "Acesse a plataforma hoje para manter sua sequência de estudos.",
     xpReward: 50,
     coinReward: 20,
     progress: 1,
     maxProgress: 1,
-    completed: true,
-    claimed: false,
     icon: "☀️",
+    status: "Em andamento",
+    studentId: "s1",
+    studentName: "Arthur Pendelton"
   },
   {
     id: "q2",
     title: "Explorador da Matemática",
-    category: "Diária",
+    category: "Diário",
+    periodo: "1º Bimestre",
     description: "Obtenha uma nota superior a 7.0 em qualquer atividade das Montanhas dos Números.",
     xpReward: 100,
     coinReward: 40,
     progress: 1,
     maxProgress: 1,
-    completed: true,
-    claimed: false,
     icon: "📐",
+    status: "Em andamento",
+    studentId: "s2",
+    studentName: "Beatriz Oliveira"
   },
   {
     id: "q3",
     title: "Sábio Leitor",
     category: "Semanal",
-    description: "Registre notas em pelo menos 3 disciplinas das Terras da Linguagem.",
+    periodo: "Esta Semana",
+    description: "Registre notas em pelo menos 3 disciplinas das Terras da Linguagem nesta semana.",
     xpReward: 250,
     coinReward: 100,
-    progress: 2,
+    progress: 3,
     maxProgress: 3,
-    completed: false,
-    claimed: false,
     icon: "📚",
+    status: "Em andamento",
+    studentId: "s3",
+    studentName: "Carlos Eduardo"
   },
   {
     id: "q4",
-    title: "Conquistador do Reino",
-    category: "Jornada",
-    description: "Mantenha o status Avançado em 5 disciplinas ao longo do bimestre.",
-    xpReward: 600,
-    coinReward: 250,
-    progress: 3,
-    maxProgress: 5,
-    completed: false,
-    claimed: false,
-    icon: "👑",
+    title: "Mestre do Mês",
+    category: "Mensal",
+    periodo: "Mês Vigente",
+    description: "Mantenha o status Adequado ou Avançado em todas as matérias ao longo do mês.",
+    xpReward: 500,
+    coinReward: 200,
+    progress: 10,
+    maxProgress: 10,
+    icon: "🗓️",
+    status: "Concluido",
+    studentId: "s4",
+    studentName: "Diana Prince"
+  },
+  {
+    id: "q5",
+    title: "Ocultista Arcano do Conhecimento",
+    category: "Especial (Mensal)",
+    periodo: "2º Bimestre",
+    description: "Conclua o projeto interdisciplinar de tecnologia e ciências deste mês.",
+    xpReward: 1000,
+    coinReward: 450,
+    progress: 0,
+    maxProgress: 1,
+    icon: "🌟",
+    status: "Encerrado",
+    studentId: "s5",
+    studentName: "Enzo Gabriel"
   },
 ];
 
@@ -529,14 +554,8 @@ function AdventureMap({
    ABA DE OBJETIVOS (QUESTS DO ALUNO)
 ============================================================ */
 
-function ObjectivesTab({
-  quests,
-  onClaimReward,
-}: {
-  quests: Quest[];
-  onClaimReward: (questId: string) => void;
-}) {
-  const [filter, setFilter] = useState<"Todas" | "Diária" | "Semanal" | "Jornada">("Todas");
+function ObjectivesTab({ quests }: { quests: Quest[] }) {
+  const [filter, setFilter] = useState<"Todas" | QuestCategory>("Todas");
 
   const filteredQuests = quests.filter((q) => filter === "Todas" || q.category === filter);
 
@@ -549,13 +568,13 @@ function ObjectivesTab({
           </div>
           <h2 className="text-3xl font-black text-white">Objetivos & Metas</h2>
           <p className="mt-2 text-sm text-slate-400 leading-relaxed">
-            Cumpra os objetivos diários e semanais para conquistar recompensas em moedas e subir de nível no reino.
+            Cumpra os objetivos diários, semanais, mensais e especiais para acompanhar seu progresso no reino.
           </p>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {(["Todas", "Diária", "Semanal", "Jornada"] as const).map((cat) => (
+        {(["Todas", "Diário", "Semanal", "Mensal", "Especial (Mensal)"] as const).map((cat) => (
           <button
             key={cat}
             type="button"
@@ -566,36 +585,43 @@ function ObjectivesTab({
                 : "border-slate-800 bg-slate-900/50 text-slate-400 hover:border-slate-700"
             }`}
           >
-            {cat === "Todas" ? "Todas as Missões" : `Missões ${cat}s`}
+            {cat === "Todas" ? "Todas as Missões" : `Missões (${cat})`}
           </button>
         ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredQuests.map((q) => {
-          const isFinished = q.progress >= q.maxProgress;
           const percent = Math.min(100, Math.round((q.progress / q.maxProgress) * 100));
 
           return (
             <div
               key={q.id}
-              className={`rounded-2xl border p-5 flex flex-col justify-between transition ${
-                q.claimed
-                  ? "border-slate-800/40 bg-slate-950/20 opacity-50"
-                  : isFinished
-                  ? "border-amber-500/40 bg-slate-900/90 shadow-[0_0_15px_rgba(245,158,11,0.05)]"
-                  : "border-slate-800 bg-slate-900/40"
-              }`}
+              className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 flex flex-col justify-between transition"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-md border border-slate-800 bg-slate-950 text-slate-400">
-                    {q.category}
-                  </span>
-                  <div className="flex items-center gap-3 text-xs font-bold">
-                    <span className="text-amber-400">✨ +{q.xpReward} XP</span>
-                    <span className="text-amber-300">🪙 +{q.coinReward}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-md border ${
+                      q.category === "Especial (Mensal)"
+                        ? "border-purple-500/40 bg-purple-950/40 text-purple-300"
+                        : "border-slate-800 bg-slate-950 text-slate-400"
+                    }`}>
+                      {q.category}
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-400">
+                      📅 {q.periodo}
+                    </span>
                   </div>
+
+                  {/* BADGE EXIBINDO OS 3 STATUS */}
+                  <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md border ${
+                    q.status === "Concluido" ? "border-emerald-500/40 bg-emerald-950/40 text-emerald-300" :
+                    q.status === "Encerrado" ? "border-rose-500/40 bg-rose-950/40 text-rose-400" :
+                    "border-amber-500/40 bg-amber-950/40 text-amber-300"
+                  }`}>
+                    {q.status}
+                  </span>
                 </div>
 
                 <div className="flex items-start gap-3">
@@ -608,6 +634,11 @@ function ObjectivesTab({
                   </div>
                 </div>
 
+                <div className="mt-4 flex items-center gap-3 text-xs font-bold">
+                  <span className="text-amber-400">✨ +{q.xpReward} XP</span>
+                  <span className="text-amber-300">🪙 +{q.coinReward}</span>
+                </div>
+
                 <div className="mt-4 space-y-1.5">
                   <div className="flex justify-between text-[10px] font-bold">
                     <span className="text-slate-500">Progresso</span>
@@ -615,29 +646,14 @@ function ObjectivesTab({
                   </div>
                   <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800">
                     <div
-                      className="bg-amber-500 h-full rounded-full transition-all duration-500"
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        q.status === "Concluido" ? "bg-emerald-500" :
+                        q.status === "Encerrado" ? "bg-rose-500" : "bg-amber-500"
+                      }`}
                       style={{ width: `${percent}%` }}
                     />
                   </div>
                 </div>
-              </div>
-
-              <div className="mt-5 pt-3 border-t border-slate-800/60 flex justify-end">
-                {q.claimed ? (
-                  <span className="text-xs font-bold text-emerald-500 flex items-center gap-1">
-                    ✓ Recompensa Resgatada
-                  </span>
-                ) : isFinished ? (
-                  <button
-                    type="button"
-                    onClick={() => onClaimReward(q.id)}
-                    className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-5 py-2 text-xs font-black text-black shadow-lg hover:brightness-110 active:scale-95 transition"
-                  >
-                    🎁 Resgatar Recompensa
-                  </button>
-                ) : (
-                  <span className="text-xs font-bold text-slate-500 italic">Em andamento...</span>
-                )}
               </div>
             </div>
           );
@@ -651,8 +667,18 @@ function ObjectivesTab({
    PAINEL GAMIFICADO DO PROFESSOR (MODO MESTRE NARRADOR)
 ============================================================ */
 
-function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
-  const [teacherTab, setTeacherTab] = useState<"overview" | "grades" | "create_event" | "quests" | "enturmar">("overview");
+function TeacherPanel({
+  onSwitchRole,
+  quests,
+  setQuests,
+  events
+}: {
+  onSwitchRole: () => void;
+  quests: Quest[];
+  setQuests: React.Dispatch<React.SetStateAction<Quest[]>>;
+  events: EventItem[];
+}) {
+  const [teacherTab, setTeacherTab] = useState<"overview" | "validation" | "grades" | "create_event" | "quests" | "enturmar">("overview");
   const [selectedSubject, setSelectedSubject] = useState<string>("Matemática");
   const [students, setStudents] = useState<StudentRecord[]>(mockClassStudents);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -669,6 +695,41 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
   function triggerToast(msg: string) {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  }
+
+  /* ============================================================
+     REGRA DE NEGÓCIO: VALIDAÇÃO EXCLUSIVA DO PROFESSOR
+  ============================================================ */
+  function handleValidateQuest(questId: string, novoStatus: "Concluido" | "Encerrado") {
+    // Busca a missão a ser alterada
+    const quest = quests.find(q => q.id === questId);
+    if (!quest) return;
+
+    // Se a missão for para CONCLUIDO -> Calcula recompensas + Bônus do Evento Ativo
+    if (novoStatus === "Concluido") {
+      // Checa evento ativo (se houver, soma bônus)
+      const activeEvent = events[0]; // Pega o evento da rodada como exemplo
+      const bonusXp = activeEvent ? activeEvent.rewardXp : 0;
+      const bonusCoins = activeEvent ? activeEvent.rewardCoins : 0;
+
+      const totalXp = quest.xpReward + bonusXp;
+      const totalCoins = quest.coinReward + bonusCoins;
+
+      setQuests(prev =>
+        prev.map(q => q.id === questId ? { ...q, status: "Concluido", progress: q.maxProgress } : q)
+      );
+
+      triggerToast(`🎉 Missão Concluída! ${quest.studentName || "O aluno"} recebeu +${totalXp} XP (com Bônus de Evento) e +${totalCoins} Moedas!`);
+    }
+
+    // Se a missão for para ENCERRADO -> Trava a missão e o aluno NÃO recebe recompensas
+    if (novoStatus === "Encerrado") {
+      setQuests(prev =>
+        prev.map(q => q.id === questId ? { ...q, status: "Encerrado" } : q)
+      );
+
+      triggerToast(`🚫 Missão Encerrada! ${quest.studentName || "O aluno"} não cumpriu os requisitos e NÃO receberá recompensas.`);
+    }
   }
 
   function handleStudentGradeChange(studentId: string, bimIndex: number, val: string) {
@@ -725,21 +786,18 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
     setNewStudentClass("");
   }
 
-  // INICIAR MODO DE EDIÇÃO DO ALUNO
   function handleStartEdit(student: StudentRecord) {
     setEditingStudentId(student.id);
     setEditName(student.name);
     setEditClass(student.turma || "");
   }
 
-  // CANCELAR EDIÇÃO
   function handleCancelEdit() {
     setEditingStudentId(null);
     setEditName("");
     setEditClass("");
   }
 
-  // SALVAR ALTERAÇÃO DE NOME E TURMA
   function handleSaveEdit(studentId: string) {
     if (!editName.trim() || !editClass.trim()) {
       triggerToast("⚠️ Nome e turma não podem ficar em branco!");
@@ -756,7 +814,6 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
     setEditingStudentId(null);
   }
 
-  // EXCLUIR ALUNO
   function handleDeleteStudent(studentId: string, studentName: string) {
     if (confirm(`Tem certeza que deseja remover ${studentName} do Reino?`)) {
       setStudents((prev) => prev.filter((s) => s.id !== studentId));
@@ -766,7 +823,6 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
 
   return (
     <section className="space-y-6">
-      {/* NOTIFICAÇÃO GAMIFICADA (TOAST) */}
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 rounded-2xl border border-amber-500 bg-[#161c14] p-4 text-xs font-black text-amber-300 shadow-2xl animate-bounce">
           {toastMessage}
@@ -806,7 +862,6 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
           </div>
         </div>
 
-        {/* MEDIDORES ATRIBUTOS DA TURMA */}
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-purple-900/60 pt-6">
           <div className="rounded-2xl border border-purple-800/40 bg-purple-950/30 p-3.5">
             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-purple-300">
@@ -855,7 +910,21 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
           }`}
         >
           <span>📊</span>
-          <span>Visão Geral da Classe</span>
+          <span>Visão Geral</span>
+        </button>
+
+        {/* ABA EXCLUSIVA DO PROFESSOR PARA VALIDAÇÃO DE MISSÕES */}
+        <button
+          type="button"
+          onClick={() => setTeacherTab("validation")}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
+            teacherTab === "validation"
+              ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
+              : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
+          }`}
+        >
+          <span>📜</span>
+          <span>Mural de Validação</span>
         </button>
 
         <button
@@ -867,8 +936,8 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
               : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
           }`}
         >
-          <span>📜</span>
-          <span>Grimório de Notas (Diário)</span>
+          <span>📖</span>
+          <span>Grimório de Notas</span>
         </button>
 
         <button
@@ -894,10 +963,9 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
           }`}
         >
           <span>🎯</span>
-          <span>Criar Missões (Quests)</span>
+          <span>Criar Missões</span>
         </button>
 
-        {/* ABA: ENTURMAR ALUNO */}
         <button
           type="button"
           onClick={() => setTeacherTab("enturmar")}
@@ -912,9 +980,7 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
         </button>
       </div>
 
-      {/* CONTEÚDO DAS ABAS DO PROFESSOR */}
-
-      {/* ABA 1: VISÃO GERAL */}
+      {/* ABA: VISÃO GERAL */}
       {teacherTab === "overview" && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1010,7 +1076,91 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
         </div>
       )}
 
-      {/* ABA 2: GRIMÓRIO DE NOTAS / DIÁRIO */}
+      {/* ABA: MURAL DE VALIDAÇÃO (STATUS: Em andamento | Concluido | Encerrado) */}
+      {teacherTab === "validation" && (
+        <div className="space-y-5 rounded-2xl border border-slate-800 bg-[#11150f] p-6">
+          <div className="border-b border-slate-800 pb-4">
+            <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">Aprovação do Mestre</div>
+            <h3 className="text-xl font-black text-white">Mural de Validação de Missões</h3>
+            <p className="text-xs text-slate-500 mt-1">Apenas professores alteram o status e concedem as recompensas das missões.</p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-slate-900/80 uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th className="p-3">Aventureiro(a)</th>
+                  <th className="p-3">Missão (Quest)</th>
+                  <th className="p-3 text-center">Período</th>
+                  <th className="p-3 text-center">Status Atual</th>
+                  <th className="p-3 text-center">Recompensa Base</th>
+                  <th className="p-3 text-center">Ações Exclusivas do Professor</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60">
+                {quests.map((q) => (
+                  <tr key={q.id} className="hover:bg-slate-900/30 transition">
+                    <td className="p-3 font-bold text-white">
+                      {q.studentName || "Aluno do Reino"}
+                    </td>
+
+                    <td className="p-3 font-bold text-white">
+                      <div className="flex items-center gap-2">
+                        <span>{q.icon}</span>
+                        <span>{q.title}</span>
+                      </div>
+                    </td>
+
+                    <td className="p-3 text-center text-slate-400 font-bold">
+                      {q.periodo}
+                    </td>
+
+                    <td className="p-3 text-center">
+                      <span className={`px-2.5 py-1 rounded text-[10px] font-bold border ${
+                        q.status === "Concluido" ? "border-emerald-500/40 bg-emerald-950/40 text-emerald-300" :
+                        q.status === "Encerrado" ? "border-rose-500/40 bg-rose-950/40 text-rose-400" :
+                        "border-amber-500/40 bg-amber-950/40 text-amber-300"
+                      }`}>
+                        {q.status}
+                      </span>
+                    </td>
+
+                    <td className="p-3 text-center font-bold">
+                      <span className="text-amber-400">✨ {q.xpReward} XP</span>
+                      <span className="text-amber-300 ml-2">🪙 {q.coinReward}</span>
+                    </td>
+
+                    <td className="p-3 text-center">
+                      {q.status === "Em andamento" ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleValidateQuest(q.id, "Concluido")}
+                            className="rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-[10px] font-bold transition shadow-md"
+                          >
+                            ✓ Marcar como Concluído
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleValidateQuest(q.id, "Encerrado")}
+                            className="rounded-lg bg-rose-950 border border-rose-800 hover:bg-rose-900 text-rose-300 px-3 py-1.5 text-[10px] font-bold transition"
+                          >
+                            🚫 Encerrar
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-slate-500 italic">Ciclo Finalizado</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ABA: GRIMÓRIO DE NOTAS / DIÁRIO */}
       {teacherTab === "grades" && (
         <div className="space-y-5 rounded-2xl border border-slate-800 bg-[#11150f] p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
@@ -1039,7 +1189,7 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
             <table className="w-full text-left text-xs text-slate-300">
               <thead className="bg-slate-900/80 uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th className="p-3">Estudante / Titulo</th>
+                  <th className="p-3">Estudante / Título</th>
                   <th className="p-3 text-center">Turma</th>
                   <th className="p-3 text-center">1º Bim</th>
                   <th className="p-3 text-center">2º Bim</th>
@@ -1113,13 +1263,13 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
         </div>
       )}
 
-      {/* ABA 3: CRIAR BOSS / EVENTO */}
+      {/* ABA: CRIAR BOSS / EVENTO */}
       {teacherTab === "create_event" && (
         <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-6">
           <div className="border-b border-slate-800 pb-4">
             <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">Invocação de Desafios</div>
             <h3 className="text-xl font-black text-white">Criar Evento ou Boss Raid da Semana</h3>
-            <p className="text-xs text-slate-500 mt-1">Defina um desafio de tempo limitado para unir a turma em prol de um objetivo comum.</p>
+            <p className="text-xs text-slate-500 mt-1">Defina um desafio de tempo limitado com período para unir a turma.</p>
           </div>
 
           <form
@@ -1147,6 +1297,16 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
                 <option value="Feira">⚙️ Feira / Exposição</option>
                 <option value="Especial">✨ Evento Especial</option>
               </select>
+            </div>
+
+            <div className="space-y-1 md:col-span-2">
+              <label className="text-xs font-bold text-slate-300">Período do Evento</label>
+              <input
+                type="text"
+                required
+                placeholder="Ex: 1º Bimestre, Até 25/10, Semanal..."
+                className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
+              />
             </div>
 
             <div className="md:col-span-2 space-y-1">
@@ -1189,13 +1349,13 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
         </div>
       )}
 
-      {/* ABA 4: GERENCIAR QUESTS */}
+      {/* ABA: GERENCIAR QUESTS / MISSÕES */}
       {teacherTab === "quests" && (
         <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-6">
           <div className="border-b border-slate-800 pb-4">
             <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">Quadro do Mestre</div>
             <h3 className="text-xl font-black text-white">Cadastrar Nova Missão (Quest)</h3>
-            <p className="text-xs text-slate-500 mt-1">Adicione objetivos diários, semanais ou de jornada para os estudantes cumprirem.</p>
+            <p className="text-xs text-slate-500 mt-1">Adicione objetivos e configure o período de realização para os estudantes.</p>
           </div>
 
           <form
@@ -1216,12 +1376,23 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-300">Categoria</label>
+              <label className="text-xs font-bold text-slate-300">Categoria da Missão</label>
               <select className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500">
-                <option value="Diária">☀️ Diária</option>
+                <option value="Diário">☀️ Diário</option>
                 <option value="Semanal">📅 Semanal</option>
-                <option value="Jornada">👑 Jornada</option>
+                <option value="Mensal">🗓️ Mensal</option>
+                <option value="Especial (Mensal)">🌟 Especial (Mensal)</option>
               </select>
+            </div>
+
+            <div className="space-y-1 md:col-span-2">
+              <label className="text-xs font-bold text-slate-300">Período da Atividade / Missão</label>
+              <input
+                type="text"
+                required
+                placeholder="Ex: 1º Bimestre, Até 20/05, Semanal..."
+                className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
+              />
             </div>
 
             <div className="md:col-span-2 space-y-1">
@@ -1229,7 +1400,7 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
               <input
                 type="text"
                 required
-                placeholder="Ex: Tirar nota maior que 8.0 em pelo menos 2 avaliações nesta semana."
+                placeholder="Ex: Tirar nota maior que 8.0 em pelo menos 2 avaliações no período."
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
@@ -1264,7 +1435,7 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
         </div>
       )}
 
-      {/* ABA 5: FORMULÁRIO DE ENTURMAÇÃO DE ALUNOS COM EDIÇÃO E REMOÇÃO */}
+      {/* ABA: ENTURMAÇÃO DE ALUNOS */}
       {teacherTab === "enturmar" && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-6">
@@ -1310,7 +1481,6 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
             </form>
           </div>
 
-          {/* LISTA DOS ALUNOS ENTURMADOS (COM MODO DE EDIÇÃO EM LINHA) */}
           <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-4">
             <h3 className="text-lg font-black text-white flex items-center gap-2">
               <span>👥</span> Alunos Cadastrados no Reino ({students.length})
@@ -1333,7 +1503,6 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
 
                     return (
                       <tr key={st.id} className="hover:bg-slate-900/30 transition">
-                        {/* COLUNA DO NOME */}
                         <td className="p-3 font-bold text-white">
                           <div className="flex items-center gap-3">
                             <span className="text-xl p-1.5 rounded-lg bg-slate-900 border border-slate-800">{st.avatar}</span>
@@ -1350,7 +1519,6 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
                           </div>
                         </td>
 
-                        {/* COLUNA DA TURMA */}
                         <td className="p-3 text-center">
                           {isEditing ? (
                             <input
@@ -1366,11 +1534,9 @@ function TeacherPanel({ onSwitchRole }: { onSwitchRole: () => void }) {
                           )}
                         </td>
 
-                        {/* COLUNA DE NÍVEL E INSÍGNIA */}
                         <td className="p-3 text-center font-bold text-amber-400">Lvl {st.level}</td>
                         <td className="p-3 text-center text-slate-400">{st.badge}</td>
 
-                        {/* COLUNA DE AÇÕES DE EDIÇÃO E EXCLUSÃO */}
                         <td className="p-3 text-center">
                           {isEditing ? (
                             <div className="flex items-center justify-center gap-1">
@@ -1432,23 +1598,11 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("inicio");
   const [grades, setGrades] = useState<Record<string, Grades>>({});
   const [quests, setQuests] = useState<Quest[]>(initialQuests);
+  const [events] = useState<EventItem[]>(mockEvents);
   
   // Status Globais do Jogador
-  const [userCoins, setUserCoins] = useState(450);
-  const [userXp, setUserXp] = useState(1250);
-
-  function handleClaimReward(questId: string) {
-    setQuests((prev) =>
-      prev.map((q) => {
-        if (q.id === questId && !q.claimed) {
-          setUserCoins((c) => c + q.coinReward);
-          setUserXp((x) => x + q.xpReward);
-          return { ...q, claimed: true };
-        }
-        return q;
-      })
-    );
-  }
+  const [userCoins] = useState(450);
+  const [userXp] = useState(1250);
 
   return (
     <div className="min-h-screen bg-[#0d100d] text-slate-100 flex flex-col justify-between">
@@ -1488,7 +1642,12 @@ export default function Home() {
       {/* CONTEÚDO CONFORME O PERFIL */}
       <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
         {role === "teacher" ? (
-          <TeacherPanel onSwitchRole={() => setRole("student")} />
+          <TeacherPanel
+            onSwitchRole={() => setRole("student")}
+            quests={quests}
+            setQuests={setQuests}
+            events={events}
+          />
         ) : (
           <>
             {/* ABA: INÍCIO */}
@@ -1628,14 +1787,20 @@ export default function Home() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {mockEvents.map((evt) => (
+                  {events.map((evt) => (
                     <div key={evt.id} className="rounded-2xl border border-amber-500/30 bg-slate-900/80 p-6">
                       <div className="flex justify-between items-center mb-3">
                         <span className="text-xs font-bold text-amber-400">{evt.type}</span>
-                        <span className="text-xs font-bold text-emerald-400">{evt.timeLeft || evt.startDate}</span>
+                        <span className="text-xs font-bold text-amber-300 border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 rounded-md">
+                          📅 {evt.periodo}
+                        </span>
                       </div>
                       <h3 className="text-xl font-black text-white">{evt.title}</h3>
                       <p className="text-xs text-slate-400 mt-2">{evt.description}</p>
+                      <div className="mt-4 flex items-center gap-3 text-xs font-bold">
+                        <span className="text-amber-400">✨ +{evt.rewardXp} XP</span>
+                        <span className="text-amber-300">🪙 +{evt.rewardCoins} Moedas</span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1643,9 +1808,7 @@ export default function Home() {
             )}
 
             {/* ABA: OBJETIVOS */}
-            {activeTab === "objetivos" && (
-              <ObjectivesTab quests={quests} onClaimReward={handleClaimReward} />
-            )}
+            {activeTab === "objetivos" && <ObjectivesTab quests={quests} />}
 
             {/* OUTRAS ABAS */}
             {activeTab !== "inicio" && activeTab !== "mapa" && activeTab !== "eventos" && activeTab !== "objetivos" && (
