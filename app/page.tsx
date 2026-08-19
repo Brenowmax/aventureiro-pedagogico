@@ -1,65 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import AdventureMap from "@/components/AdventureMap";
 
 /* ============================================================
-   TYPES / TIPAGENS
+   TIPOS
 ============================================================ */
 
-type UserRole = "student" | "teacher";
+type UserRole = "teacher" | "student";
 
-type Subject = {
-  name: string;
-  icon: string;
-  level: string;
-  x: number;
-  y: number;
-  color: string;
-  region: string;
-};
+type TeacherTab =
+  | "overview"
+  | "validation"
+  | "grades"
+  | "create_event"
+  | "quests"
+  | "enturmar";
 
 type Grades = [string, string, string, string];
-
-type PerformanceLevel =
-  | "Abaixo do Básico"
-  | "Básico"
-  | "Adequado"
-  | "Avançado"
-  | "Sem avaliação";
-
-type EventItem = {
-  id: string;
-  title: string;
-  description: string;
-  type: "Boss Raid" | "Maratona" | "Feira" | "Especial";
-  icon: string;
-  periodo: string;
-  rewardXp: number;
-  rewardCoins: number;
-  badgeReward?: string;
-  color: string;
-};
-
-type QuestCategory = "Diário" | "Semanal" | "Mensal" | "Especial (Mensal)";
-
-// Estruturação dos 3 Status de Missão
-type QuestStatus = "Em andamento" | "Concluido" | "Encerrado";
-
-type Quest = {
-  id: string;
-  title: string;
-  category: QuestCategory;
-  periodo: string;
-  description: string;
-  xpReward: number;
-  coinReward: number;
-  progress: number;
-  maxProgress: number;
-  icon: string;
-  status: QuestStatus;
-  studentId?: string;
-  studentName?: string;
-};
 
 type StudentRecord = {
   id: string;
@@ -67,147 +25,44 @@ type StudentRecord = {
   avatar: string;
   level: number;
   xp: number;
+  coins: number;
   badge: string;
-  turma?: string;
+  turma: string;
   grades: Record<string, Grades>;
 };
 
+type QuestStatus = "Em andamento" | "Concluido" | "Encerrado";
+
+type Quest = {
+  id: string;
+  title: string;
+  icon: string;
+  periodo: string;
+  categoria: string;
+  requirement: string;
+  xpReward: number;
+  coinReward: number;
+  status: QuestStatus;
+  progress: number;
+  maxProgress: number;
+  studentId?: string;
+  studentName?: string;
+};
+
+type EventItem = {
+  id: string;
+  title: string;
+  type: string;
+  periodo: string;
+  description: string;
+  rewardXp: number;
+  rewardCoins: number;
+  active: boolean;
+};
+
 /* ============================================================
-   DADOS INICIAIS DE EXEMPLO
+   COMPONENTES CURRICULARES
 ============================================================ */
-
-const subjects: Subject[] = [
-  { name: "Língua Portuguesa", icon: "📖", level: "Especialista", x: 23, y: 27, color: "#d97706", region: "Terras da Linguagem" },
-  { name: "Língua Inglesa", icon: "🇬🇧", level: "Explorador", x: 40, y: 19, color: "#2563eb", region: "Terras da Linguagem" },
-  { name: "Matemática", icon: "📐", level: "Aventureiro", x: 66, y: 25, color: "#7c3aed", region: "Montanhas dos Números" },
-  { name: "História", icon: "🏛️", level: "Explorador", x: 79, y: 39, color: "#b45309", region: "Vale das Eras" },
-  { name: "Geografia", icon: "🌎", level: "Mestre", x: 61, y: 48, color: "#15803d", region: "Terras da Cartografia" },
-  { name: "Educação Física", icon: "⚽", level: "Explorador", x: 29, y: 53, color: "#dc2626", region: "Campos da Energia" },
-  { name: "Artes", icon: "🎨", level: "Aventureiro", x: 44, y: 66, color: "#db2777", region: "Floresta das Artes" },
-  { name: "Ciências", icon: "🔬", level: "Especialista", x: 74, y: 62, color: "#0891b2", region: "Laboratórios do Saber" },
-  { name: "Projeto de Vida", icon: "🧭", level: "Aprendiz", x: 16, y: 72, color: "#ca8a04", region: "Horizonte do Futuro" },
-  { name: "Tecnologia", icon: "💻", level: "Aventureiro", x: 86, y: 72, color: "#4f46e5", region: "Distrito Tecnológico" },
-  { name: "Educação Financeira", icon: "💰", level: "Aprendiz", x: 51, y: 82, color: "#16a34a", region: "Mercado do Conhecimento" },
-  { name: "Robótica", icon: "🤖", level: "Explorador", x: 72, y: 84, color: "#64748b", region: "Distrito Tecnológico" },
-  { name: "Orientação de Estudos de Português", icon: "📝", level: "Aprendiz", x: 30, y: 87, color: "#ea580c", region: "Terras da Linguagem" },
-  { name: "Orientação de Estudos de Matemática", icon: "📊", level: "Aprendiz", x: 90, y: 51, color: "#9333ea", region: "Montanhas dos Números" },
-];
-
-const mockEvents: EventItem[] = [
-  {
-    id: "1",
-    title: "O Desafio do Guardião da Geometria",
-    description: "Batalha especial contra o Boss das Montanhas dos Números! Complete os exercícios para ganhar bônus de XP.",
-    type: "Boss Raid",
-    icon: "🐉",
-    periodo: "1º Bimestre - Até 25/10",
-    rewardXp: 500,
-    rewardCoins: 200,
-    badgeReward: "Caçador de Polígonos",
-    color: "#7c3aed",
-  },
-  {
-    id: "2",
-    title: "Maratona do Conhecimento Literário",
-    description: "Leia o livro do mês e participe do quiz para desbloquear XP em dobro.",
-    type: "Maratona",
-    icon: "📜",
-    periodo: "Semanal - Até sexta-feira",
-    rewardXp: 350,
-    rewardCoins: 150,
-    color: "#d97706",
-  },
-  {
-    id: "3",
-    title: "Feira de Inovação & Robótica 32-bits",
-    description: "Apresente seu projeto na semana tecnológica e ganhe o selo exclusivo.",
-    type: "Feira",
-    icon: "⚙️",
-    periodo: "2º Bimestre",
-    rewardXp: 800,
-    rewardCoins: 400,
-    badgeReward: "Gênio da Tecnologia",
-    color: "#0891b2",
-  },
-];
-
-const initialQuests: Quest[] = [
-  {
-    id: "q1",
-    title: "Mestre da Frequência",
-    category: "Diário",
-    periodo: "Diário (Hoje)",
-    description: "Acesse a plataforma hoje para manter sua sequência de estudos.",
-    xpReward: 50,
-    coinReward: 20,
-    progress: 1,
-    maxProgress: 1,
-    icon: "☀️",
-    status: "Em andamento",
-    studentId: "s1",
-    studentName: "Arthur Pendelton"
-  },
-  {
-    id: "q2",
-    title: "Explorador da Matemática",
-    category: "Diário",
-    periodo: "1º Bimestre",
-    description: "Obtenha uma nota superior a 7.0 em qualquer atividade das Montanhas dos Números.",
-    xpReward: 100,
-    coinReward: 40,
-    progress: 1,
-    maxProgress: 1,
-    icon: "📐",
-    status: "Em andamento",
-    studentId: "s2",
-    studentName: "Beatriz Oliveira"
-  },
-  {
-    id: "q3",
-    title: "Sábio Leitor",
-    category: "Semanal",
-    periodo: "Esta Semana",
-    description: "Registre notas em pelo menos 3 disciplinas das Terras da Linguagem nesta semana.",
-    xpReward: 250,
-    coinReward: 100,
-    progress: 3,
-    maxProgress: 3,
-    icon: "📚",
-    status: "Em andamento",
-    studentId: "s3",
-    studentName: "Carlos Eduardo"
-  },
-  {
-    id: "q4",
-    title: "Mestre do Mês",
-    category: "Mensal",
-    periodo: "Mês Vigente",
-    description: "Mantenha o status Adequado ou Avançado em todas as matérias ao longo do mês.",
-    xpReward: 500,
-    coinReward: 200,
-    progress: 10,
-    maxProgress: 10,
-    icon: "🗓️",
-    status: "Concluido",
-    studentId: "s4",
-    studentName: "Diana Prince"
-  },
-  {
-    id: "q5",
-    title: "Ocultista Arcano do Conhecimento",
-    category: "Especial (Mensal)",
-    periodo: "2º Bimestre",
-    description: "Conclua o projeto interdisciplinar de tecnologia e ciências deste mês.",
-    xpReward: 1000,
-    coinReward: 450,
-    progress: 0,
-    maxProgress: 1,
-    icon: "🌟",
-    status: "Encerrado",
-    studentId: "s5",
-    studentName: "Enzo Gabriel"
-  },
-];
 
 const allCurricularSubjects = [
   "Língua Portuguesa",
@@ -226,713 +81,690 @@ const allCurricularSubjects = [
   "Orientação de Estudos de Matemática",
 ];
 
-function createEmptyGrades(): Record<string, Grades> {
-  return Object.fromEntries(
-    allCurricularSubjects.map((subject) => [
-      subject,
-      ["", "", "", ""] as Grades,
-    ])
-  );
+const subjects = [
+  { name: "Língua Portuguesa", icon: "📜" },
+  { name: "Língua Inglesa", icon: "🇬🇧" },
+  { name: "Matemática", icon: "🔢" },
+  { name: "História", icon: "🏛️" },
+  { name: "Geografia", icon: "🗺️" },
+  { name: "Educação Física", icon: "⚽" },
+  { name: "Artes", icon: "🎨" },
+  { name: "Ciências", icon: "🔬" },
+  { name: "Projeto de Vida", icon: "🧭" },
+  { name: "Tecnologia", icon: "💻" },
+  { name: "Educação Financeira", icon: "🪙" },
+  { name: "Robótica", icon: "🤖" },
+  {
+    name: "Orientação de Estudos de Português",
+    icon: "📚",
+  },
+  {
+    name: "Orientação de Estudos de Matemática",
+    icon: "🧮",
+  },
+];
+
+/* ============================================================
+   FUNÇÕES AUXILIARES
+============================================================ */
+
+function createEmptyGrades(): Grades {
+  return ["", "", "", ""];
 }
 
-function createStudentGrades(
-  mathGrades: Grades = ["", "", "", ""]
-): Record<string, Grades> {
-  return {
-    ...createEmptyGrades(),
-    "Matemática": mathGrades,
-  };
+function calculateAverage(grades: Grades): number {
+  const validGrades = grades
+    .map(Number)
+    .filter((value) => !Number.isNaN(value));
+
+  if (validGrades.length === 0) return 0;
+
+  const sum = validGrades.reduce((acc, value) => acc + value, 0);
+
+  return sum / validGrades.length;
 }
+
+function getPerformanceLevel(avg: number): string {
+  if (avg >= 9) return "Avançado";
+  if (avg >= 7) return "Adequado";
+  if (avg >= 5) return "Básico";
+  return "Abaixo do Básico";
+}
+
+function getPerformanceClass(perf: string): string {
+  if (perf === "Avançado") {
+    return "bg-purple-950/50 text-purple-300 border border-purple-800/50";
+  }
+
+  if (perf === "Adequado") {
+    return "bg-emerald-950/50 text-emerald-300 border border-emerald-800/50";
+  }
+
+  if (perf === "Básico") {
+    return "bg-orange-950/50 text-orange-300 border border-orange-800/50";
+  }
+
+  return "bg-red-950/50 text-red-300 border border-red-800/50";
+}
+
+function getPerformanceIcon(perf: string): string {
+  if (perf === "Avançado") return "🟣";
+  if (perf === "Adequado") return "🟢";
+  if (perf === "Básico") return "🟠";
+  return "🔴";
+}
+
+/* ============================================================
+   DADOS INICIAIS
+============================================================ */
 
 const mockClassStudents: StudentRecord[] = [
   {
     id: "s1",
-    name: "Arthur Pendelton",
-    avatar: "🗡️",
-    level: 6,
-    xp: 1850,
-    badge: "Guardião da Luz",
+    name: "Pedro Henrique",
+    avatar: "🧙‍♂️",
+    level: 5,
+    xp: 1250,
+    coins: 450,
+    badge: "Mago das Letras",
     turma: "9º Ano A",
-    grades: createStudentGrades(["8.5", "9.0", "8.0", ""]),
+    grades: {},
   },
   {
     id: "s2",
     name: "Beatriz Oliveira",
     avatar: "🧝",
-    level: 5,
-    xp: 1420,
+    level: 7,
+    xp: 1850,
+    coins: 620,
     badge: "Arquimaga das Letras",
     turma: "9º Ano A",
-    grades: createStudentGrades(["9.5", "10", "9.0", ""]),
+    grades: {},
   },
   {
     id: "s3",
-    name: "Carlos Eduardo",
+    name: "Arthur Pendelton",
     avatar: "🛡️",
-    level: 4,
-    xp: 980,
-    badge: "Defensor das Eras",
+    level: 6,
+    xp: 1600,
+    coins: 530,
+    badge: "Guardião do Conhecimento",
     turma: "9º Ano A",
-    grades: createStudentGrades(["6.0", "5.5", "6.5", ""]),
+    grades: {},
   },
   {
     id: "s4",
-    name: "Diana Prince",
-    avatar: "🔮",
-    level: 7,
-    xp: 2100,
-    badge: "Sábia do Conhecimento",
-    turma: "9º Ano B",
-    grades: createStudentGrades(["10", "9.8", "9.5", ""]),
-  },
-  {
-    id: "s5",
-    name: "Enzo Gabriel",
+    name: "Gabriel Santos",
     avatar: "⚡",
-    level: 3,
-    xp: 620,
-    badge: "Iniciante Veloz",
-    turma: "9º Ano B",
-    grades: createStudentGrades(["4.0", "5.0", "3.5", ""]),
+    level: 4,
+    xp: 980,
+    coins: 340,
+    badge: "Aventureiro",
+    turma: "9º Ano A",
+    grades: {},
   },
 ];
-/* ============================================================
-   FUNÇÕES AUXILIARES DE CÁLCULO
-============================================================ */
 
-function getPerformanceLevel(grade: number): PerformanceLevel {
-  if (Number.isNaN(grade)) {
-    return "Sem avaliação";
-  }
+const initialQuests: Quest[] = [
+  {
+    id: "q1",
+    title: "Mestre da Frequência",
+    icon: "☀️",
+    periodo: "Semanal",
+    categoria: "Semanal",
+    requirement: "Manter frequência e participação durante a semana.",
+    xpReward: 100,
+    coinReward: 50,
+    status: "Em andamento",
+    progress: 0,
+    maxProgress: 1,
+    studentId: "s3",
+    studentName: "Arthur Pendelton",
+  },
+  {
+    id: "q2",
+    title: "Arquimaga das Letras",
+    icon: "📜",
+    periodo: "1º Bimestre",
+    categoria: "Especial",
+    requirement: "Obter desempenho destacado nas atividades de Língua Portuguesa.",
+    xpReward: 150,
+    coinReward: 75,
+    status: "Em andamento",
+    progress: 0,
+    maxProgress: 1,
+    studentId: "s2",
+    studentName: "Beatriz Oliveira",
+  },
+  {
+    id: "q3",
+    title: "Explorador da Geometria",
+    icon: "⚔️",
+    periodo: "Mensal",
+    categoria: "Mensal",
+    requirement: "Completar as atividades de geometria propostas.",
+    xpReward: 200,
+    coinReward: 80,
+    status: "Em andamento",
+    progress: 0,
+    maxProgress: 1,
+    studentId: "s1",
+    studentName: "Pedro Henrique",
+  },
+];
 
-  if (grade < 5) {
-    return "Abaixo do Básico";
-  }
-
-  if (grade < 7) {
-    return "Básico";
-  }
-
-  if (grade < 9) {
-    return "Adequado";
-  }
-
-  return "Avançado";
-}
-
-function getPerformanceIcon(level: PerformanceLevel) {
-  switch (level) {
-    case "Abaixo do Básico":
-      return "🔴";
-
-    case "Básico":
-      return "🟠";
-
-    case "Adequado":
-      return "🟢";
-
-    case "Avançado":
-      return "🟣";
-
-    default:
-      return "⚪";
-  }
-}
-
-function getPerformanceClass(level: PerformanceLevel) {
-  switch (level) {
-    case "Abaixo do Básico":
-      return "border-red-900/50 bg-red-950/20 text-red-400";
-
-    case "Básico":
-      return "border-orange-900/50 bg-orange-950/20 text-orange-400";
-
-    case "Adequado":
-      return "border-green-900/50 bg-green-950/20 text-green-400";
-
-    case "Avançado":
-      return "border-purple-900/50 bg-purple-950/20 text-purple-400";
-
-    default:
-      return "border-slate-800 bg-slate-900 text-slate-500";
-  }
-}
-
-function calculateAverage(grades: Grades) {
-  const total = grades.reduce((sum, grade) => {
-    if (grade === "") {
-      return sum;
-    }
-
-    const numericGrade = Number(grade);
-
-    if (Number.isNaN(numericGrade)) {
-      return sum;
-    }
-
-    return sum + numericGrade;
-  }, 0);
-
-  const hasAnyGrade = grades.some(
-    (grade) => grade !== "" && !Number.isNaN(Number(grade))
-  );
-
-  if (!hasAnyGrade) {
-    return NaN;
-  }
-
-  // IMPORTANTE:
-  // Sempre divide pelos 4 bimestres.
-  // Bimestre vazio vale 0.
-  return total / 4;
-}
-
-function calculateXP(average: number) {
-  if (Number.isNaN(average)) {
-    return 0;
-  }
-
-  return Math.round(average * 100);
-}
-
-function calculateReputation(average: number) {
-  if (Number.isNaN(average)) {
-    return 0;
-  }
-
-  return Math.round(average * 100);
-}
+const mockEvents: EventItem[] = [
+  {
+    id: "event1",
+    title: "Guardião dos Polígonos de Ouro",
+    type: "🐉 Boss Raid",
+    periodo: "1º Bimestre",
+    description:
+      "Desafio coletivo de Matemática para derrotar o Guardião dos Polígonos.",
+    rewardXp: 500,
+    rewardCoins: 200,
+    active: true,
+  },
+];
 
 /* ============================================================
-   COMPONENTE DE HP / CORAÇÕES ESTILO ZELDA
-============================================================ */
-function ZeldaHeartBar({ reputation }: { reputation: number }) {
-  const totalHearts = 10;
-  const heartValue = 100;
-
-  return (
-    <div className="flex items-center gap-0.5 text-xs select-none">
-      {Array.from({ length: totalHearts }).map((_, index) => {
-        const threshold = (index + 1) * heartValue;
-        const halfThreshold = threshold - heartValue / 2;
-
-        if (reputation >= threshold) {
-          return <span key={index} className="text-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.6)]">❤️</span>;
-        } else if (reputation >= halfThreshold) {
-          return <span key={index} className="text-red-400 opacity-90">💔</span>;
-        } else {
-          return <span key={index} className="opacity-20 grayscale filter">🖤</span>;
-        }
-      })}
-    </div>
-  );
-}
-
-/* ============================================================
-   MAPA INTERATIVO DO ALUNO
+   ABA DE OBJETIVOS DO ALUNO
 ============================================================ */
 
-function AdventureMap({
-  grades,
-  setGrades,
+function ObjectivesTab({
+  quests,
+  student,
 }: {
-  grades: Record<string, Grades>;
-  setGrades: React.Dispatch<React.SetStateAction<Record<string, Grades>>>;
+  quests: Quest[];
+  student: StudentRecord;
 }) {
-  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
-
-  function updateGrade(subjectName: string, bimestre: number, value: string) {
-    let numericValue = value;
-    if (Number(value) > 10) numericValue = "10";
-    if (Number(value) < 0) numericValue = "0";
-
-    setGrades((current) => {
-      const previous = current[subjectName] || ["", "", "", ""];
-      const updated: Grades = [...previous] as Grades;
-      updated[bimestre] = numericValue;
-      return { ...current, [subjectName]: updated };
-    });
-  }
-
-  function getSubjectData(subject: Subject) {
-    const subjectGrades = grades[subject.name] || ["", "", "", ""];
-    const average = calculateAverage(subjectGrades);
-    const xp = calculateXP(average);
-    const reputation = calculateReputation(average);
-    const performance = getPerformanceLevel(average);
-
-    return { grades: subjectGrades, average, xp, reputation, performance };
-  }
-
-  if (selectedSubject) {
-    const data = getSubjectData(selectedSubject);
-
-    return (
-      <section className="rounded-2xl border border-slate-800 bg-[#11150f] p-4 shadow-2xl sm:p-6">
-        <button
-          type="button"
-          onClick={() => setSelectedSubject(null)}
-          className="mb-5 flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-bold text-slate-300 transition hover:border-amber-600 hover:text-amber-400"
-        >
-          ← Voltar ao mapa
-        </button>
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div
-                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl"
-                style={{
-                  backgroundColor: `${selectedSubject.color}22`,
-                  border: `1px solid ${selectedSubject.color}66`,
-                }}
-              >
-                {selectedSubject.icon}
-              </div>
-              <div>
-                <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-amber-500">
-                  {selectedSubject.region}
-                </div>
-                <h2 className="mt-1 text-2xl font-black">{selectedSubject.name}</h2>
-              </div>
-            </div>
-
-            <div className={`rounded-xl border px-5 py-3 ${getPerformanceClass(data.performance)}`}>
-              <div className="text-[9px] font-bold uppercase tracking-wider opacity-60">Proficiência</div>
-              <div className="mt-1 font-black">{getPerformanceIcon(data.performance)} {data.performance}</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-4">
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-            <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Média do Componente</div>
-            <div className="mt-2 text-2xl font-black text-white">{data.average > 0 ? data.average.toFixed(1) : "--"}</div>
-          </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-            <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Proficiência</div>
-            <div className="mt-2 text-sm font-black">{getPerformanceIcon(data.performance)} {data.performance}</div>
-          </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-            <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500">XP OBTIDO</div>
-            <div className="mt-2 text-2xl font-black text-amber-400">✨ {data.xp}</div>
-          </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-            <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500">HP de Reputação</div>
-            <div className="mt-3">
-              <ZeldaHeartBar reputation={data.reputation} />
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-5 rounded-2xl border border-slate-800 bg-[#11150f] p-5">
-          <div className="mb-5">
-            <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-amber-500">Desempenho acadêmico</div>
-            <h3 className="mt-1 text-xl font-black">Notas Bimestrais</h3>
-            <p className="mt-1 text-sm text-slate-500">Digite as notas de 0 a 10 para preencher a barra de HP/Reputação.</p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {["1º Bimestre", "2º Bimestre", "3º Bimestre", "4º Bimestre"].map((label, index) => {
-              const grade = Number(data.grades[index]);
-              const classification = getPerformanceLevel(grade);
-
-              return (
-                <div key={label} className="rounded-xl border border-slate-800 bg-slate-900/40 p-3">
-                  <label className="mb-2 block text-xs font-bold text-slate-400">{label}</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
-                    step="0.1"
-                    value={data.grades[index]}
-                    onChange={(e) => updateGrade(selectedSubject.name, index, e.target.value)}
-                    placeholder="0,0"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-center text-lg font-black text-white outline-none focus:border-amber-500"
-                  />
-                  <div className={`mt-2 rounded-lg border px-2 py-2 text-center text-[10px] font-bold ${getPerformanceClass(classification)}`}>
-                    {getPerformanceIcon(classification)} {classification}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <section className="overflow-hidden rounded-2xl border border-slate-800 bg-[#11150f] shadow-2xl">
-        <div className="border-b border-slate-800 p-5">
-          <div className="text-[9px] font-bold uppercase tracking-[0.3em] text-amber-500">Cartografia Acadêmica</div>
-          <h2 className="mt-1 text-2xl font-black">Reino do Conhecimento</h2>
-          <p className="mt-1 text-sm text-slate-500">Clique nos pontos do mapa ou nos cards abaixo para registrar notas e coletar HP.</p>
-        </div>
-
-        <div className="p-3 sm:p-5">
-          <div
-            className="relative overflow-hidden rounded-2xl border border-amber-900/40"
-            style={{
-              aspectRatio: "16 / 10",
-              background: "radial-gradient(circle at 50% 45%, #27351f 0%, #172017 35%, #0d120d 75%, #080b08 100%)",
-            }}
-          >
-            {subjects.map((subject) => {
-              const data = getSubjectData(subject);
-
-              return (
-                <button
-                  key={subject.name}
-                  type="button"
-                  onClick={() => setSelectedSubject(subject)}
-                  className="group absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{ left: `${subject.x}%`, top: `${subject.y}%` }}
-                >
-                  <div
-                    className="flex h-11 w-11 items-center justify-center rounded-full border-2 text-xl shadow-xl transition-all group-hover:scale-125 sm:h-14 sm:w-14"
-                    style={{
-                      backgroundColor: `${subject.color}22`,
-                      borderColor: `${subject.color}99`,
-                      boxShadow: `0 0 25px ${subject.color}25`,
-                    }}
-                  >
-                    {subject.icon}
-                  </div>
-
-                  {data.average > 0 && (
-                    <div className={`absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border border-[#11150f] px-1 text-[8px] font-black text-black ${
-                      data.performance === "Abaixo do Básico" ? "bg-red-400" :
-                      data.performance === "Básico" ? "bg-orange-400" :
-                      data.performance === "Adequado" ? "bg-green-400" : "bg-purple-400"
-                    }`}>
-                      {data.average.toFixed(1)}
-                    </div>
-                  )}
-
-                  <div className="pointer-events-none absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap rounded-md border border-slate-700 bg-[#090c09]/95 px-2 py-1 text-[8px] font-bold text-slate-300 opacity-0 transition-opacity group-hover:opacity-100 sm:text-[9px]">
-                    {subject.name}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-black text-white">Disciplinas e HP de Reputação</h3>
-          <span className="text-xs text-slate-500">{subjects.length} Disciplinas no Reino</span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {subjects.map((subject) => {
-            const data = getSubjectData(subject);
-
-            return (
-              <div
-                key={subject.name}
-                onClick={() => setSelectedSubject(subject)}
-                className="rounded-2xl border border-slate-800 bg-[#11150f] p-5 hover:border-amber-500/50 transition cursor-pointer flex flex-col justify-between group"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl"
-                        style={{
-                          backgroundColor: `${subject.color}22`,
-                          border: `1px solid ${subject.color}55`,
-                        }}
-                      >
-                        {subject.icon}
-                      </div>
-                      <div>
-                        <div className="text-[9px] font-bold uppercase tracking-wider text-amber-500">
-                          {subject.region}
-                        </div>
-                        <h4 className="font-black text-white group-hover:text-amber-400 transition">
-                          {subject.name}
-                        </h4>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-slate-800/80 space-y-2">
-                    <div className="flex justify-between items-center text-[10px] font-bold">
-                      <span className="text-slate-400">Vida / Reputação</span>
-                      <span className="text-amber-400">{data.reputation} / 1000 HP</span>
-                    </div>
-                    <ZeldaHeartBar reputation={data.reputation} />
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between text-xs pt-3 border-t border-slate-800/40">
-                  <span className="text-slate-500">Média: <strong className="text-white">{data.average > 0 ? data.average.toFixed(1) : "--"}</strong></span>
-                  <span className={`px-2 py-0.5 rounded border text-[10px] font-bold ${getPerformanceClass(data.performance)}`}>
-                    {data.performance}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-    </div>
+  const studentQuests = quests.filter(
+    (quest) =>
+      quest.studentId === student.id ||
+      quest.studentName === student.name
   );
-}
-
-/* ============================================================
-   ABA DE OBJETIVOS (QUESTS DO ALUNO)
-============================================================ */
-
-function ObjectivesTab({ quests }: { quests: Quest[] }) {
-  const [filter, setFilter] = useState<"Todas" | QuestCategory>("Todas");
-
-  const filteredQuests = quests.filter((q) => filter === "Todas" || q.category === filter);
 
   return (
     <section className="space-y-6">
-      <div className="rounded-3xl border border-amber-900/40 bg-gradient-to-br from-[#1b1e17] via-[#11150f] to-[#0a0d0a] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-400 mb-3">
-            🎯 Quadro de Missões
-          </div>
-          <h2 className="text-3xl font-black text-white">Objetivos & Metas</h2>
-          <p className="mt-2 text-sm text-slate-400 leading-relaxed">
-            Cumpra os objetivos diários, semanais, mensais e especiais para acompanhar seu progresso no reino.
+      <div className="rounded-3xl border border-amber-900/40 bg-gradient-to-br from-[#1b1e17] via-[#11150f] to-[#0a0d0a] p-6 sm:p-8 shadow-2xl">
+        <div className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-500">
+          📜 Quadro do Aventureiro
+        </div>
+
+        <h2 className="mt-1 text-3xl font-black text-white">
+          Meus Objetivos
+        </h2>
+
+        <p className="mt-2 text-sm text-slate-400">
+          Complete os objetivos e aguarde a validação do Mestre.
+        </p>
+      </div>
+
+      {studentQuests.length === 0 ? (
+        <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-10 text-center">
+          <div className="text-5xl">📜</div>
+          <h3 className="mt-3 text-lg font-black text-white">
+            Nenhum objetivo disponível
+          </h3>
+          <p className="mt-1 text-xs text-slate-500">
+            Novos objetivos aparecerão aqui quando forem atribuídos pelo
+            professor.
           </p>
         </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {(["Todas", "Diário", "Semanal", "Mensal", "Especial (Mensal)"] as const).map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => setFilter(cat)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition border ${
-              filter === cat
-                ? "border-amber-500 bg-amber-500/10 text-amber-400"
-                : "border-slate-800 bg-slate-900/50 text-slate-400 hover:border-slate-700"
-            }`}
-          >
-            {cat === "Todas" ? "Todas as Missões" : `Missões (${cat})`}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredQuests.map((q) => {
-          const percent = Math.min(100, Math.round((q.progress / q.maxProgress) * 100));
-
-          return (
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {studentQuests.map((quest) => (
             <div
-              key={q.id}
-              className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 flex flex-col justify-between transition"
+              key={quest.id}
+              className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 shadow-xl"
             >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-md border ${
-                      q.category === "Especial (Mensal)"
-                        ? "border-purple-500/40 bg-purple-950/40 text-purple-300"
-                        : "border-slate-800 bg-slate-950 text-slate-400"
-                    }`}>
-                      {q.category}
-                    </span>
-                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-400">
-                      📅 {q.periodo}
-                    </span>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-950/30 text-2xl">
+                    {quest.icon}
                   </div>
 
-                  {/* BADGE EXIBINDO OS 3 STATUS */}
-                  <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md border ${
-                    q.status === "Concluido" ? "border-emerald-500/40 bg-emerald-950/40 text-emerald-300" :
-                    q.status === "Encerrado" ? "border-rose-500/40 bg-rose-950/40 text-rose-400" :
-                    "border-amber-500/40 bg-amber-950/40 text-amber-300"
-                  }`}>
-                    {q.status}
-                  </span>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="text-3xl p-2 rounded-xl bg-slate-800/50 border border-slate-700/50 shrink-0">
-                    {q.icon}
-                  </div>
                   <div>
-                    <h3 className="font-black text-white text-base">{q.title}</h3>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">{q.description}</p>
+                    <h3 className="font-black text-white">
+                      {quest.title}
+                    </h3>
+
+                    <p className="text-[10px] text-slate-500">
+                      {quest.categoria} • {quest.periodo}
+                    </p>
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center gap-3 text-xs font-bold">
-                  <span className="text-amber-400">✨ +{q.xpReward} XP</span>
-                  <span className="text-amber-300">🪙 +{q.coinReward}</span>
+                <span
+                  className={`rounded-lg border px-2 py-1 text-[9px] font-black ${
+                    quest.status === "Concluido"
+                      ? "border-emerald-500/40 bg-emerald-950/40 text-emerald-300"
+                      : quest.status === "Encerrado"
+                      ? "border-rose-500/40 bg-rose-950/40 text-rose-300"
+                      : "border-amber-500/40 bg-amber-950/40 text-amber-300"
+                  }`}
+                >
+                  {quest.status}
+                </span>
+              </div>
+
+              <div className="mt-5 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+                <div className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+                  Requisito
                 </div>
 
-                <div className="mt-4 space-y-1.5">
-                  <div className="flex justify-between text-[10px] font-bold">
-                    <span className="text-slate-500">Progresso</span>
-                    <span className="text-amber-400">{q.progress} / {q.maxProgress} ({percent}%)</span>
+                <p className="mt-1 text-xs leading-relaxed text-slate-300">
+                  {quest.requirement}
+                </p>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-amber-500/20 bg-amber-950/20 p-3 text-center">
+                  <div className="text-[9px] font-black uppercase text-amber-500">
+                    XP
                   </div>
-                  <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        q.status === "Concluido" ? "bg-emerald-500" :
-                        q.status === "Encerrado" ? "bg-rose-500" : "bg-amber-500"
-                      }`}
-                      style={{ width: `${percent}%` }}
-                    />
+                  <div className="mt-1 text-lg font-black text-amber-300">
+                    +{quest.xpReward}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-yellow-500/20 bg-yellow-950/20 p-3 text-center">
+                  <div className="text-[9px] font-black uppercase text-yellow-500">
+                    Moedas
+                  </div>
+                  <div className="mt-1 text-lg font-black text-yellow-300">
+                    +{quest.coinReward}
                   </div>
                 </div>
               </div>
+
+              {quest.status === "Em andamento" && (
+                <div className="mt-4 rounded-xl border border-purple-500/20 bg-purple-950/20 p-3 text-center">
+                  <span className="text-[10px] font-bold text-purple-300">
+                    🧙 Aguarde a validação do Mestre
+                  </span>
+                </div>
+              )}
+
+              {quest.status === "Concluido" && (
+                <div className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-950/20 p-3 text-center">
+                  <span className="text-[10px] font-bold text-emerald-300">
+                    🎉 Objetivo validado pelo professor!
+                  </span>
+                </div>
+              )}
+
+              {quest.status === "Encerrado" && (
+                <div className="mt-4 rounded-xl border border-rose-500/20 bg-rose-950/20 p-3 text-center">
+                  <span className="text-[10px] font-bold text-rose-300">
+                    🚫 Objetivo encerrado pelo professor.
+                  </span>
+                </div>
+              )}
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
 
 /* ============================================================
-   PAINEL GAMIFICADO DO PROFESSOR (MODO MESTRE NARRADOR)
+   PAINEL DO PROFESSOR
 ============================================================ */
 
 function TeacherPanel({
   onSwitchRole,
+  students,
+  setStudents,
   quests,
   setQuests,
-  events
+  events,
+  setEvents,
 }: {
   onSwitchRole: () => void;
+  students: StudentRecord[];
+  setStudents: React.Dispatch<React.SetStateAction<StudentRecord[]>>;
   quests: Quest[];
   setQuests: React.Dispatch<React.SetStateAction<Quest[]>>;
   events: EventItem[];
+  setEvents: React.Dispatch<React.SetStateAction<EventItem[]>>;
 }) {
-  const [teacherTab, setTeacherTab] = useState<"overview" | "validation" | "grades" | "create_event" | "quests" | "enturmar">("overview");
-  const [selectedSubject, setSelectedSubject] =
-  useState<string>("Matemática");
-  const [students, setStudents] = useState<StudentRecord[]>(mockClassStudents);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [teacherTab, setTeacherTab] =
+    useState<TeacherTab>("overview");
 
-  // Estados do Form de Adicionar Aluno
+  const [toastMessage, setToastMessage] = useState("");
+
+  const [selectedSubject, setSelectedSubject] =
+    useState<string>("Língua Portuguesa");
+
   const [newStudentName, setNewStudentName] = useState("");
   const [newStudentClass, setNewStudentClass] = useState("");
 
-  // ESTADOS DE EDIÇÃO DE NOME E TURMA DO ALUNO
-  const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
+  const [editingStudentId, setEditingStudentId] =
+    useState<string | null>(null);
+
   const [editName, setEditName] = useState("");
   const [editClass, setEditClass] = useState("");
 
-  function triggerToast(msg: string) {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+  /* ------------------------------------------------------------
+     CAMPOS DE EVENTO
+  ------------------------------------------------------------ */
+
+  const [eventTitle, setEventTitle] = useState("");
+  const [eventType, setEventType] =
+    useState("Boss Raid");
+  const [eventPeriodo, setEventPeriodo] = useState("");
+  const [eventDescription, setEventDescription] =
+    useState("");
+  const [eventXp, setEventXp] = useState("500");
+  const [eventCoins, setEventCoins] = useState("200");
+
+  /* ------------------------------------------------------------
+     CAMPOS DE QUEST
+  ------------------------------------------------------------ */
+
+  const [questTitle, setQuestTitle] = useState("");
+  const [questCategory, setQuestCategory] =
+    useState("Diário");
+  const [questPeriodo, setQuestPeriodo] = useState("");
+  const [questRequirement, setQuestRequirement] =
+    useState("");
+  const [questXp, setQuestXp] = useState("150");
+  const [questCoins, setQuestCoins] = useState("50");
+  const [questStudentId, setQuestStudentId] =
+    useState("all");
+
+  function triggerToast(message: string) {
+    setToastMessage(message);
+
+    window.setTimeout(() => {
+      setToastMessage("");
+    }, 3500);
   }
 
   /* ============================================================
-     REGRA DE NEGÓCIO: VALIDAÇÃO EXCLUSIVA DO PROFESSOR
+     REGRA DE NEGÓCIO:
+     VALIDAÇÃO EXCLUSIVA DO PROFESSOR
   ============================================================ */
-  function handleValidateQuest(questId: string, novoStatus: "Concluido" | "Encerrado") {
-    // Busca a missão a ser alterada
-    const quest = quests.find(q => q.id === questId);
+
+  function handleValidateQuest(
+    questId: string,
+    novoStatus: "Concluido" | "Encerrado"
+  ) {
+    const quest = quests.find((q) => q.id === questId);
+
     if (!quest) return;
 
-    // Se a missão for para CONCLUIDO -> Calcula recompensas + Bônus do Evento Ativo
-    if (novoStatus === "Concluido") {
-      // Checa evento ativo (se houver, soma bônus)
-      const activeEvent = events[0]; // Pega o evento da rodada como exemplo
-      const bonusXp = activeEvent ? activeEvent.rewardXp : 0;
-      const bonusCoins = activeEvent ? activeEvent.rewardCoins : 0;
+    /*
+      REGRA DE SEGURANÇA:
 
-      const totalXp = quest.xpReward + bonusXp;
-      const totalCoins = quest.coinReward + bonusCoins;
-
-      setQuests(prev =>
-        prev.map(q => q.id === questId ? { ...q, status: "Concluido", progress: q.maxProgress } : q)
+      Só uma missão "Em andamento" pode ser validada.
+      Isso impede que o professor receba/reaplique
+      recompensas em uma missão já encerrada ou concluída.
+    */
+    if (quest.status !== "Em andamento") {
+      triggerToast(
+        "⚠️ Esta missão já foi finalizada e não pode ser validada novamente."
       );
 
-      triggerToast(`🎉 Missão Concluída! ${quest.studentName || "O aluno"} recebeu +${totalXp} XP (com Bônus de Evento) e +${totalCoins} Moedas!`);
+      return;
     }
 
-    // Se a missão for para ENCERRADO -> Trava a missão e o aluno NÃO recebe recompensas
+    /* ----------------------------------------------------------
+       ENCERRAMENTO SEM RECOMPENSA
+    ---------------------------------------------------------- */
+
     if (novoStatus === "Encerrado") {
-      setQuests(prev =>
-        prev.map(q => q.id === questId ? { ...q, status: "Encerrado" } : q)
+      setQuests((prev) =>
+        prev.map((q) =>
+          q.id === questId
+            ? {
+                ...q,
+                status: "Encerrado",
+              }
+            : q
+        )
       );
 
-      triggerToast(`🚫 Missão Encerrada! ${quest.studentName || "O aluno"} não cumpriu os requisitos e NÃO receberá recompensas.`);
+      triggerToast(
+        `🚫 Missão encerrada! ${
+          quest.studentName || "O aluno"
+        } não recebeu recompensas.`
+      );
+
+      return;
     }
+
+    /* ----------------------------------------------------------
+       CONCLUSÃO + RECOMPENSA
+    ---------------------------------------------------------- */
+
+    const activeEvent = events.find((event) => event.active);
+
+    const bonusXp = activeEvent
+      ? activeEvent.rewardXp
+      : 0;
+
+    const bonusCoins = activeEvent
+      ? activeEvent.rewardCoins
+      : 0;
+
+    const totalXp = quest.xpReward + bonusXp;
+    const totalCoins =
+      quest.coinReward + bonusCoins;
+
+    /*
+      Atualiza a missão.
+    */
+
+    setQuests((prev) =>
+      prev.map((q) =>
+        q.id === questId
+          ? {
+              ...q,
+              status: "Concluido",
+              progress: q.maxProgress,
+            }
+          : q
+      )
+    );
+
+    /*
+      Atualiza o aluno REALMENTE.
+
+      Primeiro tentamos localizar pelo studentId.
+      Como segurança, também usamos studentName.
+    */
+
+    setStudents((prev) =>
+      prev.map((student) => {
+        const belongsToQuest =
+          (quest.studentId &&
+            student.id === quest.studentId) ||
+          (!quest.studentId &&
+            quest.studentName &&
+            student.name === quest.studentName);
+
+        if (!belongsToQuest) {
+          return student;
+        }
+
+        const newXp = student.xp + totalXp;
+        const newCoins = student.coins + totalCoins;
+
+        /*
+          Regra simples de nível:
+          cada 500 XP representa um nível.
+        */
+        const newLevel =
+          Math.floor(newXp / 500) + 1;
+
+        return {
+          ...student,
+          xp: newXp,
+          coins: newCoins,
+          level: Math.max(student.level, newLevel),
+        };
+      })
+    );
+
+    const bonusMessage = activeEvent
+      ? ` + Bônus do evento: ${bonusXp} XP e ${bonusCoins} moedas.`
+      : "";
+
+    triggerToast(
+      `🎉 Missão concluída! ${
+        quest.studentName || "O aluno"
+      } recebeu +${totalXp} XP e +${totalCoins} moedas.${bonusMessage}`
+    );
   }
 
-  function handleStudentGradeChange(studentId: string, bimIndex: number, val: string) {
+  /* ============================================================
+     LANÇAMENTO DE NOTAS
+  ============================================================ */
+
+  function handleStudentGradeChange(
+    studentId: string,
+    bimIndex: number,
+    val: string
+  ) {
     let numeric = val;
+
     if (Number(val) > 10) numeric = "10";
     if (Number(val) < 0) numeric = "0";
 
     setStudents((prev) =>
-      prev.map((s) => {
-        if (s.id === studentId) {
-          const currentGrades = s.grades[selectedSubject] || ["", "", "", ""];
-          const updated: Grades = [...currentGrades] as Grades;
-          updated[bimIndex] = numeric;
-          return {
-            ...s,
-            grades: { ...s.grades, [selectedSubject]: updated },
-          };
+      prev.map((student) => {
+        if (student.id !== studentId) {
+          return student;
         }
-        return s;
+
+        const currentGrades =
+          student.grades[selectedSubject] ||
+          createEmptyGrades();
+
+        const updated: Grades = [
+          ...currentGrades,
+        ] as Grades;
+
+        updated[bimIndex] = numeric;
+
+        return {
+          ...student,
+          grades: {
+            ...student.grades,
+            [selectedSubject]: updated,
+          },
+        };
       })
     );
   }
 
-  function rewardStudent(studentName: string) {
-    triggerToast(`✨ 100 XP e 50 Moedas concedidos a ${studentName}!`);
+  /* ============================================================
+     BÔNUS MANUAL
+  ============================================================ */
+
+  function rewardStudent(studentId: string) {
+    setStudents((prev) =>
+      prev.map((student) => {
+        if (student.id !== studentId) {
+          return student;
+        }
+
+        const newXp = student.xp + 100;
+        const newCoins = student.coins + 50;
+
+        return {
+          ...student,
+          xp: newXp,
+          coins: newCoins,
+          level: Math.max(
+            student.level,
+            Math.floor(newXp / 500) + 1
+          ),
+        };
+      })
+    );
+
+    const student = students.find(
+      (student) => student.id === studentId
+    );
+
+    triggerToast(
+      `✨ 100 XP e 50 Moedas concedidos a ${
+        student?.name || "aventureiro"
+      }!`
+    );
   }
-function handleAddStudent(e: React.FormEvent) {
-  e.preventDefault();
 
-  if (!newStudentName.trim() || !newStudentClass.trim()) {
-    triggerToast("⚠️ Preencha o nome e a turma do aluno!");
-    return;
+  /* ============================================================
+     CADASTRAR ALUNO
+  ============================================================ */
+
+  function handleAddStudent(
+    e: React.FormEvent
+  ) {
+    e.preventDefault();
+
+    if (
+      !newStudentName.trim() ||
+      !newStudentClass.trim()
+    ) {
+      triggerToast(
+        "⚠️ Preencha o nome e a turma do aluno!"
+      );
+
+      return;
+    }
+
+    const avatars = [
+      "🗡️",
+      "🧝",
+      "🛡️",
+      "🔮",
+      "⚡",
+      "🧙‍♂️",
+      "📜",
+    ];
+
+    const randomAvatar =
+      avatars[
+        Math.floor(Math.random() * avatars.length)
+      ];
+
+    const newStudent: StudentRecord = {
+      id: `s-${Date.now()}`,
+      name: newStudentName.trim(),
+      avatar: randomAvatar,
+      level: 1,
+      xp: 0,
+      coins: 0,
+      badge: "Iniciante do Reino",
+      turma: newStudentClass.trim(),
+      grades: {},
+    };
+
+    setStudents((prev) => [
+      newStudent,
+      ...prev,
+    ]);
+
+    triggerToast(
+      `🎉 Aluno ${newStudent.name} enturmado na turma ${newStudent.turma}!`
+    );
+
+    setNewStudentName("");
+    setNewStudentClass("");
   }
 
-  const avatars = [
-    "🗡️",
-    "🧝",
-    "🛡️",
-    "🔮",
-    "⚡",
-    "🧙‍♂️",
-    "📜",
-  ];
+  /* ============================================================
+     EDITAR ALUNO
+  ============================================================ */
 
-  const randomAvatar =
-    avatars[Math.floor(Math.random() * avatars.length)];
-
-  const newStudent: StudentRecord = {
-    id: `s-${Date.now()}`,
-    name: newStudentName.trim(),
-    avatar: randomAvatar,
-    level: 1,
-    xp: 0,
-    badge: "Iniciante do Reino",
-    turma: newStudentClass.trim(),
-    grades: createEmptyGrades(),
-  };
-
-  setStudents((prev) => [newStudent, ...prev]);
-
-  triggerToast(
-    `🎉 Aluno ${newStudentName} enturmado na turma ${newStudentClass}!`
-  );
-
-  setNewStudentName("");
-  setNewStudentClass("");
-}
-   function handleStartEdit(student: StudentRecord) {
+  function handleStartEdit(
+    student: StudentRecord
+  ) {
     setEditingStudentId(student.id);
     setEditName(student.name);
     setEditClass(student.turma || "");
@@ -944,38 +776,264 @@ function handleAddStudent(e: React.FormEvent) {
     setEditClass("");
   }
 
-  function handleSaveEdit(studentId: string) {
-    if (!editName.trim() || !editClass.trim()) {
-      triggerToast("⚠️ Nome e turma não podem ficar em branco!");
+  function handleSaveEdit(
+    studentId: string
+  ) {
+    if (
+      !editName.trim() ||
+      !editClass.trim()
+    ) {
+      triggerToast(
+        "⚠️ Nome e turma não podem ficar em branco!"
+      );
+
       return;
     }
 
     setStudents((prev) =>
-      prev.map((s) =>
-        s.id === studentId ? { ...s, name: editName, turma: editClass } : s
+      prev.map((student) =>
+        student.id === studentId
+          ? {
+              ...student,
+              name: editName.trim(),
+              turma: editClass.trim(),
+            }
+          : student
       )
     );
 
-    triggerToast("✏️ Dados do aventureiro atualizados com sucesso!");
+    /*
+      Também atualiza o nome nas missões existentes,
+      para evitar referências antigas.
+    */
+
+    setQuests((prev) =>
+      prev.map((quest) => {
+        if (quest.studentId !== studentId) {
+          return quest;
+        }
+
+        return {
+          ...quest,
+          studentName: editName.trim(),
+        };
+      })
+    );
+
+    triggerToast(
+      "✏️ Dados do aventureiro atualizados com sucesso!"
+    );
+
     setEditingStudentId(null);
+    setEditName("");
+    setEditClass("");
   }
 
-  function handleDeleteStudent(studentId: string, studentName: string) {
-    if (confirm(`Tem certeza que deseja remover ${studentName} do Reino?`)) {
-      setStudents((prev) => prev.filter((s) => s.id !== studentId));
-      triggerToast(`🗑️ ${studentName} foi removido da guilda.`);
+  /* ============================================================
+     EXCLUIR ALUNO
+  ============================================================ */
+
+  function handleDeleteStudent(
+    studentId: string,
+    studentName: string
+  ) {
+    if (
+      confirm(
+        `Tem certeza que deseja remover ${studentName} do Reino?`
+      )
+    ) {
+      setStudents((prev) =>
+        prev.filter(
+          (student) => student.id !== studentId
+        )
+      );
+
+      triggerToast(
+        `🗑️ ${studentName} foi removido da guilda.`
+      );
     }
+  }
+
+  /* ============================================================
+     CRIAR EVENTO
+  ============================================================ */
+
+  function handleCreateEvent(
+    e: React.FormEvent
+  ) {
+    e.preventDefault();
+
+    if (
+      !eventTitle.trim() ||
+      !eventPeriodo.trim() ||
+      !eventDescription.trim()
+    ) {
+      triggerToast(
+        "⚠️ Preencha todos os campos obrigatórios do evento."
+      );
+
+      return;
+    }
+
+    /*
+      Novo evento se torna o único evento ativo.
+    */
+
+    const newEvent: EventItem = {
+      id: `event-${Date.now()}`,
+      title: eventTitle.trim(),
+      type: eventType,
+      periodo: eventPeriodo.trim(),
+      description: eventDescription.trim(),
+      rewardXp: Math.max(0, Number(eventXp) || 0),
+      rewardCoins: Math.max(
+        0,
+        Number(eventCoins) || 0
+      ),
+      active: true,
+    };
+
+    setEvents((prev) => [
+      ...prev.map((event) => ({
+        ...event,
+        active: false,
+      })),
+      newEvent,
+    ]);
+
+    triggerToast(
+      "🐉 Evento / Boss Raid invocado com sucesso para toda a turma!"
+    );
+
+    setEventTitle("");
+    setEventPeriodo("");
+    setEventDescription("");
+    setEventXp("500");
+    setEventCoins("200");
+  }
+
+  /* ============================================================
+     CRIAR QUEST
+  ============================================================ */
+
+  function handleCreateQuest(
+    e: React.FormEvent
+  ) {
+    e.preventDefault();
+
+    if (
+      !questTitle.trim() ||
+      !questPeriodo.trim() ||
+      !questRequirement.trim()
+    ) {
+      triggerToast(
+        "⚠️ Preencha os campos obrigatórios da Quest."
+      );
+
+      return;
+    }
+
+    /*
+      Se "todos" estiver selecionado, criamos uma missão
+      para cada aluno cadastrado.
+
+      Assim o professor consegue criar um objetivo
+      coletivo sem quebrar a regra de recompensa individual.
+    */
+
+    const selectedStudent =
+      questStudentId !== "all"
+        ? students.find(
+            (student) =>
+              student.id === questStudentId
+          )
+        : null;
+
+    if (
+      questStudentId !== "all" &&
+      !selectedStudent
+    ) {
+      triggerToast(
+        "⚠️ Não foi possível localizar o aluno selecionado."
+      );
+
+      return;
+    }
+
+    const studentsToReceive =
+      questStudentId === "all"
+        ? students
+        : selectedStudent
+        ? [selectedStudent]
+        : [];
+
+    if (studentsToReceive.length === 0) {
+      triggerToast(
+        "⚠️ Cadastre pelo menos um aluno antes de criar uma Quest."
+      );
+
+      return;
+    }
+
+    const newQuests: Quest[] =
+      studentsToReceive.map(
+        (student, index) => ({
+          id: `quest-${Date.now()}-${index}`,
+          title: questTitle.trim(),
+          icon: "🎯",
+          periodo: questPeriodo.trim(),
+          categoria: questCategory,
+          requirement:
+            questRequirement.trim(),
+          xpReward: Math.max(
+            0,
+            Number(questXp) || 0
+          ),
+          coinReward: Math.max(
+            0,
+            Number(questCoins) || 0
+          ),
+          status: "Em andamento",
+          progress: 0,
+          maxProgress: 1,
+          studentId: student.id,
+          studentName: student.name,
+        })
+      );
+
+    setQuests((prev) => [
+      ...newQuests,
+      ...prev,
+    ]);
+
+    triggerToast(
+      `🎯 Quest publicada para ${newQuests.length} aventureiro(s)!`
+    );
+
+    setQuestTitle("");
+    setQuestPeriodo("");
+    setQuestRequirement("");
+    setQuestXp("150");
+    setQuestCoins("50");
+    setQuestStudentId("all");
   }
 
   return (
     <section className="space-y-6">
+      {/* ======================================================
+          TOAST
+      ====================================================== */}
+
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 rounded-2xl border border-amber-500 bg-[#161c14] p-4 text-xs font-black text-amber-300 shadow-2xl animate-bounce">
+        <div className="fixed top-5 right-5 z-50 max-w-sm rounded-2xl border border-amber-500 bg-[#161c14] p-4 text-xs font-black text-amber-300 shadow-2xl animate-bounce">
           {toastMessage}
         </div>
       )}
 
-      {/* CABEÇALHO DO MESTRE DO JOGO */}
+      {/* ======================================================
+          CABEÇALHO DO PROFESSOR
+      ====================================================== */}
+
       <div className="rounded-3xl border border-purple-800/50 bg-gradient-to-br from-[#231538] via-[#150f24] to-[#0a0812] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
@@ -983,6 +1041,7 @@ function handleAddStudent(e: React.FormEvent) {
               <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-purple-500/60 bg-purple-950/50 text-5xl shadow-[0_0_30px_rgba(168,85,247,0.3)]">
                 🧙‍♂️
               </div>
+
               <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-purple-500 bg-purple-900 px-2 py-0.5 text-[8px] font-black uppercase text-purple-200">
                 Lvl 99 Mestre
               </span>
@@ -992,8 +1051,18 @@ function handleAddStudent(e: React.FormEvent) {
               <div className="inline-flex items-center gap-2 rounded-lg border border-purple-500/40 bg-purple-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-purple-300 mb-1">
                 ⚙️ Portal de Comando do Narrador
               </div>
-              <h2 className="text-3xl font-black text-white">Professor(a) Arcano</h2>
-              <p className="text-xs text-purple-300/80 mt-0.5">Turma: <strong className="text-white">9º Ano A - Guilda dos Exploradores</strong></p>
+
+              <h2 className="text-3xl font-black text-white">
+                Professor(a) Arcano
+              </h2>
+
+              <p className="text-xs text-purple-300/80 mt-0.5">
+                Turma:{" "}
+                <strong className="text-white">
+                  9º Ano A - Guilda dos
+                  Exploradores
+                </strong>
+              </p>
             </div>
           </div>
 
@@ -1014,7 +1083,11 @@ function handleAddStudent(e: React.FormEvent) {
               <span>Engajamento do Reino</span>
               <span>88% XP</span>
             </div>
-            <div className="mt-2 text-xl font-black text-purple-200">Nível Coletivo 14</div>
+
+            <div className="mt-2 text-xl font-black text-purple-200">
+              Nível Coletivo 14
+            </div>
+
             <div className="mt-2 h-2 w-full bg-purple-950 rounded-full overflow-hidden border border-purple-900">
               <div className="h-full bg-purple-500 rounded-full w-[88%]" />
             </div>
@@ -1025,7 +1098,11 @@ function handleAddStudent(e: React.FormEvent) {
               <span>Frequência / Mana da Sala</span>
               <span>94% Presença</span>
             </div>
-            <div className="mt-2 text-xl font-black text-emerald-300">{students.length} Alunos Cadastrados</div>
+
+            <div className="mt-2 text-xl font-black text-emerald-300">
+              {students.length} Alunos Cadastrados
+            </div>
+
             <div className="mt-2 h-2 w-full bg-emerald-950 rounded-full overflow-hidden border border-emerald-900">
               <div className="h-full bg-emerald-500 rounded-full w-[94%]" />
             </div>
@@ -1036,7 +1113,11 @@ function handleAddStudent(e: React.FormEvent) {
               <span>Desempenho Geral (HP)</span>
               <span>8.2 Média</span>
             </div>
-            <div className="mt-2 text-xl font-black text-amber-300">Status Adequado</div>
+
+            <div className="mt-2 text-xl font-black text-amber-300">
+              Status Adequado
+            </div>
+
             <div className="mt-2 h-2 w-full bg-amber-950 rounded-full overflow-hidden border border-amber-900">
               <div className="h-full bg-amber-500 rounded-full w-[82%]" />
             </div>
@@ -1044,11 +1125,16 @@ function handleAddStudent(e: React.FormEvent) {
         </div>
       </div>
 
-      {/* MENU DE ABAS DO PROFESSOR */}
+      {/* ======================================================
+          MENU DO PROFESSOR
+      ====================================================== */}
+
       <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
         <button
           type="button"
-          onClick={() => setTeacherTab("overview")}
+          onClick={() =>
+            setTeacherTab("overview")
+          }
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
             teacherTab === "overview"
               ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
@@ -1059,10 +1145,11 @@ function handleAddStudent(e: React.FormEvent) {
           <span>Visão Geral</span>
         </button>
 
-        {/* ABA EXCLUSIVA DO PROFESSOR PARA VALIDAÇÃO DE MISSÕES */}
         <button
           type="button"
-          onClick={() => setTeacherTab("validation")}
+          onClick={() =>
+            setTeacherTab("validation")
+          }
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
             teacherTab === "validation"
               ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
@@ -1075,7 +1162,9 @@ function handleAddStudent(e: React.FormEvent) {
 
         <button
           type="button"
-          onClick={() => setTeacherTab("grades")}
+          onClick={() =>
+            setTeacherTab("grades")
+          }
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
             teacherTab === "grades"
               ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
@@ -1088,7 +1177,9 @@ function handleAddStudent(e: React.FormEvent) {
 
         <button
           type="button"
-          onClick={() => setTeacherTab("create_event")}
+          onClick={() =>
+            setTeacherTab("create_event")
+          }
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
             teacherTab === "create_event"
               ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
@@ -1101,7 +1192,9 @@ function handleAddStudent(e: React.FormEvent) {
 
         <button
           type="button"
-          onClick={() => setTeacherTab("quests")}
+          onClick={() =>
+            setTeacherTab("quests")
+          }
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
             teacherTab === "quests"
               ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
@@ -1114,7 +1207,9 @@ function handleAddStudent(e: React.FormEvent) {
 
         <button
           type="button"
-          onClick={() => setTeacherTab("enturmar")}
+          onClick={() =>
+            setTeacherTab("enturmar")
+          }
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
             teacherTab === "enturmar"
               ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
@@ -1126,21 +1221,30 @@ function handleAddStudent(e: React.FormEvent) {
         </button>
       </div>
 
-      {/* ABA: VISÃO GERAL */}
+      {/* ======================================================
+          VISÃO GERAL
+      ====================================================== */}
+
       {teacherTab === "overview" && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-4">
               <h3 className="font-black text-lg text-white flex items-center gap-2">
-                <span>🛡️</span> Distribuição da Turma por Proficiência
+                <span>🛡️</span>
+                Distribuição da Turma por Proficiência
               </h3>
 
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
-                    <span className="text-purple-400">🟣 Avançado (9.0 - 10.0)</span>
-                    <span className="text-slate-300">12 alunos (40%)</span>
+                    <span className="text-purple-400">
+                      🟣 Avançado (9.0 - 10.0)
+                    </span>
+                    <span className="text-slate-300">
+                      12 alunos (40%)
+                    </span>
                   </div>
+
                   <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
                     <div className="h-full bg-purple-500 w-[40%]" />
                   </div>
@@ -1148,9 +1252,14 @@ function handleAddStudent(e: React.FormEvent) {
 
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
-                    <span className="text-green-400">🟢 Adequado (7.0 - 8.9)</span>
-                    <span className="text-slate-300">11 alunos (36%)</span>
+                    <span className="text-green-400">
+                      🟢 Adequado (7.0 - 8.9)
+                    </span>
+                    <span className="text-slate-300">
+                      11 alunos (36%)
+                    </span>
                   </div>
+
                   <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
                     <div className="h-full bg-green-500 w-[36%]" />
                   </div>
@@ -1158,9 +1267,14 @@ function handleAddStudent(e: React.FormEvent) {
 
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
-                    <span className="text-orange-400">🟠 Básico (5.0 - 6.9)</span>
-                    <span className="text-slate-300">5 alunos (17%)</span>
+                    <span className="text-orange-400">
+                      🟠 Básico (5.0 - 6.9)
+                    </span>
+                    <span className="text-slate-300">
+                      5 alunos (17%)
+                    </span>
                   </div>
+
                   <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
                     <div className="h-full bg-orange-500 w-[17%]" />
                   </div>
@@ -1168,9 +1282,14 @@ function handleAddStudent(e: React.FormEvent) {
 
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
-                    <span className="text-red-400">🔴 Abaixo do Básico (0.0 - 4.9)</span>
-                    <span className="text-slate-300">2 alunos (7%)</span>
+                    <span className="text-red-400">
+                      🔴 Abaixo do Básico (0.0 - 4.9)
+                    </span>
+                    <span className="text-slate-300">
+                      2 alunos (7%)
+                    </span>
                   </div>
+
                   <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
                     <div className="h-full bg-red-500 w-[7%]" />
                   </div>
@@ -1180,41 +1299,78 @@ function handleAddStudent(e: React.FormEvent) {
 
             <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-4">
               <h3 className="font-black text-lg text-white flex items-center gap-2">
-                <span>⚡</span> Feitos Recentes do Reino
+                <span>⚡</span>
+                Feitos Recentes do Reino
               </h3>
 
               <div className="space-y-3 text-xs">
                 <div className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/50">
                   <div className="flex items-center gap-3">
-                    <span className="text-xl">🏆</span>
+                    <span className="text-xl">
+                      🏆
+                    </span>
+
                     <div>
-                      <strong className="text-white block">Beatriz Oliveira</strong>
-                      <span className="text-slate-400">Conquistou a insígnia &quot;Arquimaga das Letras&quot;</span>
+                      <strong className="text-white block">
+                        Beatriz Oliveira
+                      </strong>
+
+                      <span className="text-slate-400">
+                        Conquistou a insígnia
+                        &quot;Arquimaga das Letras&quot;
+                      </span>
                     </div>
                   </div>
-                  <span className="text-[10px] text-slate-500">Há 15m</span>
+
+                  <span className="text-[10px] text-slate-500">
+                    Há 15m
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/50">
                   <div className="flex items-center gap-3">
-                    <span className="text-xl">⚔️</span>
+                    <span className="text-xl">
+                      ⚔️
+                    </span>
+
                     <div>
-                      <strong className="text-white block">Guilda dos Exploradores</strong>
-                      <span className="text-slate-400">Derrotou 70% da barra de HP do Boss de Geometria</span>
+                      <strong className="text-white block">
+                        Guilda dos Exploradores
+                      </strong>
+
+                      <span className="text-slate-400">
+                        Derrotou 70% da barra de HP do
+                        Boss de Geometria
+                      </span>
                     </div>
                   </div>
-                  <span className="text-[10px] text-slate-500">Há 2h</span>
+
+                  <span className="text-[10px] text-slate-500">
+                    Há 2h
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/50">
                   <div className="flex items-center gap-3">
-                    <span className="text-xl">☀️</span>
+                    <span className="text-xl">
+                      ☀️
+                    </span>
+
                     <div>
-                      <strong className="text-white block">Arthur Pendelton</strong>
-                      <span className="text-slate-400">Completou a Missão Diária &quot;Mestre da Frequência&quot;</span>
+                      <strong className="text-white block">
+                        Arthur Pendelton
+                      </strong>
+
+                      <span className="text-slate-400">
+                        Completou a Missão Diária
+                        &quot;Mestre da Frequência&quot;
+                      </span>
                     </div>
                   </div>
-                  <span className="text-[10px] text-slate-500">Há 4h</span>
+
+                  <span className="text-[10px] text-slate-500">
+                    Há 4h
+                  </span>
                 </div>
               </div>
             </div>
@@ -1222,185 +1378,672 @@ function handleAddStudent(e: React.FormEvent) {
         </div>
       )}
 
-      {/* ABA: MURAL DE VALIDAÇÃO (STATUS: Em andamento | Concluido | Encerrado) */}
-      {teacherTab === "validation" && (
-        <div className="space-y-5 rounded-2xl border border-slate-800 bg-[#11150f] p-6">
-          <div className="border-b border-slate-800 pb-4">
-            <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">Aprovação do Mestre</div>
-            <h3 className="text-xl font-black text-white">Mural de Validação de Missões</h3>
-            <p className="text-xs text-slate-500 mt-1">Apenas professores alteram o status e concedem as recompensas das missões.</p>
+   {/* ======================================================
+    MURAL DE VALIDAÇÃO
+    EXCLUSIVO DO PROFESSOR
+    ESTILO MURAL DE QUESTS DA TAVERNA
+====================================================== */}
+
+{teacherTab === "validation" && (
+  <div className="space-y-6">
+
+    {/* CABEÇALHO DO MURAL */}
+    <div className="rounded-2xl border border-purple-500/20 bg-[#11150f] p-6 shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+        <div>
+          <div className="text-[9px] font-black uppercase tracking-[0.3em] text-purple-400">
+            📜 Quadro de Missões do Mestre
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-900/80 uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
-                <tr>
-                  <th className="p-3">Aventureiro(a)</th>
-                  <th className="p-3">Missão (Quest)</th>
-                  <th className="p-3 text-center">Período</th>
-                  <th className="p-3 text-center">Status Atual</th>
-                  <th className="p-3 text-center">Recompensa Base</th>
-                  <th className="p-3 text-center">Ações Exclusivas do Professor</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {quests.map((q) => (
-                  <tr key={q.id} className="hover:bg-slate-900/30 transition">
-                    <td className="p-3 font-bold text-white">
-                      {q.studentName || "Aluno do Reino"}
-                    </td>
+          <h3 className="text-2xl font-black text-white mt-1">
+            Mural de Validação
+          </h3>
 
-                    <td className="p-3 font-bold text-white">
-                      <div className="flex items-center gap-2">
-                        <span>{q.icon}</span>
-                        <span>{q.title}</span>
-                      </div>
-                    </td>
+          <p className="text-xs text-slate-500 mt-2 max-w-2xl">
+            Revise as missões concluídas pelos aventureiros.
+            O Mestre é responsável por confirmar a realização
+            e conceder as recompensas de XP e Priantinas.
+          </p>
+        </div>
 
-                    <td className="p-3 text-center text-slate-400 font-bold">
-                      {q.periodo}
-                    </td>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="rounded-xl border border-emerald-500/20 bg-emerald-950/20 px-4 py-2 text-center">
+            <div className="text-[9px] uppercase tracking-wider text-emerald-400 font-black">
+              Ativas
+            </div>
 
-                    <td className="p-3 text-center">
-                      <span className={`px-2.5 py-1 rounded text-[10px] font-bold border ${
-                        q.status === "Concluido" ? "border-emerald-500/40 bg-emerald-950/40 text-emerald-300" :
-                        q.status === "Encerrado" ? "border-rose-500/40 bg-rose-950/40 text-rose-400" :
-                        "border-amber-500/40 bg-amber-950/40 text-amber-300"
-                      }`}>
-                        {q.status}
-                      </span>
-                    </td>
+            <div className="text-lg font-black text-white">
+              {
+                quests.filter(
+                  (quest) =>
+                    quest.status === "Em andamento"
+                ).length
+              }
+            </div>
+          </div>
 
-                    <td className="p-3 text-center font-bold">
-                      <span className="text-amber-400">✨ {q.xpReward} XP</span>
-                      <span className="text-amber-300 ml-2">🪙 {q.coinReward}</span>
-                    </td>
+          <div className="rounded-xl border border-amber-500/20 bg-amber-950/20 px-4 py-2 text-center">
+            <div className="text-[9px] uppercase tracking-wider text-amber-400 font-black">
+              Finalizadas
+            </div>
 
-                    <td className="p-3 text-center">
-                      {q.status === "Em andamento" ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleValidateQuest(q.id, "Concluido")}
-                            className="rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-[10px] font-bold transition shadow-md"
-                          >
-                            ✓ Marcar como Concluído
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleValidateQuest(q.id, "Encerrado")}
-                            className="rounded-lg bg-rose-950 border border-rose-800 hover:bg-rose-900 text-rose-300 px-3 py-1.5 text-[10px] font-bold transition"
-                          >
-                            🚫 Encerrar
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-[10px] text-slate-500 italic">Ciclo Finalizado</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="text-lg font-black text-white">
+              {
+                quests.filter(
+                  (quest) =>
+                    quest.status === "Concluido"
+                ).length
+              }
+            </div>
           </div>
         </div>
-      )}
 
-      {/* ABA: GRIMÓRIO DE NOTAS / DIÁRIO */}
+      </div>
+    </div>
+
+
+    {/* ==================================================
+        LISTAGEM DAS QUESTS
+    ================================================== */}
+
+    {quests.length === 0 ? (
+
+      <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-12 text-center">
+
+        <div className="text-5xl mb-4">
+          🏚️
+        </div>
+
+        <h3 className="text-lg font-black text-white">
+          O mural está vazio
+        </h3>
+
+        <p className="text-xs text-slate-500 mt-2">
+          Nenhuma missão foi publicada pelo Mestre ainda.
+        </p>
+
+      </div>
+
+    ) : (
+
+      <div className="space-y-7">
+
+        {quests.map((quest) => {
+
+          /*
+            Identifica os alunos relacionados à Quest.
+
+            Se a Quest for destinada a "all", todos os alunos
+            aparecem dentro da ficha.
+
+            Caso contrário, somente o aluno destinatário
+            aparece.
+          */
+
+          const questStudents =
+            quest.studentId === "all"
+              ? students
+              : students.filter(
+                  (student) =>
+                    student.id === quest.studentId
+                );
+
+          return (
+
+            <section
+              key={quest.id}
+              className="relative overflow-hidden rounded-3xl border border-amber-700/30 bg-gradient-to-br from-[#1b2118] via-[#11150f] to-[#0b0e0b] shadow-2xl"
+            >
+
+              {/* DETALHE DECORATIVO SUPERIOR */}
+
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-700 via-purple-500 to-amber-700" />
+
+              <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-purple-500/5 blur-3xl pointer-events-none" />
+
+              <div className="absolute -bottom-20 -left-20 w-48 h-48 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
+
+
+              {/* ==================================================
+                  CABEÇALHO DA QUEST
+              ================================================== */}
+
+              <div className="p-5 sm:p-7 border-b border-slate-800/80">
+
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+
+                  {/* TÍTULO */}
+
+                  <div className="flex items-start gap-4">
+
+                    <div className="w-14 h-14 shrink-0 rounded-2xl border border-amber-500/30 bg-amber-950/20 flex items-center justify-center text-3xl shadow-lg">
+                      {quest.icon}
+                    </div>
+
+                    <div>
+
+                      <div className="text-[9px] uppercase tracking-[0.25em] text-amber-500 font-black">
+                        Quest do Reino
+                      </div>
+
+                      <h4 className="text-xl sm:text-2xl font-black text-white mt-0.5">
+                        {quest.title}
+                      </h4>
+
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
+
+                        <span className="rounded-md border border-purple-500/30 bg-purple-950/30 px-2 py-1 text-[10px] font-bold text-purple-300">
+                          📜 {quest.category}
+                        </span>
+
+                        <span className="rounded-md border border-slate-700 bg-slate-900/80 px-2 py-1 text-[10px] font-bold text-slate-400">
+                          📅 {quest.periodo}
+                        </span>
+
+                        <span
+                          className={`rounded-md border px-2 py-1 text-[10px] font-bold ${
+                            quest.status === "Concluido"
+                              ? "border-emerald-500/40 bg-emerald-950/40 text-emerald-300"
+                              : quest.status === "Encerrado"
+                              ? "border-rose-500/40 bg-rose-950/40 text-rose-400"
+                              : "border-amber-500/40 bg-amber-950/40 text-amber-300"
+                          }`}
+                        >
+                          {quest.status === "Concluido"
+                            ? "✓ Concluída"
+                            : quest.status === "Encerrado"
+                            ? "🚫 Encerrada"
+                            : "⚔️ Em andamento"}
+                        </span>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+
+                  {/* RECOMPENSAS */}
+
+                  <div className="flex items-center gap-2 shrink-0">
+
+                    <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 px-4 py-2 text-center min-w-[90px]">
+                      <div className="text-[9px] uppercase tracking-wider text-amber-500 font-black">
+                        Experiência
+                      </div>
+
+                      <div className="text-sm font-black text-amber-300 mt-0.5">
+                        ✨ {quest.xpReward} XP
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-yellow-500/30 bg-yellow-950/20 px-4 py-2 text-center min-w-[90px]">
+                      <div className="text-[9px] uppercase tracking-wider text-yellow-500 font-black">
+                        Recompensa
+                      </div>
+
+                      <div className="text-sm font-black text-yellow-300 mt-0.5">
+                        🪙 {quest.coinReward}
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+
+
+                {/* REQUISITO DA QUEST */}
+
+                <div className="mt-5 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+
+                  <div className="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-black mb-1">
+                    Objetivo da Missão
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    {quest.requirement}
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              {/* ==================================================
+                  ÁREA DOS AVENTUREIROS
+              ================================================== */}
+
+              <div className="p-5 sm:p-7">
+
+                <div className="flex items-center justify-between gap-3 mb-4">
+
+                  <div>
+
+                    <div className="text-[9px] uppercase tracking-[0.25em] text-purple-400 font-black">
+                      Registro dos Aventureiros
+                    </div>
+
+                    <h5 className="text-sm font-black text-white mt-1">
+                      Participantes da Quest
+                    </h5>
+
+                  </div>
+
+                  <span className="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1 text-[10px] font-bold text-slate-400">
+                    👥 {questStudents.length}{" "}
+                    {questStudents.length === 1
+                      ? "aventureiro"
+                      : "aventureiros"}
+                  </span>
+
+                </div>
+
+
+                {questStudents.length === 0 ? (
+
+                  <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/30 p-8 text-center">
+
+                    <div className="text-3xl">
+                      🏚️
+                    </div>
+
+                    <p className="text-xs text-slate-500 mt-2">
+                      Nenhum aventureiro foi vinculado
+                      a esta Quest.
+                    </p>
+
+                  </div>
+
+                ) : (
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+
+                    {questStudents.map((student) => (
+
+                      <div
+                        key={`${quest.id}-${student.id}`}
+                        className="group relative rounded-2xl border border-slate-800 bg-[#0d120d] p-4 transition-all duration-200 hover:border-amber-500/30 hover:bg-[#11170f] hover:-translate-y-0.5"
+                      >
+
+                        {/* MINI CABEÇALHO DO ALUNO */}
+
+                        <div className="flex items-center gap-3">
+
+                          <div className="relative shrink-0">
+
+                            <div className="w-12 h-12 rounded-xl border border-slate-700 bg-slate-900 flex items-center justify-center text-2xl shadow-lg">
+                              {student.avatar}
+                            </div>
+
+                            <div className="absolute -bottom-1 -right-1 rounded-md border border-slate-800 bg-slate-950 px-1 text-[8px] font-black text-amber-400">
+                              {student.level}
+                            </div>
+
+                          </div>
+
+                          <div className="min-w-0">
+
+                            <div className="font-black text-sm text-white truncate">
+                              {student.name}
+                            </div>
+
+                            <div className="text-[10px] text-slate-500 truncate mt-0.5">
+                              {student.turma ||
+                                "Sem Turma"}
+                            </div>
+
+                          </div>
+
+                        </div>
+
+
+                        {/* STATUS INDIVIDUAL */}
+
+                        <div className="mt-4">
+
+                          {quest.status === "Concluido" ? (
+
+                            <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 px-3 py-2">
+
+                              <div className="flex items-center justify-between">
+
+                                <span className="text-[9px] uppercase tracking-wider font-black text-emerald-400">
+                                  Missão Validada
+                                </span>
+
+                                <span className="text-sm">
+                                  ✓
+                                </span>
+
+                              </div>
+
+                              <div className="text-[10px] text-emerald-300/70 mt-1">
+                                Recompensa concedida pelo Mestre.
+                              </div>
+
+                            </div>
+
+                          ) : quest.status === "Encerrado" ? (
+
+                            <div className="rounded-xl border border-rose-500/30 bg-rose-950/20 px-3 py-2">
+
+                              <div className="flex items-center justify-between">
+
+                                <span className="text-[9px] uppercase tracking-wider font-black text-rose-400">
+                                  Quest Encerrada
+                                </span>
+
+                                <span className="text-sm">
+                                  🚫
+                                </span>
+
+                              </div>
+
+                              <div className="text-[10px] text-rose-300/70 mt-1">
+                                Ciclo finalizado sem recompensa.
+                              </div>
+
+                            </div>
+
+                          ) : (
+
+                            <div className="space-y-2">
+
+                              <div className="flex items-center justify-between">
+
+                                <span className="text-[9px] uppercase tracking-wider font-black text-amber-500">
+                                  Aguardando Validação
+                                </span>
+
+                                <span className="text-[9px] font-bold text-slate-500">
+                                  {quest.status}
+                                </span>
+
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleValidateQuest(
+                                    quest.id,
+                                    "Concluido"
+                                  )
+                                }
+                                className="w-full rounded-xl border border-emerald-500/30 bg-emerald-600/10 px-3 py-2.5 text-[10px] font-black text-emerald-300 hover:bg-emerald-600/20 hover:border-emerald-400/50 transition shadow-sm"
+                              >
+                                🎁 Conceder Recompensa
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleValidateQuest(
+                                    quest.id,
+                                    "Encerrado"
+                                  )
+                                }
+                                className="w-full rounded-xl border border-rose-500/20 bg-rose-950/20 px-3 py-2 text-[10px] font-bold text-rose-400 hover:bg-rose-900/30 transition"
+                              >
+                                🚫 Encerrar Quest
+                              </button>
+
+                            </div>
+
+                          )}
+
+                        </div>
+
+                      </div>
+
+                    ))}
+
+                  </div>
+
+                )}
+
+              </div>
+
+
+              {/* ==================================================
+                  RODAPÉ DA QUEST
+              ================================================== */}
+
+              <div className="border-t border-slate-800/80 bg-slate-950/20 px-5 sm:px-7 py-3">
+
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+
+                  <div className="text-[9px] text-slate-600 font-bold">
+                    ⚔️ Registro oficial do Reino do Conhecimento
+                  </div>
+
+                  <div className="text-[9px] text-slate-500">
+                    Recompensa individual:
+                    <span className="text-amber-400 font-black ml-1">
+                      ✨ {quest.xpReward} XP
+                    </span>
+                    <span className="text-yellow-400 font-black ml-2">
+                      🪙 {quest.coinReward} Priantinas
+                    </span>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </section>
+
+          );
+
+        })}
+
+      </div>
+
+    )}
+
+  </div>
+)}
+      {/* ======================================================
+          GRIMÓRIO DE NOTAS
+      ====================================================== */}
+
       {teacherTab === "grades" && (
         <div className="space-y-5 rounded-2xl border border-slate-800 bg-[#11150f] p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
             <div>
-              <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">Lançamento Rápido</div>
-              <h3 className="text-xl font-black text-white">Grimório de Notas e HP dos Aventureiros</h3>
+              <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">
+                Lançamento Rápido
+              </div>
+
+              <h3 className="text-xl font-black text-white">
+                Grimório de Notas e HP dos
+                Aventureiros
+              </h3>
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="text-xs font-bold text-slate-400">Disciplina:</label>
-                          </div>
-<select
-  value={selectedSubject}
-  onChange={(e) => setSelectedSubject(e.target.value)}
-  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-white outline-none focus:border-purple-500"
->
-  {allCurricularSubjects.map((subjectName) => {
-    const subjectInfo = subjects.find(
-      (subject) => subject.name === subjectName
-    );
+              <label className="text-xs font-bold text-slate-400">
+                Disciplina:
+              </label>
 
-    return (
-      <option key={subjectName} value={subjectName}>
-        {subjectInfo?.icon || "📚"} {subjectName}
-      </option>
-    );
-  })}
-</select>
+              <select
+                value={selectedSubject}
+                onChange={(e) =>
+                  setSelectedSubject(
+                    e.target.value
+                  )
+                }
+                className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-white outline-none focus:border-purple-500"
+              >
+                {allCurricularSubjects.map(
+                  (subjectName) => {
+                    const subjectInfo =
+                      subjects.find(
+                        (subject) =>
+                          subject.name ===
+                          subjectName
+                      );
+
+                    return (
+                      <option
+                        key={subjectName}
+                        value={subjectName}
+                      >
+                        {subjectInfo?.icon ||
+                          "📚"}{" "}
+                        {subjectName}
+                      </option>
+                    );
+                  }
+                )}
+              </select>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-300">
               <thead className="bg-slate-900/80 uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th className="p-3">Estudante / Título</th>
-                  <th className="p-3 text-center">Turma</th>
-                  <th className="p-3 text-center">1º Bim</th>
-                  <th className="p-3 text-center">2º Bim</th>
-                  <th className="p-3 text-center">3º Bim</th>
-                  <th className="p-3 text-center">4º Bim</th>
-                  <th className="p-3 text-center">Média / Status</th>
-                  <th className="p-3 text-center">Ações de Mestre</th>
+                  <th className="p-3">
+                    Estudante / Título
+                  </th>
+
+                  <th className="p-3 text-center">
+                    Turma
+                  </th>
+
+                  <th className="p-3 text-center">
+                    1º Bim
+                  </th>
+
+                  <th className="p-3 text-center">
+                    2º Bim
+                  </th>
+
+                  <th className="p-3 text-center">
+                    3º Bim
+                  </th>
+
+                  <th className="p-3 text-center">
+                    4º Bim
+                  </th>
+
+                  <th className="p-3 text-center">
+                    Média / Status
+                  </th>
+
+                  <th className="p-3 text-center">
+                    Ações de Mestre
+                  </th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-slate-800/60">
-                {students.map((st) => {
-                  const stGrades = st.grades[selectedSubject] || ["", "", "", ""];
-                  const avg = calculateAverage(stGrades);
-                  const perf = getPerformanceLevel(avg);
+                {students.map((student) => {
+                  const studentGrades =
+                    student.grades[
+                      selectedSubject
+                    ] ||
+                    createEmptyGrades();
+
+                  const avg =
+                    calculateAverage(
+                      studentGrades
+                    );
+
+                  const perf =
+                    getPerformanceLevel(avg);
 
                   return (
-                    <tr key={st.id} className="hover:bg-slate-900/30 transition">
+                    <tr
+                      key={student.id}
+                      className="hover:bg-slate-900/30 transition"
+                    >
                       <td className="p-3 font-bold text-white">
                         <div className="flex items-center gap-3">
-                          <span className="text-2xl p-1.5 rounded-lg bg-slate-900 border border-slate-800">{st.avatar}</span>
+                          <span className="text-2xl p-1.5 rounded-lg bg-slate-900 border border-slate-800">
+                            {student.avatar}
+                          </span>
+
                           <div>
-                            <div className="font-black text-sm">{st.name}</div>
-                            <div className="text-[10px] text-purple-400 font-normal">Nível {st.level} • {st.badge}</div>
+                            <div className="font-black text-sm">
+                              {student.name}
+                            </div>
+
+                            <div className="text-[10px] text-purple-400 font-normal">
+                              Nível{" "}
+                              {student.level}{" "}
+                              •{" "}
+                              {student.badge}
+                            </div>
                           </div>
                         </div>
                       </td>
 
                       <td className="p-3 text-center">
                         <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] font-bold text-purple-300">
-                          {st.turma || "Sem Turma"}
+                          {student.turma ||
+                            "Sem Turma"}
                         </span>
                       </td>
 
-                      {[0, 1, 2, 3].map((bimIdx) => (
-                        <td key={bimIdx} className="p-3 text-center">
-                          <input
-                            type="number"
-                            min="0"
-                            max="10"
-                            step="0.1"
-                            value={stGrades[bimIdx]}
-                            onChange={(e) => handleStudentGradeChange(st.id, bimIdx, e.target.value)}
-                            placeholder="--"
-                            className="w-14 rounded-lg border border-slate-800 bg-slate-950 py-1.5 text-center font-black text-white outline-none focus:border-purple-500"
-                          />
-                        </td>
-                      ))}
+                      {[0, 1, 2, 3].map(
+                        (bimIdx) => (
+                          <td
+                            key={bimIdx}
+                            className="p-3 text-center"
+                          >
+                            <input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.1"
+                              value={
+                                studentGrades[
+                                  bimIdx
+                                ]
+                              }
+                              onChange={(e) =>
+                                handleStudentGradeChange(
+                                  student.id,
+                                  bimIdx,
+                                  e.target.value
+                                )
+                              }
+                              placeholder="--"
+                              className="w-14 rounded-lg border border-slate-800 bg-slate-950 py-1.5 text-center font-black text-white outline-none focus:border-purple-500"
+                            />
+                          </td>
+                        )
+                      )}
 
                       <td className="p-3 text-center">
-                        <div className="font-black text-sm text-white">{avg > 0 ? avg.toFixed(1) : "--"}</div>
-                        <div className={`mt-0.5 inline-block px-2 py-0.5 rounded text-[9px] font-bold ${getPerformanceClass(perf)}`}>
-                          {getPerformanceIcon(perf)} {perf}
+                        <div className="font-black text-sm text-white">
+                          {avg > 0
+                            ? avg.toFixed(1)
+                            : "--"}
+                        </div>
+
+                        <div
+                          className={`mt-0.5 inline-block px-2 py-0.5 rounded text-[9px] font-bold ${getPerformanceClass(
+                            perf
+                          )}`}
+                        >
+                          {getPerformanceIcon(
+                            perf
+                          )}{" "}
+                          {perf}
                         </div>
                       </td>
 
                       <td className="p-3 text-center">
                         <button
                           type="button"
-                          onClick={() => rewardStudent(st.name)}
+                          onClick={() =>
+                            rewardStudent(
+                              student.id
+                            )
+                          }
                           className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-[10px] font-black text-amber-300 hover:bg-amber-500/20 transition"
                         >
                           🎁 Bônus
@@ -1415,76 +2058,148 @@ function handleAddStudent(e: React.FormEvent) {
         </div>
       )}
 
-      {/* ABA: CRIAR BOSS / EVENTO */}
+      {/* ======================================================
+          CRIAR EVENTO
+      ====================================================== */}
+
       {teacherTab === "create_event" && (
         <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-6">
           <div className="border-b border-slate-800 pb-4">
-            <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">Invocação de Desafios</div>
-            <h3 className="text-xl font-black text-white">Criar Evento ou Boss Raid da Semana</h3>
-            <p className="text-xs text-slate-500 mt-1">Defina um desafio de tempo limitado com período para unir a turma.</p>
+            <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">
+              Invocação de Desafios
+            </div>
+
+            <h3 className="text-xl font-black text-white">
+              Criar Evento ou Boss Raid da Semana
+            </h3>
+
+            <p className="text-xs text-slate-500 mt-1">
+              Defina um desafio de tempo limitado
+              com período para unir a turma.
+            </p>
           </div>
 
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              triggerToast("🐉 Evento / Boss Raid invocado com sucesso para toda a turma!");
-            }}
+            onSubmit={handleCreateEvent}
             className="grid grid-cols-1 md:grid-cols-2 gap-5"
           >
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-300">Título do Evento / Chefão</label>
+              <label className="text-xs font-bold text-slate-300">
+                Título do Evento / Chefão
+              </label>
+
               <input
                 type="text"
                 required
+                value={eventTitle}
+                onChange={(e) =>
+                  setEventTitle(e.target.value)
+                }
                 placeholder="Ex: O Guardião dos Polígonos de Ouro"
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-300">Tipo de Evento</label>
-              <select className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500">
-                <option value="Boss Raid">🐉 Boss Raid (Batalha em Equipe)</option>
-                <option value="Maratona">📜 Maratona do Conhecimento</option>
-                <option value="Feira">⚙️ Feira / Exposição</option>
-                <option value="Especial">✨ Evento Especial</option>
+              <label className="text-xs font-bold text-slate-300">
+                Tipo de Evento
+              </label>
+
+              <select
+                value={eventType}
+                onChange={(e) =>
+                  setEventType(e.target.value)
+                }
+                className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
+              >
+                <option value="Boss Raid">
+                  🐉 Boss Raid (Batalha em
+                  Equipe)
+                </option>
+
+                <option value="Maratona">
+                  📜 Maratona do Conhecimento
+                </option>
+
+                <option value="Feira">
+                  ⚙️ Feira / Exposição
+                </option>
+
+                <option value="Especial">
+                  ✨ Evento Especial
+                </option>
               </select>
             </div>
 
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-slate-300">Período do Evento</label>
+              <label className="text-xs font-bold text-slate-300">
+                Período do Evento
+              </label>
+
               <input
                 type="text"
                 required
+                value={eventPeriodo}
+                onChange={(e) =>
+                  setEventPeriodo(
+                    e.target.value
+                  )
+                }
                 placeholder="Ex: 1º Bimestre, Até 25/10, Semanal..."
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
 
             <div className="md:col-span-2 space-y-1">
-              <label className="text-xs font-bold text-slate-300">Descrição do Desafio</label>
+              <label className="text-xs font-bold text-slate-300">
+                Descrição do Desafio
+              </label>
+
               <textarea
                 rows={3}
                 required
+                value={eventDescription}
+                onChange={(e) =>
+                  setEventDescription(
+                    e.target.value
+                  )
+                }
                 placeholder="Descreva as tarefas que a turma precisa realizar para derrotar o chefão..."
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-300">Recompensa de XP Coletivo</label>
+              <label className="text-xs font-bold text-slate-300">
+                Recompensa de XP Coletivo
+              </label>
+
               <input
                 type="number"
-                defaultValue={500}
+                min="0"
+                value={eventXp}
+                onChange={(e) =>
+                  setEventXp(e.target.value)
+                }
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-300">Recompensa de Moedas (Priantinas)</label>
+              <label className="text-xs font-bold text-slate-300">
+                Recompensa de Moedas
+                (Priantinas)
+              </label>
+
               <input
                 type="number"
-                defaultValue={200}
+                min="0"
+                value={eventCoins}
+                onChange={(e) =>
+                  setEventCoins(
+                    e.target.value
+                  )
+                }
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
@@ -1494,83 +2209,190 @@ function handleAddStudent(e: React.FormEvent) {
                 type="submit"
                 className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-3 text-xs font-black text-white shadow-lg hover:brightness-110 active:scale-95 transition"
               >
-                🔥 Lançar Evento para a Turma
+                🔥 Lançar Evento para a
+                Turma
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* ABA: GERENCIAR QUESTS / MISSÕES */}
+      {/* ======================================================
+          CRIAR QUEST
+      ====================================================== */}
+
       {teacherTab === "quests" && (
         <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-6">
           <div className="border-b border-slate-800 pb-4">
-            <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">Quadro do Mestre</div>
-            <h3 className="text-xl font-black text-white">Cadastrar Nova Missão (Quest)</h3>
-            <p className="text-xs text-slate-500 mt-1">Adicione objetivos e configure o período de realização para os estudantes.</p>
+            <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">
+              Quadro do Mestre
+            </div>
+
+            <h3 className="text-xl font-black text-white">
+              Cadastrar Nova Missão (Quest)
+            </h3>
+
+            <p className="text-xs text-slate-500 mt-1">
+              Adicione objetivos e configure o
+              período de realização para os
+              estudantes.
+            </p>
           </div>
 
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              triggerToast("🎯 Nova Quest enviada ao Mural do Estudante!");
-            }}
+            onSubmit={handleCreateQuest}
             className="grid grid-cols-1 md:grid-cols-2 gap-5"
           >
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-300">Título da Quest</label>
+              <label className="text-xs font-bold text-slate-300">
+                Título da Quest
+              </label>
+
               <input
                 type="text"
                 required
+                value={questTitle}
+                onChange={(e) =>
+                  setQuestTitle(
+                    e.target.value
+                  )
+                }
                 placeholder="Ex: Leitor Compulsivo"
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-300">Categoria da Missão</label>
-              <select className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500">
-                <option value="Diário">☀️ Diário</option>
-                <option value="Semanal">📅 Semanal</option>
-                <option value="Mensal">🗓️ Mensal</option>
-                <option value="Especial (Mensal)">🌟 Especial (Mensal)</option>
+              <label className="text-xs font-bold text-slate-300">
+                Categoria da Missão
+              </label>
+
+              <select
+                value={questCategory}
+                onChange={(e) =>
+                  setQuestCategory(
+                    e.target.value
+                  )
+                }
+                className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
+              >
+                <option value="Diário">
+                  ☀️ Diário
+                </option>
+
+                <option value="Semanal">
+                  📅 Semanal
+                </option>
+
+                <option value="Mensal">
+                  🗓️ Mensal
+                </option>
+
+                <option value="Especial (Mensal)">
+                  🌟 Especial (Mensal)
+                </option>
               </select>
             </div>
 
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-slate-300">Período da Atividade / Missão</label>
+              <label className="text-xs font-bold text-slate-300">
+                Aventureiro / Destinatário
+              </label>
+
+              <select
+                value={questStudentId}
+                onChange={(e) =>
+                  setQuestStudentId(
+                    e.target.value
+                  )
+                }
+                className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
+              >
+                <option value="all">
+                  👥 Todos os alunos
+                </option>
+
+                {students.map((student) => (
+                  <option
+                    key={student.id}
+                    value={student.id}
+                  >
+                    {student.avatar}{" "}
+                    {student.name} —{" "}
+                    {student.turma}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1 md:col-span-2">
+              <label className="text-xs font-bold text-slate-300">
+                Período da Atividade / Missão
+              </label>
+
               <input
                 type="text"
                 required
+                value={questPeriodo}
+                onChange={(e) =>
+                  setQuestPeriodo(
+                    e.target.value
+                  )
+                }
                 placeholder="Ex: 1º Bimestre, Até 20/05, Semanal..."
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
 
             <div className="md:col-span-2 space-y-1">
-              <label className="text-xs font-bold text-slate-300">Instruções / Requisitos</label>
+              <label className="text-xs font-bold text-slate-300">
+                Instruções / Requisitos
+              </label>
+
               <input
                 type="text"
                 required
+                value={questRequirement}
+                onChange={(e) =>
+                  setQuestRequirement(
+                    e.target.value
+                  )
+                }
                 placeholder="Ex: Tirar nota maior que 8.0 em pelo menos 2 avaliações no período."
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-300">Premiação em XP</label>
+              <label className="text-xs font-bold text-slate-300">
+                Premiação em XP
+              </label>
+
               <input
                 type="number"
-                defaultValue={150}
+                min="0"
+                value={questXp}
+                onChange={(e) =>
+                  setQuestXp(e.target.value)
+                }
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-300">Premiação em Moedas</label>
+              <label className="text-xs font-bold text-slate-300">
+                Premiação em Moedas
+              </label>
+
               <input
                 type="number"
-                defaultValue={50}
+                min="0"
+                value={questCoins}
+                onChange={(e) =>
+                  setQuestCoins(
+                    e.target.value
+                  )
+                }
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
@@ -1587,36 +2409,66 @@ function handleAddStudent(e: React.FormEvent) {
         </div>
       )}
 
-      {/* ABA: ENTURMAÇÃO DE ALUNOS */}
+      {/* ======================================================
+          ENTURMAR ALUNOS
+      ====================================================== */}
+
       {teacherTab === "enturmar" && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-6">
             <div className="border-b border-slate-800 pb-4">
-              <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">Invocação de Aventureiros</div>
-              <h3 className="text-xl font-black text-white">Enturmar Novo Aluno</h3>
-              <p className="text-xs text-slate-500 mt-1">Cadastre e atribua estudantes às suas respectivas turmas para liberá-los no reino.</p>
+              <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">
+                Invocação de Aventureiros
+              </div>
+
+              <h3 className="text-xl font-black text-white">
+                Enturmar Novo Aluno
+              </h3>
+
+              <p className="text-xs text-slate-500 mt-1">
+                Cadastre e atribua estudantes às
+                suas respectivas turmas para
+                liberá-los no reino.
+              </p>
             </div>
 
-            <form onSubmit={handleAddStudent} className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <form
+              onSubmit={handleAddStudent}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-5"
+            >
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-300">Nome Completo do Aluno</label>
+                <label className="text-xs font-bold text-slate-300">
+                  Nome Completo do Aluno
+                </label>
+
                 <input
                   type="text"
                   required
                   value={newStudentName}
-                  onChange={(e) => setNewStudentName(e.target.value)}
+                  onChange={(e) =>
+                    setNewStudentName(
+                      e.target.value
+                    )
+                  }
                   placeholder="Ex: Gabriel Santos"
                   className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-300">Turma (Digitável)</label>
+                <label className="text-xs font-bold text-slate-300">
+                  Turma (Digitável)
+                </label>
+
                 <input
                   type="text"
                   required
                   value={newStudentClass}
-                  onChange={(e) => setNewStudentClass(e.target.value)}
+                  onChange={(e) =>
+                    setNewStudentClass(
+                      e.target.value
+                    )
+                  }
                   placeholder="Ex: 9º Ano A, 3001, Turma B..."
                   className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
                 />
@@ -1635,38 +2487,70 @@ function handleAddStudent(e: React.FormEvent) {
 
           <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-4">
             <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <span>👥</span> Alunos Cadastrados no Reino ({students.length})
+              <span>👥</span>
+              Alunos Cadastrados no Reino (
+              {students.length})
             </h3>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-300">
                 <thead className="bg-slate-900/80 uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
                   <tr>
-                    <th className="p-3">Nome do Aluno</th>
-                    <th className="p-3 text-center">Turma</th>
-                    <th className="p-3 text-center">Nível</th>
-                    <th className="p-3 text-center">Insígnia</th>
-                    <th className="p-3 text-center">Ações</th>
+                    <th className="p-3">
+                      Nome do Aluno
+                    </th>
+
+                    <th className="p-3 text-center">
+                      Turma
+                    </th>
+
+                    <th className="p-3 text-center">
+                      Nível
+                    </th>
+
+                    <th className="p-3 text-center">
+                      Insígnia
+                    </th>
+
+                    <th className="p-3 text-center">
+                      Ações
+                    </th>
                   </tr>
                 </thead>
+
                 <tbody className="divide-y divide-slate-800/60">
-                  {students.map((st) => {
-                    const isEditing = editingStudentId === st.id;
+                  {students.map((student) => {
+                    const isEditing =
+                      editingStudentId ===
+                      student.id;
 
                     return (
-                      <tr key={st.id} className="hover:bg-slate-900/30 transition">
+                      <tr
+                        key={student.id}
+                        className="hover:bg-slate-900/30 transition"
+                      >
                         <td className="p-3 font-bold text-white">
                           <div className="flex items-center gap-3">
-                            <span className="text-xl p-1.5 rounded-lg bg-slate-900 border border-slate-800">{st.avatar}</span>
+                            <span className="text-xl p-1.5 rounded-lg bg-slate-900 border border-slate-800">
+                              {student.avatar}
+                            </span>
+
                             {isEditing ? (
                               <input
                                 type="text"
                                 value={editName}
-                                onChange={(e) => setEditName(e.target.value)}
+                                onChange={(e) =>
+                                  setEditName(
+                                    e.target
+                                      .value
+                                  )
+                                }
                                 className="rounded-lg border border-purple-500 bg-slate-950 px-2 py-1 text-xs text-white outline-none w-full"
                               />
                             ) : (
-                              <span className="font-black">{st.name}</span>
+                              <span className="font-black">
+                                {student.name}
+                              </span>
                             )}
                           </div>
                         </td>
@@ -1676,32 +2560,51 @@ function handleAddStudent(e: React.FormEvent) {
                             <input
                               type="text"
                               value={editClass}
-                              onChange={(e) => setEditClass(e.target.value)}
+                              onChange={(e) =>
+                                setEditClass(
+                                  e.target
+                                    .value
+                                )
+                              }
                               className="rounded-lg border border-purple-500 bg-slate-950 px-2 py-1 text-xs text-white outline-none w-28 text-center"
                             />
                           ) : (
                             <span className="px-2.5 py-1 rounded-lg bg-purple-950/40 border border-purple-800/50 text-[10px] font-bold text-purple-300">
-                              {st.turma || "Sem Turma"}
+                              {student.turma ||
+                                "Sem Turma"}
                             </span>
                           )}
                         </td>
 
-                        <td className="p-3 text-center font-bold text-amber-400">Lvl {st.level}</td>
-                        <td className="p-3 text-center text-slate-400">{st.badge}</td>
+                        <td className="p-3 text-center font-bold text-amber-400">
+                          Lvl{" "}
+                          {student.level}
+                        </td>
+
+                        <td className="p-3 text-center text-slate-400">
+                          {student.badge}
+                        </td>
 
                         <td className="p-3 text-center">
                           {isEditing ? (
                             <div className="flex items-center justify-center gap-1">
                               <button
                                 type="button"
-                                onClick={() => handleSaveEdit(st.id)}
+                                onClick={() =>
+                                  handleSaveEdit(
+                                    student.id
+                                  )
+                                }
                                 className="rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 text-[10px] font-bold transition"
                               >
                                 ✓ Salvar
                               </button>
+
                               <button
                                 type="button"
-                                onClick={handleCancelEdit}
+                                onClick={
+                                  handleCancelEdit
+                                }
                                 className="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 text-[10px] font-bold transition"
                               >
                                 ✕
@@ -1711,15 +2614,25 @@ function handleAddStudent(e: React.FormEvent) {
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 type="button"
-                                onClick={() => handleStartEdit(st)}
+                                onClick={() =>
+                                  handleStartEdit(
+                                    student
+                                  )
+                                }
                                 className="rounded-lg border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 px-2 py-1 text-[10px] font-bold transition"
                                 title="Editar Nome e Turma"
                               >
                                 ✏️ Editar
                               </button>
+
                               <button
                                 type="button"
-                                onClick={() => handleDeleteStudent(st.id, st.name)}
+                                onClick={() =>
+                                  handleDeleteStudent(
+                                    student.id,
+                                    student.name
+                                  )
+                                }
                                 className="rounded-lg border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-2 py-1 text-[10px] font-bold transition"
                                 title="Remover Aluno"
                               >
@@ -1746,44 +2659,141 @@ function handleAddStudent(e: React.FormEvent) {
 ============================================================ */
 
 export default function Home() {
-  const [role, setRole] = useState<UserRole>("teacher");
-  const [activeTab, setActiveTab] = useState<string>("inicio");
-  const [grades, setGrades] = useState<Record<string, Grades>>({});
-  const [quests, setQuests] = useState<Quest[]>(initialQuests);
-  const [events] = useState<EventItem[]>(mockEvents);
-  
-  // Status Globais do Jogador
-  const [userCoins] = useState(450);
-  const [userXp] = useState(1250);
+  const [role, setRole] =
+    useState<UserRole>("teacher");
+
+  const [activeTab, setActiveTab] =
+    useState<string>("inicio");
+
+  const [students, setStudents] =
+    useState<StudentRecord[]>(
+      mockClassStudents
+    );
+
+  const [selectedStudentId, setSelectedStudentId] =
+    useState<string>("s1");
+
+  const [quests, setQuests] =
+    useState<Quest[]>(initialQuests);
+
+  const [events, setEvents] =
+    useState<EventItem[]>(mockEvents);
+
+  /*
+    Notas utilizadas pelo mapa.
+
+    Mantemos o estado no Home para que o mapa
+    continue funcionando como antes.
+  */
+
+  const [grades, setGrades] = useState<
+    Record<string, number>
+  >({
+    "Língua Portuguesa": 92,
+    "Língua Inglesa": 79,
+    Matemática: 88,
+    História: 95,
+    Geografia: 97,
+    "Educação Física": 86,
+    Artes: 91,
+    Ciências: 84,
+    "Projeto de Vida": 90,
+    Tecnologia: 94,
+    "Educação Financeira": 87,
+    Robótica: 89,
+    "Orientação de Estudos de Português": 85,
+    "Orientação de Estudos de Matemática": 83,
+  });
+
+  /*
+    O aluno selecionado é derivado do estado.
+    Assim o XP/moedas mostrados no perfil são
+    os valores reais do StudentRecord.
+  */
+
+  const selectedStudent =
+    useMemo(
+      () =>
+        students.find(
+          (student) =>
+            student.id ===
+            selectedStudentId
+        ) || students[0],
+      [students, selectedStudentId]
+    );
+
+  /*
+    Se um aluno for removido, garantimos que
+    ainda exista um aluno válido selecionado.
+  */
+
+  const currentStudent =
+    selectedStudent || {
+      id: "temporary",
+      name: "Aventureiro",
+      avatar: "🧙‍♂️",
+      level: 1,
+      xp: 0,
+      coins: 0,
+      badge: "Iniciante",
+      turma: "Sem Turma",
+      grades: {},
+    };
 
   return (
     <div className="min-h-screen bg-[#0d100d] text-slate-100 flex flex-col justify-between">
-      {/* CABEÇALHO COM CONTROLE DE PERFIL */}
+      {/* ======================================================
+          CABEÇALHO
+      ====================================================== */}
+
       <header className="border-b border-slate-800 bg-[#11150f] p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="text-2xl">{role === "student" ? "🧙‍♂️" : "🎓"}</div>
+          <div className="text-2xl">
+            {role === "student"
+              ? "🧙‍♂️"
+              : "🎓"}
+          </div>
+
           <div>
             <div className="text-[9px] font-bold uppercase tracking-widest text-amber-500">
-              {role === "student" ? "Aventureiro Pedagógico" : "Portal Educador"}
+              {role === "student"
+                ? "Aventureiro Pedagógico"
+                : "Portal Educador"}
             </div>
-            <h1 className="text-lg font-black">Reino do Conhecimento</h1>
+
+            <h1 className="text-lg font-black">
+              Reino do Conhecimento
+            </h1>
           </div>
         </div>
 
-        {/* BOTÃO DE TROCA DE PERFIL / SAIR */}
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => setRole(role === "student" ? "teacher" : "student")}
+            onClick={() =>
+              setRole(
+                role === "student"
+                  ? "teacher"
+                  : "student"
+              )
+            }
             className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition"
           >
             <span>🔄</span>
-            <span>{role === "student" ? "Modo Professor" : "Modo Aluno"}</span>
+
+            <span>
+              {role === "student"
+                ? "Modo Professor"
+                : "Modo Aluno"}
+            </span>
           </button>
 
           <button
             type="button"
-            onClick={() => setRole(role === "student" ? "teacher" : "student")}
+            onClick={() => {
+              setRole("teacher");
+              setActiveTab("inicio");
+            }}
             className="rounded-lg border border-red-900/50 bg-red-950/30 px-3 py-1.5 text-xs font-bold text-red-400 hover:bg-red-900/40 transition"
           >
             🚪 Sair
@@ -1791,59 +2801,97 @@ export default function Home() {
         </div>
       </header>
 
-      {/* CONTEÚDO CONFORME O PERFIL */}
+      {/* ======================================================
+          CONTEÚDO
+      ====================================================== */}
+
       <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
         {role === "teacher" ? (
           <TeacherPanel
-            onSwitchRole={() => setRole("student")}
+            onSwitchRole={() =>
+              setRole("student")
+            }
+            students={students}
+            setStudents={setStudents}
             quests={quests}
             setQuests={setQuests}
             events={events}
+            setEvents={setEvents}
           />
         ) : (
           <>
-            {/* ABA: INÍCIO */}
+            {/* ==================================================
+                INÍCIO DO ALUNO
+            ================================================== */}
+
             {activeTab === "inicio" && (
               <section className="space-y-6">
                 <div className="rounded-3xl border border-amber-900/40 bg-gradient-to-b from-[#161c14] to-[#0f140e] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
                   <div className="flex flex-col lg:flex-row items-center lg:items-stretch gap-8">
-                    {/* AVATAR 32-BIT */}
                     <div className="flex flex-col items-center">
                       <div className="relative group cursor-pointer">
                         <div className="w-48 h-56 sm:w-56 sm:h-64 rounded-2xl bg-[#090d08] border-4 border-amber-600/60 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden p-2">
-                          <div className="text-7xl sm:text-8xl relative z-10 select-none">🧙‍♂️</div>
+                          <div className="text-7xl sm:text-8xl relative z-10 select-none">
+                            {currentStudent.avatar}
+                          </div>
+
                           <div className="absolute bottom-2 inset-x-2 bg-slate-900/90 border border-slate-700/80 rounded-lg py-1 text-center backdrop-blur-sm z-20">
-                            <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider">Mago das Letras</span>
+                            <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider">
+                              {currentStudent.badge}
+                            </span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* STATUS DE PROGRESSO */}
                     <div className="flex-1 flex flex-col justify-between space-y-6 w-full">
                       <div>
                         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
                           <div>
-                            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-500">Personagem Principal</div>
-                            <h2 className="text-3xl font-black text-white mt-0.5">Aventureiro(a)</h2>
+                            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-500">
+                              Personagem Principal
+                            </div>
+
+                            <h2 className="text-3xl font-black text-white mt-0.5">
+                              {currentStudent.name}
+                            </h2>
+
+                            <p className="text-xs text-slate-500 mt-1">
+                              {currentStudent.turma}
+                            </p>
                           </div>
                         </div>
 
                         <div className="mt-5 space-y-2">
                           <div className="flex justify-between items-end">
                             <div>
-                              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Progresso Geral</span>
-                              <div className="text-xl font-black text-amber-400">Nível 5</div>
+                              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                                Progresso Geral
+                              </span>
+
+                              <div className="text-xl font-black text-amber-400">
+                                Nível{" "}
+                                {currentStudent.level}
+                              </div>
                             </div>
+
                             <span className="text-xs font-black text-emerald-400 bg-emerald-950/40 px-2.5 py-1 rounded-md border border-emerald-800/50">
-                              {userXp} / 2.000 XP
+                              {currentStudent.xp}{" "}
+                              XP
                             </span>
                           </div>
 
                           <div className="w-full bg-slate-900 h-5 rounded-xl p-1 border border-slate-800 shadow-inner overflow-hidden">
                             <div
                               className="bg-gradient-to-r from-amber-500 via-emerald-500 to-emerald-400 h-full rounded-lg transition-all duration-500"
-                              style={{ width: `${Math.min(100, (userXp / 2000) * 100)}%` }}
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  (currentStudent.xp %
+                                    500) /
+                                    5
+                                )}%`,
+                              }}
                             />
                           </div>
                         </div>
@@ -1851,75 +2899,195 @@ export default function Home() {
 
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         <div className="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-center">
-                          <div className="text-[9px] font-black uppercase text-amber-500 tracking-wider">Moeda Escolar</div>
-                          <div className="text-2xl font-black text-amber-400 mt-1 flex items-center justify-center gap-1">
-                            🪙 {userCoins}
+                          <div className="text-[9px] font-black uppercase text-amber-500 tracking-wider">
+                            Moeda Escolar
                           </div>
-                          <div className="text-[10px] font-bold text-slate-400">Priantinas</div>
+
+                          <div className="text-2xl font-black text-amber-400 mt-1 flex items-center justify-center gap-1">
+                            🪙{" "}
+                            {currentStudent.coins}
+                          </div>
+
+                          <div className="text-[10px] font-bold text-slate-400">
+                            Priantinas
+                          </div>
                         </div>
 
                         <div className="rounded-2xl border border-purple-500/30 bg-purple-950/20 p-3.5 text-center">
-                          <div className="text-[9px] font-black uppercase text-purple-400 tracking-wider">Reputação Total</div>
+                          <div className="text-[9px] font-black uppercase text-purple-400 tracking-wider">
+                            Reputação Total
+                          </div>
+
                           <div className="text-2xl font-black text-purple-300 mt-1 flex items-center justify-center gap-1">
                             ⭐ 780
                           </div>
-                          <div className="text-[10px] font-bold text-slate-400">/ 1000 Média</div>
+
+                          <div className="text-[10px] font-bold text-slate-400">
+                            / 1000 Média
+                          </div>
                         </div>
 
                         <div className="col-span-2 sm:col-span-1 rounded-2xl border border-blue-500/30 bg-blue-950/20 p-3.5 text-center">
-                          <div className="text-[9px] font-black uppercase text-blue-400 tracking-wider">Patente de Reino</div>
-                          <div className="text-lg font-black text-blue-300 mt-1.5 truncate">Aventureiro</div>
-                          <div className="text-[10px] font-bold text-slate-400">Classe Ativa</div>
+                          <div className="text-[9px] font-black uppercase text-blue-400 tracking-wider">
+                            Patente de Reino
+                          </div>
+
+                          <div className="text-lg font-black text-blue-300 mt-1.5 truncate">
+                            Aventureiro
+                          </div>
+
+                          <div className="text-[10px] font-bold text-slate-400">
+                            Classe Ativa
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* CARDS DE STATUS DO INÍCIO */}
+                {/* SELEÇÃO DE AVENTUREIRO PARA TESTE */}
+                {students.length > 1 && (
+                  <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="text-[9px] font-black uppercase tracking-widest text-slate-500">
+                          Demonstração
+                        </div>
+
+                        <div className="text-xs font-bold text-white">
+                          Aventureiro conectado
+                        </div>
+                      </div>
+
+                      <select
+                        value={
+                          currentStudent.id
+                        }
+                        onChange={(e) =>
+                          setSelectedStudentId(
+                            e.target.value
+                          )
+                        }
+                        className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-white"
+                      >
+                        {students.map(
+                          (student) => (
+                            <option
+                              key={student.id}
+                              value={
+                                student.id
+                              }
+                            >
+                              {student.name} —{" "}
+                              {student.turma}
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* CARDS DE STATUS */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">Status de Perfil</div>
-                    <h3 className="text-lg font-black text-slate-200 mt-1">Conduta Acadêmica</h3>
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      Status de Perfil
+                    </div>
+
+                    <h3 className="text-lg font-black text-slate-200 mt-1">
+                      Conduta Acadêmica
+                    </h3>
+
                     <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4 flex items-center gap-3">
-                      <div className="text-3xl">🌟</div>
+                      <div className="text-3xl">
+                        🌟
+                      </div>
+
                       <div>
-                        <div className="text-xs font-bold text-emerald-400">Exemplar</div>
-                        <p className="text-[10px] text-slate-400 mt-0.5">Atribuído pelo Conselho de Professores</p>
+                        <div className="text-xs font-bold text-emerald-400">
+                          Exemplar
+                        </div>
+
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          Atribuído pelo Conselho
+                          de Professores
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">Insígnias de Honra</div>
-                    <h3 className="text-lg font-black text-slate-200 mt-1">Conquistas Equipadas</h3>
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      Insígnias de Honra
+                    </div>
+
+                    <h3 className="text-lg font-black text-slate-200 mt-1">
+                      Conquistas Equipadas
+                    </h3>
+
                     <div className="mt-4 flex gap-2 justify-between">
                       <div className="flex-1 rounded-xl border border-amber-500/30 bg-amber-950/20 p-3 text-center">
-                        <div className="text-2xl">📜</div>
-                        <div className="text-[10px] font-bold text-amber-300 mt-1">Primeira Nota 10</div>
+                        <div className="text-2xl">
+                          📜
+                        </div>
+
+                        <div className="text-[10px] font-bold text-amber-300 mt-1">
+                          Primeira Nota 10
+                        </div>
                       </div>
+
                       <div className="flex-1 rounded-xl border border-purple-500/30 bg-purple-950/20 p-3 text-center">
-                        <div className="text-2xl">⚡</div>
-                        <div className="text-[10px] font-bold text-purple-300 mt-1">Lorde da Média</div>
+                        <div className="text-2xl">
+                          ⚡
+                        </div>
+
+                        <div className="text-[10px] font-bold text-purple-300 mt-1">
+                          Lorde da Média
+                        </div>
                       </div>
+
                       <div className="flex-1 rounded-xl border border-slate-800 bg-slate-900/50 p-3 text-center opacity-40">
-                        <div className="text-2xl">🔒</div>
-                        <div className="text-[10px] font-bold text-slate-500 mt-1">Bloqueado</div>
+                        <div className="text-2xl">
+                          🔒
+                        </div>
+
+                        <div className="text-[10px] font-bold text-slate-500 mt-1">
+                          Bloqueado
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">Classificação Geral</div>
-                    <h3 className="text-lg font-black text-slate-200 mt-1">Ranking do Reino</h3>
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      Classificação Geral
+                    </div>
+
+                    <h3 className="text-lg font-black text-slate-200 mt-1">
+                      Ranking do Reino
+                    </h3>
+
                     <div className="mt-4 space-y-2">
                       <div className="flex items-center justify-between rounded-lg bg-slate-900/60 p-2 text-xs">
-                        <span className="font-bold text-amber-400">🥇 1º Lugar</span>
-                        <span className="font-black text-white">2.850 XP</span>
+                        <span className="font-bold text-amber-400">
+                          🥇 1º Lugar
+                        </span>
+
+                        <span className="font-black text-white">
+                          2.850 XP
+                        </span>
                       </div>
+
                       <div className="flex items-center justify-between rounded-lg bg-amber-500/10 border border-amber-500/30 p-2 text-xs">
-                        <span className="font-bold text-amber-300">🥉 Você (3º)</span>
-                        <span className="font-black text-amber-300">{userXp} XP</span>
+                        <span className="font-bold text-amber-300">
+                          🥉 Você
+                        </span>
+
+                        <span className="font-black text-amber-300">
+                          {currentStudent.xp}{" "}
+                          XP
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1927,109 +3095,263 @@ export default function Home() {
               </section>
             )}
 
-            {/* ABA: MAPA INTERATIVO */}
-            {activeTab === "mapa" && <AdventureMap grades={grades} setGrades={setGrades} />}
+            {/* ==================================================
+                MAPA
+            ================================================== */}
 
-            {/* ABA: EVENTOS */}
+            {activeTab === "mapa" && (
+              <AdventureMap
+                grades={grades}
+                setGrades={setGrades}
+              />
+            )}
+
+            {/* ==================================================
+                EVENTOS
+            ================================================== */}
+
             {activeTab === "eventos" && (
               <section className="space-y-6">
                 <div className="rounded-3xl border border-amber-900/40 bg-gradient-to-br from-[#1b1e17] via-[#11150f] to-[#0a0d0a] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-                  <h2 className="text-3xl font-black text-white">Eventos & Desafios Especiais</h2>
-                  <p className="mt-2 text-sm text-slate-400">Participe dos desafios sazonais ativos no reino.</p>
+                  <h2 className="text-3xl font-black text-white">
+                    Eventos & Desafios
+                    Especiais
+                  </h2>
+
+                  <p className="mt-2 text-sm text-slate-400">
+                    Participe dos desafios sazonais
+                    ativos no reino.
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {events.map((evt) => (
-                    <div key={evt.id} className="rounded-2xl border border-amber-500/30 bg-slate-900/80 p-6">
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-xs font-bold text-amber-400">{evt.type}</span>
-                        <span className="text-xs font-bold text-amber-300 border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 rounded-md">
-                          📅 {evt.periodo}
-                        </span>
-                      </div>
-                      <h3 className="text-xl font-black text-white">{evt.title}</h3>
-                      <p className="text-xs text-slate-400 mt-2">{evt.description}</p>
-                      <div className="mt-4 flex items-center gap-3 text-xs font-bold">
-                        <span className="text-amber-400">✨ +{evt.rewardXp} XP</span>
-                        <span className="text-amber-300">🪙 +{evt.rewardCoins} Moedas</span>
-                      </div>
+                {events.length === 0 ? (
+                  <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-10 text-center">
+                    <div className="text-5xl">
+                      💤
                     </div>
-                  ))}
-                </div>
+
+                    <h3 className="mt-3 text-lg font-black text-white">
+                      Nenhum evento ativo
+                    </h3>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {events
+                      .filter(
+                        (event) =>
+                          event.active
+                      )
+                      .map((event) => (
+                        <div
+                          key={event.id}
+                          className="rounded-2xl border border-amber-500/30 bg-slate-900/80 p-6"
+                        >
+                          <div className="flex justify-between items-center mb-3">
+                            <span className="text-xs font-bold text-amber-400">
+                              {event.type}
+                            </span>
+
+                            <span className="text-xs font-bold text-amber-300 border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 rounded-md">
+                              📅{" "}
+                              {event.periodo}
+                            </span>
+                          </div>
+
+                          <h3 className="text-xl font-black text-white">
+                            {event.title}
+                          </h3>
+
+                          <p className="text-xs text-slate-400 mt-2">
+                            {event.description}
+                          </p>
+
+                          <div className="mt-4 flex items-center gap-3 text-xs font-bold">
+                            <span className="text-amber-400">
+                              ✨ +
+                              {
+                                event.rewardXp
+                              }{" "}
+                              XP
+                            </span>
+
+                            <span className="text-amber-300">
+                              🪙 +
+                              {
+                                event.rewardCoins
+                              }{" "}
+                              Moedas
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
               </section>
             )}
 
-            {/* ABA: OBJETIVOS */}
-            {activeTab === "objetivos" && <ObjectivesTab quests={quests} />}
+            {/* ==================================================
+                OBJETIVOS
+            ================================================== */}
 
-            {/* OUTRAS ABAS */}
-            {activeTab !== "inicio" && activeTab !== "mapa" && activeTab !== "eventos" && activeTab !== "objetivos" && (
-              <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-slate-800 bg-slate-900/30">
-                <div className="text-4xl mb-2">🚧</div>
-                <h3 className="text-lg font-bold">Módulo em Desenvolvimento</h3>
-                <p className="text-xs text-slate-500 mt-1">Esta seção estará disponível em breve.</p>
-              </div>
+            {activeTab === "objetivos" && (
+              <ObjectivesTab
+                quests={quests}
+                student={currentStudent}
+              />
             )}
+
+            {/* ==================================================
+                OUTRAS ABAS
+            ================================================== */}
+
+            {activeTab !== "inicio" &&
+              activeTab !== "mapa" &&
+              activeTab !== "eventos" &&
+              activeTab !== "objetivos" && (
+                <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-slate-800 bg-slate-900/30">
+                  <div className="text-4xl mb-2">
+                    🚧
+                  </div>
+
+                  <h3 className="text-lg font-bold">
+                    Módulo em Desenvolvimento
+                  </h3>
+
+                  <p className="text-xs text-slate-500 mt-1">
+                    Esta seção estará disponível
+                    em breve.
+                  </p>
+                </div>
+              )}
           </>
         )}
       </main>
 
-      {/* NAVEGAÇÃO INFERIOR DO ALUNO */}
+      {/* ======================================================
+          NAVEGAÇÃO INFERIOR DO ALUNO
+      ====================================================== */}
+
       {role === "student" && (
         <nav className="border-t border-slate-800 bg-[#11150f] p-2 sticky bottom-0 z-50">
           <div className="max-w-md mx-auto flex items-center justify-around">
             <button
               type="button"
-              onClick={() => setActiveTab("inicio")}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${activeTab === "inicio" ? "bg-amber-500/10 text-amber-400 border border-amber-500/30" : "text-slate-500"}`}
+              onClick={() =>
+                setActiveTab("inicio")
+              }
+              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${
+                activeTab === "inicio"
+                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                  : "text-slate-500"
+              }`}
             >
-              <span className="text-lg">🏠</span>
-              <span className="text-[10px] font-bold">Início</span>
+              <span className="text-lg">
+                🏠
+              </span>
+
+              <span className="text-[10px] font-bold">
+                Início
+              </span>
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTab("mapa")}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${activeTab === "mapa" ? "bg-amber-500/10 text-amber-400 border border-amber-500/30" : "text-slate-500"}`}
+              onClick={() =>
+                setActiveTab("mapa")
+              }
+              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${
+                activeTab === "mapa"
+                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                  : "text-slate-500"
+              }`}
             >
-              <span className="text-lg">🗺️</span>
-              <span className="text-[10px] font-bold">Mapa</span>
+              <span className="text-lg">
+                🗺️
+              </span>
+
+              <span className="text-[10px] font-bold">
+                Mapa
+              </span>
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTab("eventos")}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${activeTab === "eventos" ? "bg-amber-500/10 text-amber-400 border border-amber-500/30" : "text-slate-500"}`}
+              onClick={() =>
+                setActiveTab("eventos")
+              }
+              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${
+                activeTab === "eventos"
+                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                  : "text-slate-500"
+              }`}
             >
-              <span className="text-lg">🔥</span>
-              <span className="text-[10px] font-bold">Eventos</span>
+              <span className="text-lg">
+                🔥
+              </span>
+
+              <span className="text-[10px] font-bold">
+                Eventos
+              </span>
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTab("objetivos")}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${activeTab === "objetivos" ? "bg-amber-500/10 text-amber-400 border border-amber-500/30" : "text-slate-500"}`}
+              onClick={() =>
+                setActiveTab("objetivos")
+              }
+              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${
+                activeTab === "objetivos"
+                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                  : "text-slate-500"
+              }`}
             >
-              <span className="text-lg">🎯</span>
-              <span className="text-[10px] font-bold">Objetivos</span>
+              <span className="text-lg">
+                🎯
+              </span>
+
+              <span className="text-[10px] font-bold">
+                Objetivos
+              </span>
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTab("conquistas")}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${activeTab === "conquistas" ? "bg-amber-500/10 text-amber-400 border border-amber-500/30" : "text-slate-500"}`}
+              onClick={() =>
+                setActiveTab("conquistas")
+              }
+              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${
+                activeTab === "conquistas"
+                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                  : "text-slate-500"
+              }`}
             >
-              <span className="text-lg">🏆</span>
-              <span className="text-[10px] font-bold">Conquistas</span>
+              <span className="text-lg">
+                🏆
+              </span>
+
+              <span className="text-[10px] font-bold">
+                Conquistas
+              </span>
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTab("desempenho")}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${activeTab === "desempenho" ? "bg-amber-500/10 text-amber-400 border border-amber-500/30" : "text-slate-500"}`}
+              onClick={() =>
+                setActiveTab("desempenho")
+              }
+              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${
+                activeTab === "desempenho"
+                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                  : "text-slate-500"
+              }`}
             >
-              <span className="text-lg">📊</span>
-              <span className="text-[10px] font-bold">Desempenho</span>
+              <span className="text-lg">
+                📊
+              </span>
+
+              <span className="text-[10px] font-bold">
+                Desempenho
+              </span>
             </button>
           </div>
         </nav>
