@@ -1534,7 +1534,7 @@ function TeacherPanel({
                       <div className="flex flex-wrap items-center gap-2 mt-2">
 
                         <span className="rounded-md border border-purple-500/30 bg-purple-950/30 px-2 py-1 text-[10px] font-bold text-purple-300">
-                          📜 {quest.category}
+📜 {quest.categoria}
                         </span>
 
                         <span className="rounded-md border border-slate-700 bg-slate-900/80 px-2 py-1 text-[10px] font-bold text-slate-400">
@@ -3100,10 +3100,7 @@ export default function Home() {
             ================================================== */}
 
             {activeTab === "mapa" && (
-              <AdventureMap
-                grades={grades}
-                setGrades={setGrades}
-              />
+<AdventureMap />
             )}
 
             {/* ==================================================
