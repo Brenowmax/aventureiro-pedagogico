@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import AdventureMap from "./AdventureMap";
+import AdventureMap from "@/components/AdventureMap";
 import {
   MuralValidacaoProfessor,
   SolicitacaoValidacao,
@@ -9,7 +9,7 @@ import {
 
 export const Home: React.FC = () => {
   // ============================================================
-  // ABAS DO PROFESSOR
+  // ABAS DO PAINEL DO PROFESSOR
   // ============================================================
 
   const [abaProfessor, setAbaProfessor] = useState<
@@ -20,45 +20,43 @@ export const Home: React.FC = () => {
   // SOLICITAÇÕES DE VALIDAÇÃO
   // ============================================================
 
-  const [solicitacoes, setSolicitacoes] = useState<
-    SolicitacaoValidacao[]
-  >([
-    {
-      id: "sol-1",
-      tipo: "missao",
-      alunoId: "s1",
-      alunoNome: "Lucas Silva",
-      alunoAvatar: "🧙‍♂️",
-      alunoTurma: "9º Ano A",
-      titulo: "Explorador da Matemática",
-      categoria: "DIÁRIO",
-      descricao:
-        "Concluir os exercícios propostos nas Montanhas dos Números.",
-      xpReward: 100,
-      coinReward: 40,
-      dataEnvio: new Date().toLocaleString("pt-BR"),
-      comentarioAluno:
-        "Concluí todos os exercícios das Montanhas dos Números!",
-    },
-
-    {
-      id: "sol-2",
-      tipo: "missao",
-      alunoId: "s2",
-      alunoNome: "Beatriz Lima",
-      alunoAvatar: "🧝‍♀️",
-      alunoTurma: "9º Ano A",
-      titulo: "Sábio Leitor",
-      categoria: "SEMANAL",
-      descricao:
-        "Ler o capítulo 4 do livro de Português e registrar a atividade.",
-      xpReward: 250,
-      coinReward: 100,
-      dataEnvio: new Date().toLocaleString("pt-BR"),
-      comentarioAluno:
-        "Li o capítulo 4 do livro de Português.",
-    },
-  ]);
+  const [solicitacoes, setSolicitacoes] =
+    useState<SolicitacaoValidacao[]>([
+      {
+        id: "sol-1",
+        tipo: "missao",
+        alunoId: "aluno-1",
+        alunoNome: "Lucas Silva",
+        alunoAvatar: "🧙‍♂️",
+        alunoTurma: "9º Ano A",
+        titulo: "Explorador da Matemática",
+        categoria: "DIÁRIO",
+        descricao:
+          "Concluir os exercícios das Montanhas dos Números.",
+        xpReward: 100,
+        coinReward: 40,
+        dataEnvio: new Date().toLocaleDateString("pt-BR"),
+        comentarioAluno:
+          "Concluí todos os exercícios das Montanhas dos Números!",
+      },
+      {
+        id: "sol-2",
+        tipo: "missao",
+        alunoId: "aluno-2",
+        alunoNome: "Beatriz Lima",
+        alunoAvatar: "🧝‍♀️",
+        alunoTurma: "9º Ano A",
+        titulo: "Sábio Leitor",
+        categoria: "SEMANAL",
+        descricao:
+          "Realizar a leitura do capítulo indicado pelo professor.",
+        xpReward: 250,
+        coinReward: 100,
+        dataEnvio: new Date().toLocaleDateString("pt-BR"),
+        comentarioAluno:
+          "Li o capítulo 4 do livro de Português.",
+      },
+    ]);
 
   // ============================================================
   // FORMULÁRIO DE CRIAÇÃO DE MISSÃO
@@ -75,14 +73,14 @@ export const Home: React.FC = () => {
   const [coinReward, setCoinReward] = useState(50);
 
   // ============================================================
-  // APROVAR VALIDAÇÃO
+  // APROVAR SOLICITAÇÃO
   // ============================================================
 
   const handleAprovar = (
     solicitacao: SolicitacaoValidacao
   ) => {
     alert(
-      `✓ ${solicitacao.titulo} de ${solicitacao.alunoNome} aprovada!\n\nRecompensa concedida.`
+      `✓ Missão de ${solicitacao.alunoNome} aprovada! Recompensa concedida.`
     );
 
     setSolicitacoes((prev) =>
@@ -93,7 +91,7 @@ export const Home: React.FC = () => {
   };
 
   // ============================================================
-  // RECUSAR VALIDAÇÃO
+  // RECUSAR SOLICITAÇÃO
   // ============================================================
 
   const handleRecusar = (
@@ -101,9 +99,7 @@ export const Home: React.FC = () => {
     motivo?: string
   ) => {
     alert(
-      `✕ Solicitação recusada.\n\nAluno: ${
-        solicitacao.alunoNome
-      }\nMotivo: ${
+      `✕ Solicitação recusada.\n\nMotivo: ${
         motivo ||
         "Não atendeu aos critérios da missão."
       }`
@@ -121,7 +117,7 @@ export const Home: React.FC = () => {
   // ============================================================
 
   const handleCriarMissao = (
-    e: React.FormEvent
+    e: React.FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
 
@@ -133,7 +129,7 @@ export const Home: React.FC = () => {
     }
 
     alert(
-      `⚔️ Missão "${title}" criada com sucesso!\n\nCategoria: ${category}\nXP: ${xpReward}\nMoedas: ${coinReward}`
+      `⚔️ Missão "${title}" criada com sucesso!`
     );
 
     setTitle("");
@@ -152,10 +148,10 @@ export const Home: React.FC = () => {
       <div className="max-w-7xl mx-auto">
 
         {/* ======================================================
-            BANNER DO MESTRE
+            CABEÇALHO DO PROFESSOR
         ====================================================== */}
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-6 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-6 shadow-2xl flex flex-col xl:flex-row justify-between items-start xl:items-center gap-5">
 
           <div>
             <div className="inline-block bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold text-[10px] uppercase px-2.5 py-1 rounded-md mb-2">
@@ -167,17 +163,16 @@ export const Home: React.FC = () => {
             </h1>
 
             <p className="text-slate-400 text-sm mt-1">
-              Gerencie os desafios, acompanhe o
-              desempenho e valide o progresso dos
-              alunos no reino.
+              Gerencie os desafios, acompanhe o mapa
+              acadêmico e valide o progresso dos alunos.
             </p>
           </div>
 
           {/* ==================================================
-              ABAS DO PROFESSOR
+              ABAS
           ================================================== */}
 
-          <div className="flex flex-wrap bg-slate-950 p-1.5 rounded-xl border border-slate-800 w-full md:w-auto gap-1">
+          <div className="flex flex-wrap bg-slate-950 p-1.5 rounded-xl border border-slate-800 w-full xl:w-auto gap-1">
 
             {/* MURAL */}
 
@@ -186,10 +181,10 @@ export const Home: React.FC = () => {
               onClick={() =>
                 setAbaProfessor("validacoes")
               }
-              className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 xl:flex-none px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                 abaProfessor === "validacoes"
                   ? "bg-amber-500 text-slate-950 shadow-md"
-                  : "text-slate-400 hover:text-white"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900"
               }`}
             >
               <span>🛡️</span>
@@ -212,10 +207,10 @@ export const Home: React.FC = () => {
               onClick={() =>
                 setAbaProfessor("missoes")
               }
-              className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 xl:flex-none px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                 abaProfessor === "missoes"
                   ? "bg-amber-500 text-slate-950 shadow-md"
-                  : "text-slate-400 hover:text-white"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900"
               }`}
             >
               <span>➕</span>
@@ -232,10 +227,10 @@ export const Home: React.FC = () => {
               onClick={() =>
                 setAbaProfessor("mapa")
               }
-              className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 xl:flex-none px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                 abaProfessor === "mapa"
-                  ? "bg-amber-500 text-slate-950 shadow-md"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-emerald-600 text-white shadow-md"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900"
               }`}
             >
               <span>🗺️</span>
@@ -244,6 +239,7 @@ export const Home: React.FC = () => {
                 Mapa Acadêmico
               </span>
             </button>
+
           </div>
         </div>
 
@@ -266,18 +262,24 @@ export const Home: React.FC = () => {
         {abaProfessor === "missoes" && (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
 
-            <h2 className="text-2xl font-black text-white mb-1 flex items-center gap-2">
-              ⚔️ Cadastrar Nova Missão
-            </h2>
+            <div className="mb-6">
+              <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-amber-500">
+                Ferramenta do Mestre
+              </div>
 
-            <p className="text-slate-400 text-xs mb-6">
-              Crie desafios pedagógicos para os
-              alunos cumprirem no sistema.
-            </p>
+              <h2 className="text-2xl font-black text-white mt-1 flex items-center gap-2">
+                ⚔️ Cadastrar Nova Missão
+              </h2>
+
+              <p className="text-slate-400 text-xs mt-1">
+                Crie desafios pedagógicos para os
+                alunos cumprirem no sistema.
+              </p>
+            </div>
 
             <form
               onSubmit={handleCriarMissao}
-              className="space-y-4"
+              className="space-y-5"
             >
 
               {/* TÍTULO */}
@@ -310,11 +312,9 @@ export const Home: React.FC = () => {
                   placeholder="Instruções para o aluno concluir a missão..."
                   value={description}
                   onChange={(e) =>
-                    setDescription(
-                      e.target.value
-                    )
+                    setDescription(e.target.value)
                   }
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm focus:border-amber-500 outline-none"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm focus:border-amber-500 outline-none resize-none"
                 />
               </div>
 
@@ -368,9 +368,7 @@ export const Home: React.FC = () => {
                     value={xpReward}
                     onChange={(e) =>
                       setXpReward(
-                        Number(
-                          e.target.value
-                        )
+                        Number(e.target.value)
                       )
                     }
                     className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm focus:border-amber-500 outline-none"
@@ -390,14 +388,13 @@ export const Home: React.FC = () => {
                     value={coinReward}
                     onChange={(e) =>
                       setCoinReward(
-                        Number(
-                          e.target.value
-                        )
+                        Number(e.target.value)
                       )
                     }
                     className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm focus:border-amber-500 outline-none"
                   />
                 </div>
+
               </div>
 
               {/* PUBLICAR */}
@@ -408,61 +405,61 @@ export const Home: React.FC = () => {
               >
                 ⚔️ Publicar Missão
               </button>
+
             </form>
           </div>
         )}
 
         {/* ======================================================
-            ABA — MAPA ACADÊMICO DO PROFESSOR
+            ABA — MAPA DO PROFESSOR
         ====================================================== */}
 
         {abaProfessor === "mapa" && (
-          <section className="space-y-5">
+          <div className="space-y-4">
 
-            <div className="bg-slate-900 border border-amber-500/20 rounded-2xl p-5 shadow-xl">
+            {/* AVISO DO MODO PROFESSOR */}
 
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 sm:p-5">
+
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 
                 <div>
-                  <div className="text-[9px] font-black uppercase tracking-[0.25em] text-amber-500">
+                  <div className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400">
                     Área exclusiva do professor
                   </div>
 
-                  <h2 className="text-2xl font-black text-white mt-1">
+                  <h2 className="mt-1 text-xl font-black text-white">
                     🗺️ Mapa da Reputação Acadêmica
                   </h2>
 
-                  <p className="text-xs text-slate-500 mt-1 max-w-2xl">
-                    Consulte o desenvolvimento dos
-                    componentes curriculares e lance
-                    as notas bimestrais dos alunos.
+                  <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                    Selecione um componente curricular
+                    no mapa para visualizar e editar as
+                    notas dos quatro bimestres.
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-                  <div className="text-[9px] font-black uppercase tracking-wider text-amber-500">
-                    Permissão
+                <div className="shrink-0 rounded-xl border border-emerald-500/20 bg-slate-950/60 px-4 py-3 text-center">
+
+                  <div className="text-[9px] font-black uppercase tracking-wider text-slate-600">
+                    Modo atual
                   </div>
 
-                  <div className="text-xs font-black text-amber-300 mt-1">
-                    ✏️ Edição de notas habilitada
+                  <div className="mt-1 text-xs font-black text-emerald-400">
+                    ✏️ EDIÇÃO DO PROFESSOR
                   </div>
+
                 </div>
 
               </div>
+
             </div>
 
-            {/* 
-              O AdventureMap utilizado aqui é o mesmo mapa
-              utilizado no perfil do aluno.
+            {/* MAPA */}
 
-              A diferença de permissão deve ser controlada
-              pelo próprio componente AdventureMap.
-            */}
+            <AdventureMap mode="teacher" />
 
-            <AdventureMap />
-
-          </section>
+          </div>
         )}
 
       </div>
