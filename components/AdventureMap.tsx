@@ -338,7 +338,13 @@ function ZeldaHeartBar({ reputation }: { reputation: number }) {
    COMPONENTE PRINCIPAL
 ============================================================ */
 
-export default function AdventureMap() {
+type AdventureMapProps = {
+  mode?: "student" | "teacher";
+};
+
+export default function AdventureMap({
+  mode = "student",
+}: AdventureMapProps) {
   const [selectedSubject, setSelectedSubject] =
     useState<Subject | null>(null);
 
@@ -594,22 +600,28 @@ export default function AdventureMap() {
                     {label}
                   </label>
 
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
-                    step="0.1"
-                    value={data.grades[index]}
-                    onChange={(event) =>
-                      updateGrade(
-                        selectedSubject.name,
-                        index,
-                        event.target.value
-                      )
-                    }
-                    placeholder="0,0"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-center text-lg font-black text-white outline-none transition placeholder:text-slate-700 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                  />
+                  {mode === "teacher" ? (
+  <input
+    type="number"
+    min="0"
+    max="10"
+    step="0.1"
+    value={data.grades[index]}
+    onChange={(event) =>
+      updateGrade(
+        selectedSubject.name,
+        index,
+        event.target.value
+      )
+    }
+    placeholder="0,0"
+    className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-center text-lg font-black text-white outline-none transition placeholder:text-slate-700 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+  />
+) : (
+  <div className="flex w-full items-center justify-center rounded-xl border border-slate-800 bg-slate-950/70 px-4 py-3 text-center text-lg font-black text-slate-200">
+    {data.grades[index] || "—"}
+  </div>
+)}
 
                   <div
                     className={`mt-2 rounded-lg border px-2 py-2 text-center text-[10px] font-bold ${getPerformanceClass(

@@ -1,4 +1,3 @@
-```tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -560,15 +559,16 @@ export function JornadaTutorando({
 
       {/* CONDUTA */}
 
-      <CondutaTutorando
-        tutorandoId={tutorando.id}
+            <CondutaTutorando
+        tutorandoId={Number(tutorando.id)}
       />
 
       {/* MISSÕES */}
 
       <MissaoTutorando
-        tutorando={tutorando}
-      />
+  quests={[]}
+  onSolicitarConclusao={() => {}}
+/>
 
       {/* DESEMPENHO */}
 
