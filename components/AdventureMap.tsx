@@ -223,20 +223,34 @@ function getPerformanceClass(level: PerformanceLevel) {
    MÉDIA
 ============================================================ */
 
+/* ============================================================
+   MÉDIA
+   ------------------------------------------------------------
+   Considera SOMENTE os bimestres que já possuem nota.
+   Bimestres futuros/vazios não entram como nota zero.
+============================================================ */
+
 function calculateAverage(grades: Grades) {
   const validGrades = grades
+    .filter((grade) => grade.trim() !== "")
     .map(Number)
-    .filter((grade) => !Number.isNaN(grade) && grade >= 0);
+    .filter(
+      (grade) =>
+        !Number.isNaN(grade) &&
+        grade >= 0
+    );
 
   if (validGrades.length === 0) {
     return 0;
   }
 
-  const total = validGrades.reduce((sum, grade) => sum + grade, 0);
+  const total = validGrades.reduce(
+    (sum, grade) => sum + grade,
+    0
+  );
 
   return total / validGrades.length;
 }
-
 /* ============================================================
    XP
 ============================================================ */
@@ -338,13 +352,34 @@ function ZeldaHeartBar({ reputation }: { reputation: number }) {
    COMPONENTE PRINCIPAL
 ============================================================ */
 
+type StudentRecord = {
+  id: string;
+  name: string;
+  avatar: string;
+  level: number;
+  xp: number;
+  coins: number;
+  badge: string;
+  turma: string;
+  grades: Record<string, Grades>;
+};
+
+type AdventureMapStudent = {
+  id: string;
+  name: string;
+  grades: Record<string, Grades>;
+};
+
 type AdventureMapProps = {
   mode?: "student" | "teacher";
+  students?: AdventureMapStudent[];
 };
 
 export default function AdventureMap({
   mode = "student",
+  students = [],
 }: AdventureMapProps) {
+  console.log("ADVENTURE MAP CARREGADO - modo:", mode);
   const [selectedSubject, setSelectedSubject] =
     useState<Subject | null>(null);
 
@@ -394,28 +429,116 @@ export default function AdventureMap({
      DADOS DO TERRITÓRIO
   ========================================================== */
 
+   /* ==========================================================
+     DADOS DO TERRITÓRIO
+  ========================================================== */
+
   function getSubjectData(subject: Subject) {
-  const subjectGrades = grades[subject.name] || ["", "", "", ""];
+    /*
+      MODO PROFESSOR
+      ----------------------------------------------------------
+      O mapa calcula a reputação utilizando as notas dos alunos
+      enviados pelo page.tsx.
+    */
 
-  const average = calculateAverage(subjectGrades);
+    if (mode === "teacher" && students.length > 0) {
+      const allGrades: number[] = [];
 
-  const xp = calculateXP(average);
+      students.forEach((student) => {
+        const studentGrades =
+          student.grades?.[subject.name];
 
-  const reputation = calculateReputation(average);
+        if (!studentGrades) {
+          return;
+        }
 
-  const level = calculateLevel(reputation);
+        studentGrades.forEach((grade) => {
+          const numericGrade = Number(grade);
 
-  const performance = getPerformanceLevel(average);
+          if (
+            grade !== "" &&
+            !Number.isNaN(numericGrade)
+          ) {
+            allGrades.push(numericGrade);
+          }
+        });
+      });
 
-  return {
-    grades: subjectGrades,
-    average,
-    xp,
-    reputation,
-    level,
-    performance,
-  };
-}
+      /*
+        Se houver notas cadastradas, calculamos a média geral
+        de todos os alunos para esta disciplina.
+      */
+
+      if (allGrades.length > 0) {
+        const total = allGrades.reduce(
+          (sum, grade) => sum + grade,
+          0
+        );
+
+        const average =
+          total / allGrades.length;
+
+        const xp = calculateXP(average);
+
+        const reputation =
+          calculateReputation(average);
+
+        const level =
+          calculateLevel(reputation);
+
+        const performance =
+          getPerformanceLevel(average);
+
+        return {
+          grades: [
+            "",
+            "",
+            "",
+            "",
+          ] as Grades,
+          average,
+          xp,
+          reputation,
+          level,
+          performance,
+        };
+      }
+    }
+
+    /*
+      MODO ALUNO
+      ----------------------------------------------------------
+      Mantém o comportamento anterior do mapa.
+    */
+
+    const subjectGrades =
+      grades[subject.name] ||
+      ["", "", "", ""];
+
+    const average =
+      calculateAverage(subjectGrades);
+
+    const xp =
+      calculateXP(average);
+
+    const reputation =
+      calculateReputation(average);
+
+    const level =
+      calculateLevel(reputation);
+
+    const performance =
+      getPerformanceLevel(average);
+
+    return {
+      grades: subjectGrades,
+      average,
+      xp,
+      reputation,
+      level,
+      performance,
+    };
+  }
   /* ==========================================================
      TERRITÓRIO SELECIONADO
   ========================================================== */

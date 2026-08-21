@@ -13,6 +13,7 @@ type TeacherTab =
   | "overview"
   | "validation"
   | "grades"
+  | "map"
   | "create_event"
   | "quests"
   | "enturmar";
@@ -114,16 +115,25 @@ function createEmptyGrades(): Grades {
 
 function calculateAverage(grades: Grades): number {
   const validGrades = grades
+    .filter((grade) => grade.trim() !== "")
     .map(Number)
-    .filter((value) => !Number.isNaN(value));
+    .filter(
+      (value) =>
+        !Number.isNaN(value) &&
+        value >= 0
+    );
 
-  if (validGrades.length === 0) return 0;
+  if (validGrades.length === 0) {
+    return 0;
+  }
 
-  const sum = validGrades.reduce((acc, value) => acc + value, 0);
+  const sum = validGrades.reduce(
+    (acc, value) => acc + value,
+    0
+  );
 
   return sum / validGrades.length;
 }
-
 function getPerformanceLevel(avg: number): string {
   if (avg >= 9) return "Avançado";
   if (avg >= 7) return "Adequado";
@@ -1174,7 +1184,20 @@ function TeacherPanel({
           <span>📖</span>
           <span>Grimório de Notas</span>
         </button>
-
+<button
+  type="button"
+  onClick={() =>
+    setTeacherTab("map")
+  }
+  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
+    teacherTab === "map"
+      ? "border-emerald-500 bg-emerald-900/30 text-emerald-300 shadow-lg"
+      : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
+  }`}
+>
+  <span>🗺️</span>
+  <span>Mapa Acadêmico</span>
+</button>
         <button
           type="button"
           onClick={() =>
@@ -1220,6 +1243,64 @@ function TeacherPanel({
           <span>Enturmar Aluno</span>
         </button>
       </div>
+ {/* ======================================================
+          MAPA ACADÊMICO DO PROFESSOR
+      ====================================================== */}
+
+      {teacherTab === "map" && (
+        <div className="space-y-5">
+
+          <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/40 to-slate-900 p-6 shadow-xl">
+
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+              <div>
+                <div className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400">
+                  Área exclusiva do professor
+                </div>
+
+                <h3 className="mt-1 text-2xl font-black text-white">
+                  🗺️ Mapa da Reputação Acadêmica
+                </h3>
+
+                <p className="mt-2 text-xs leading-relaxed text-slate-400 max-w-2xl">
+                  Selecione uma região do mapa para acompanhar o
+                  desempenho acadêmico e editar as notas dos quatro
+                  bimestres dos alunos.
+                </p>
+              </div>
+
+              <div className="shrink-0 rounded-xl border border-emerald-500/30 bg-slate-950/60 px-5 py-3 text-center">
+
+                <div className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+                  Modo atual
+                </div>
+
+                <div className="mt-1 text-xs font-black text-emerald-400">
+                  ✏️ PROFESSOR
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-2 sm:p-4 shadow-2xl">
+
+  <AdventureMap
+    mode="teacher"
+    students={students.map((student) => ({
+      id: student.id,
+      name: student.name,
+      grades: student.grades,
+    }))}
+  />
+
+</div>
+
+        </div>
+      )}
 
       {/* ======================================================
           VISÃO GERAL
