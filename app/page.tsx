@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useMemo, useState } from 'react';
-
+import { PainelAprovacaoProfessor } from '@/components/MissoesProfessor';
 import AdventureMap from "@/components/AdventureMap";
 import AchievementsPanel from "@/components/AchievementsPanel";
 import { ACHIEVEMENTS } from "@/components/achievements";
@@ -71,8 +71,8 @@ type EventItem = {
 const allCurricularSubjects = [
   "LÃ­ngua Portuguesa",
   "LÃ­ngua Inglesa",
-  "Matematica",
-  "Historia",
+  "MatemÃ¡tica",
+  "HistÃ³ria",
   "Geografia",
   "EducaÃ§Ã£o FÃ­sica",
   "Artes",
@@ -80,16 +80,16 @@ const allCurricularSubjects = [
   "Projeto de Vida",
   "Tecnologia",
   "EducaÃ§Ã£o Financeira",
-  "Robotica",
+  "RobÃ³tica",
   "OrientaÃ§Ã£o de Estudos de PortuguÃªs",
-  "OrientaÃ§Ã£o de Estudos de Matematica",
+  "OrientaÃ§Ã£o de Estudos de MatemÃ¡tica",
 ];
 
 const subjects = [
   { name: "LÃ­ngua Portuguesa", icon: "ðŸ“œ" },
   { name: "LÃ­ngua Inglesa", icon: "ðŸ‡¬ðŸ‡§" },
-  { name: "Matematica", icon: "ðŸ”¢" },
-  { name: "Historia", icon: "ðŸ›ï¸" },
+  { name: "MatemÃ¡tica", icon: "ðŸ”¢" },
+  { name: "HistÃ³ria", icon: "ðŸ›ï¸" },
   { name: "Geografia", icon: "ðŸ—ºï¸" },
   { name: "EducaÃ§Ã£o FÃ­sica", icon: "âš½" },
   { name: "Artes", icon: "ðŸŽ¨" },
@@ -97,13 +97,13 @@ const subjects = [
   { name: "Projeto de Vida", icon: "ðŸ§­" },
   { name: "Tecnologia", icon: "ðŸ’»" },
   { name: "EducaÃ§Ã£o Financeira", icon: "ðŸª™" },
-  { name: "Robotica", icon: "ðŸ¤–" },
+  { name: "RobÃ³tica", icon: "ðŸ¤–" },
   {
     name: "OrientaÃ§Ã£o de Estudos de PortuguÃªs",
     icon: "ðŸ“š",
   },
   {
-    name: "OrientaÃ§Ã£o de Estudos de Matematica",
+    name: "OrientaÃ§Ã£o de Estudos de MatemÃ¡tica",
     icon: "ðŸ§®",
   },
 ];
@@ -273,7 +273,7 @@ const mockEvents: EventItem[] = [
     type: "ðŸ‰ Boss Raid",
     periodo: "1Âº Bimestre",
     description:
-      "Desafio coletivo de Matematica para derrotar o GuardiÃ£o dos PolÃ­gonos.",
+      "Desafio coletivo de MatemÃ¡tica para derrotar o GuardiÃ£o dos PolÃ­gonos.",
     rewardXp: 500,
     rewardCoins: 200,
     active: true,
@@ -2746,8 +2746,8 @@ export default function Home() {
   const [role, setRole] =
     useState<UserRole>("teacher");
 
-  const [equippedAchievement, setEquippedAchievement] =
-    useState<string | null>(null);
+  const [equippedAchievements, setEquippedAchievements] =
+    useState<string[]>([]);
 
   const [activeTab, setActiveTab] =
     useState<string>("inicio");
@@ -2767,10 +2767,19 @@ export default function Home() {
     useState<EventItem[]>(mockEvents);
 
   function handleToggleEquip(id: string) {
-    setEquippedAchievement((current) =>
-      current === id ? null : id
-    );
+    setEquippedAchievements((current) => {
+      if (current.includes(id)) {
+        return current.filter((item) => item !== id);
+      }
+
+      if (current.length >= 3) {
+        return current;
+      }
+
+      return [...current, id];
+    });
   }
+
   /*
     Notas utilizadas pelo mapa.
 
@@ -2783,8 +2792,8 @@ export default function Home() {
   >({
     "LÃ­ngua Portuguesa": 92,
     "LÃ­ngua Inglesa": 79,
-    Matematica: 88,
-    Historia: 95,
+    Matemática: 88,
+    História: 95,
     Geografia: 97,
     "EducaÃ§Ã£o FÃ­sica": 86,
     Artes: 91,
@@ -2792,9 +2801,9 @@ export default function Home() {
     "Projeto de Vida": 90,
     Tecnologia: 94,
     "EducaÃ§Ã£o Financeira": 87,
-    Robotica: 89,
+    Robótica: 89,
     "OrientaÃ§Ã£o de Estudos de PortuguÃªs": 85,
-    "OrientaÃ§Ã£o de Estudos de Matematica": 83,
+    "OrientaÃ§Ã£o de Estudos de MatemÃ¡tica": 83,
   });
 
   /*
@@ -3120,54 +3129,63 @@ export default function Home() {
                       Conquistas Equipadas
                     </h3>
 
-                    <div className="mt-4 flex gap-2 justify-between">
-                      {equippedAchievement ? (
-                        (() => {
-                          const achievement =
-                            ACHIEVEMENTS.find(
-                              (item) =>
-                                item.id === equippedAchievement
-                            );
+                    <div className="mt-4 grid grid-cols-3 gap-2">
+  {[0, 1, 2].map((slot) => {
+    const achievementId =
+      equippedAchievements[slot];
 
-                          if (!achievement) {
-                            return null;
-                          }
+    const achievement =
+      achievementId
+        ? ACHIEVEMENTS.find(
+            (item) =>
+              item.id === achievementId
+          )
+        : null;
 
-                          return (
-                            <div className="flex-1 rounded-xl border border-purple-500/30 bg-purple-950/20 p-3 text-center">
-                              <div className="text-2xl">
-                                {achievement.icon}
-                              </div>
+    return (
+      <div
+        key={slot}
+        className={`min-h-[110px] rounded-xl border p-3 text-center ${
+          achievement
+            ? "border-purple-500/30 bg-purple-950/20"
+            : "border-slate-800 bg-slate-900/50 opacity-60"
+        }`}
+      >
+        {achievement ? (
+          <>
+            <div className="text-2xl">
+              {achievement.icon}
+            </div>
 
-                              <div className="text-[10px] font-bold text-purple-300 mt-1">
-                                {achievement.title}
-                              </div>
+            <div className="text-[9px] font-bold text-purple-300 mt-1">
+              {achievement.title}
+            </div>
 
-                              <div className="text-[8px] font-bold uppercase tracking-wider text-purple-500 mt-1">
-                                Equipada
-                              </div>
-                            </div>
-                          );
-                        })()
-                      ) : (
-                        <div className="flex-1 rounded-xl border border-slate-800 bg-slate-900/50 p-3 text-center opacity-60">
-                          <div className="text-2xl">
-                            ðŸ”’
-                          </div>
+            <div className="text-[8px] font-bold uppercase tracking-wider text-purple-500 mt-1">
+              Equipada
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="text-2xl">
+              ??
+            </div>
 
-                          <div className="text-[10px] font-bold text-slate-500 mt-1">
-                            Nenhuma conquista equipada
-                          </div>
+            <div className="text-[9px] font-bold text-slate-500 mt-2">
+              Slot vazio
+            </div>
 
-                          <div className="text-[8px] font-bold uppercase tracking-wider text-slate-600 mt-1">
-                            Acesse Conquistas
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+            <div className="text-[8px] font-bold uppercase tracking-wider text-slate-600 mt-1">
+              Equipar conquista
+            </div>
+          </>
+        )}
+      </div>
+    );
+  })}
+</div>
 
-                  {/* RANKING */}
+                  </div>`r`n`r`n                  {/* RANKING */}
                   <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
                     <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
                       ClassificaÃ§Ã£o Geral
@@ -3328,8 +3346,8 @@ export default function Home() {
         date: "22/08/2026",
       },
     ]}
-    equippedAchievement={equippedAchievement}
-    onEquipAchievement={setEquippedAchievement}
+    equippedAchievements={equippedAchievements}
+    onEquipAchievement={handleToggleEquip}
   />
 )}
 
@@ -3493,6 +3511,14 @@ export default function Home() {
       )}
     </div>
   );
-
 }
+
+
+
+
+
+
+
+
+
 
