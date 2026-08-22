@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import AdventureMap from "@/components/AdventureMap";
+import AchievementsPanel from "@/components/AchievementsPanel";
 
 /* ============================================================
    TIPOS
@@ -3279,13 +3280,23 @@ export default function Home() {
             )}
 
             {/* ==================================================
+                CONQUISTAS
+            ================================================== */}
+
+            {activeTab === "conquistas" && (
+              <AchievementsPanel />
+            )}
+
+            {/* ==================================================
                 OUTRAS ABAS
             ================================================== */}
 
-            {activeTab !== "inicio" &&
+                       {activeTab !== "inicio" &&
               activeTab !== "mapa" &&
               activeTab !== "eventos" &&
-              activeTab !== "objetivos" && (
+              activeTab !== "objetivos" &&
+              activeTab !== "conquistas" &&
+              activeTab !== "desempenho" && (
                 <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-slate-800 bg-slate-900/30">
                   <div className="text-4xl mb-2">
                     🚧
@@ -3296,11 +3307,11 @@ export default function Home() {
                   </h3>
 
                   <p className="text-xs text-slate-500 mt-1">
-                    Esta seção estará disponível
-                    em breve.
+                    Esta seção estará disponível em breve.
                   </p>
                 </div>
-              )}
+                         )}
+
           </>
         )}
       </main>
