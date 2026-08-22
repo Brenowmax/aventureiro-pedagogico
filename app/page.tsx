@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 import { PainelAprovacaoProfessor } from '@/components/MissoesProfessor';
 import AdventureMap from "@/components/AdventureMap";
 import AchievementsPanel from "@/components/AchievementsPanel";
@@ -2508,6 +2508,10 @@ function TeacherPanel({
   <span>Conduta</span>
 </button>
 
+{teacherTab === "conduta" && (
+  <CondutaProfessor alunos={students} />
+)}
+
       {/* ======================================================
           ENTURMAR ALUNOS
       ====================================================== */}
@@ -2775,11 +2779,25 @@ export default function Home() {
   const [selectedStudentId, setSelectedStudentId] =
     useState<string>("s1");
 
-  const [quests, setQuests] =
-    useState<Quest[]>(initialQuests);
+const [condutas, setCondutas] = useState<any[]>([]);
 
-  const [events, setEvents] =
-    useState<EventItem[]>(mockEvents);
+useEffect(() => {
+  try {
+    const salvo = localStorage.getItem("aventureiro-conduta");
+
+    if (salvo) {
+      setCondutas(JSON.parse(salvo));
+    }
+  } catch {
+    setCondutas([]);
+  }
+}, []);
+
+const [quests, setQuests] =
+  useState<Quest[]>(initialQuests);
+
+const [events, setEvents] =
+  useState<EventItem[]>(mockEvents);
 
   function handleToggleEquip(id: string) {
     setEquippedAchievements((current) => {
@@ -3107,32 +3125,117 @@ export default function Home() {
                                 {/* CARDS DE STATUS */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                  {/* STATUS DE PERFIL */}
-                  <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                      Status de Perfil
-                    </div>
+                 {/* STATUS DE PERFIL */}
+<div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
+  <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+    Status de Perfil
+  </div>
 
-                    <h3 className="text-lg font-black text-slate-200 mt-1">
-                      Conduta Acadêmica
-                    </h3>
+  <h3 className="text-lg font-black text-slate-200 mt-1">
+    Conduta Acadêmica
+  </h3>
 
-                    <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4 flex items-center gap-3">
-                      <div className="text-3xl">
-                        🌟
-                      </div>
+  {(() => {
+    const condutasAluno = condutas.filter(
+      (registro) =>
+        registro.alunoId === currentStudent.id
+    );
 
-                      <div>
-                        <div className="text-xs font-bold text-emerald-400">
-                          Exemplar
-                        </div>
+    const ultimoRegistro = condutasAluno[0];
 
-                        <p className="text-[10px] text-slate-400 mt-0.5">
-                          Atribuído pelo Conselho de Professores
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+    if (!ultimoRegistro) {
+      return (
+        <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4 flex items-center gap-3">
+          <div className="text-3xl">
+            🌟
+          </div>
+
+          <div>
+            <div className="text-xs font-bold text-emerald-400">
+              Sem registros
+            </div>
+
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              Nenhuma ocorrência registrada pelo Conselho de Professores.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    const configuracao = {
+      positiva: {
+        icone: "🟢",
+        titulo: "Conduta positiva",
+        classe:
+          "border-emerald-500/30 bg-emerald-950/20",
+        texto: "text-emerald-400",
+      },
+      advertencia: {
+        icone: "🟡",
+        titulo: "Advertência",
+        classe:
+          "border-amber-500/30 bg-amber-950/20",
+        texto: "text-amber-400",
+      },
+      demerito: {
+        icone: "🔴",
+        titulo: "Demérito",
+        classe:
+          "border-red-500/30 bg-red-950/20",
+        texto: "text-red-400",
+      },
+    }[ultimoRegistro.tipo as
+      | "positiva"
+      | "advertencia"
+      | "demerito"];
+
+    return (
+      <div
+        className={`mt-4 rounded-xl border p-4 ${configuracao?.classe || "border-slate-700 bg-slate-900/40"}`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="text-3xl">
+            {configuracao?.icone || "📋"}
+          </div>
+
+          <div className="min-w-0">
+            <div
+              className={`text-xs font-bold ${
+                configuracao?.texto || "text-slate-300"
+              }`}
+            >
+              {configuracao?.titulo ||
+                ultimoRegistro.tipo}
+            </div>
+
+            <p className="mt-1 text-sm font-bold text-slate-200">
+              {ultimoRegistro.motivo}
+            </p>
+
+            {ultimoRegistro.descricao && (
+              <p className="mt-1 text-[10px] text-slate-400">
+                {ultimoRegistro.descricao}
+              </p>
+            )}
+
+            <p className="mt-2 text-[9px] text-slate-500">
+              {new Date(
+                ultimoRegistro.data
+              ).toLocaleDateString("pt-BR")}
+            </p>
+          </div>
+        </div>
+
+        {condutasAluno.length > 1 && (
+          <div className="mt-3 border-t border-slate-700/50 pt-3 text-[10px] font-bold text-slate-500">
+            {condutasAluno.length} registros de conduta
+          </div>
+        )}
+      </div>
+    );
+  })()}
+</div>
 
                   {/* CONQUISTAS EQUIPADAS */}
                   <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
