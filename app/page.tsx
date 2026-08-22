@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { PainelAprovacaoProfessor } from '@/components/MissoesProfessor';
 import AdventureMap from "@/components/AdventureMap";
 import AchievementsPanel from "@/components/AchievementsPanel";
+import CondutaProfessor from "@/components/CondutaProfessor";
 import { ACHIEVEMENTS } from "@/components/achievements";
 
 /* ============================================================
@@ -17,6 +18,7 @@ type TeacherTab =
   | "validation"
   | "grades"
   | "map"
+  | "conduta"
   | "create_event"
   | "quests"
   | "enturmar";
@@ -2492,6 +2494,19 @@ function TeacherPanel({
           </form>
         </div>
       )}
+
+<button
+  type="button"
+  onClick={() => setTeacherTab("conduta")}
+  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
+    teacherTab === "conduta"
+      ? "border-red-500 bg-red-900/30 text-red-300 shadow-lg"
+      : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
+  }`}
+>
+  <span>⚖️</span>
+  <span>Conduta</span>
+</button>
 
       {/* ======================================================
           ENTURMAR ALUNOS
