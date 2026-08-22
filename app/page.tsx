@@ -1,8 +1,10 @@
-"use client";
+﻿"use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState } from 'react';
+
 import AdventureMap from "@/components/AdventureMap";
 import AchievementsPanel from "@/components/AchievementsPanel";
+import { ACHIEVEMENTS } from "@/components/achievements";
 
 /* ============================================================
    TIPOS
@@ -67,47 +69,47 @@ type EventItem = {
 ============================================================ */
 
 const allCurricularSubjects = [
-  "Língua Portuguesa",
-  "Língua Inglesa",
-  "Matemática",
-  "História",
+  "LÃ­ngua Portuguesa",
+  "LÃ­ngua Inglesa",
+  "Matematica",
+  "Historia",
   "Geografia",
-  "Educação Física",
+  "EducaÃ§Ã£o FÃ­sica",
   "Artes",
-  "Ciências",
+  "CiÃªncias",
   "Projeto de Vida",
   "Tecnologia",
-  "Educação Financeira",
-  "Robótica",
-  "Orientação de Estudos de Português",
-  "Orientação de Estudos de Matemática",
+  "EducaÃ§Ã£o Financeira",
+  "Robotica",
+  "OrientaÃ§Ã£o de Estudos de PortuguÃªs",
+  "OrientaÃ§Ã£o de Estudos de Matematica",
 ];
 
 const subjects = [
-  { name: "Língua Portuguesa", icon: "📜" },
-  { name: "Língua Inglesa", icon: "🇬🇧" },
-  { name: "Matemática", icon: "🔢" },
-  { name: "História", icon: "🏛️" },
-  { name: "Geografia", icon: "🗺️" },
-  { name: "Educação Física", icon: "⚽" },
-  { name: "Artes", icon: "🎨" },
-  { name: "Ciências", icon: "🔬" },
-  { name: "Projeto de Vida", icon: "🧭" },
-  { name: "Tecnologia", icon: "💻" },
-  { name: "Educação Financeira", icon: "🪙" },
-  { name: "Robótica", icon: "🤖" },
+  { name: "LÃ­ngua Portuguesa", icon: "ðŸ“œ" },
+  { name: "LÃ­ngua Inglesa", icon: "ðŸ‡¬ðŸ‡§" },
+  { name: "Matematica", icon: "ðŸ”¢" },
+  { name: "Historia", icon: "ðŸ›ï¸" },
+  { name: "Geografia", icon: "ðŸ—ºï¸" },
+  { name: "EducaÃ§Ã£o FÃ­sica", icon: "âš½" },
+  { name: "Artes", icon: "ðŸŽ¨" },
+  { name: "CiÃªncias", icon: "ðŸ”¬" },
+  { name: "Projeto de Vida", icon: "ðŸ§­" },
+  { name: "Tecnologia", icon: "ðŸ’»" },
+  { name: "EducaÃ§Ã£o Financeira", icon: "ðŸª™" },
+  { name: "Robotica", icon: "ðŸ¤–" },
   {
-    name: "Orientação de Estudos de Português",
-    icon: "📚",
+    name: "OrientaÃ§Ã£o de Estudos de PortuguÃªs",
+    icon: "ðŸ“š",
   },
   {
-    name: "Orientação de Estudos de Matemática",
-    icon: "🧮",
+    name: "OrientaÃ§Ã£o de Estudos de Matematica",
+    icon: "ðŸ§®",
   },
 ];
 
 /* ============================================================
-   FUNÇÕES AUXILIARES
+   FUNÃ‡Ã•ES AUXILIARES
 ============================================================ */
 
 function createEmptyGrades(): Grades {
@@ -136,14 +138,14 @@ function calculateAverage(grades: Grades): number {
   return sum / validGrades.length;
 }
 function getPerformanceLevel(avg: number): string {
-  if (avg >= 9) return "Avançado";
+  if (avg >= 9) return "AvanÃ§ado";
   if (avg >= 7) return "Adequado";
-  if (avg >= 5) return "Básico";
-  return "Abaixo do Básico";
+  if (avg >= 5) return "BÃ¡sico";
+  return "Abaixo do BÃ¡sico";
 }
 
 function getPerformanceClass(perf: string): string {
-  if (perf === "Avançado") {
+  if (perf === "AvanÃ§ado") {
     return "bg-purple-950/50 text-purple-300 border border-purple-800/50";
   }
 
@@ -151,7 +153,7 @@ function getPerformanceClass(perf: string): string {
     return "bg-emerald-950/50 text-emerald-300 border border-emerald-800/50";
   }
 
-  if (perf === "Básico") {
+  if (perf === "BÃ¡sico") {
     return "bg-orange-950/50 text-orange-300 border border-orange-800/50";
   }
 
@@ -159,10 +161,10 @@ function getPerformanceClass(perf: string): string {
 }
 
 function getPerformanceIcon(perf: string): string {
-  if (perf === "Avançado") return "🟣";
-  if (perf === "Adequado") return "🟢";
-  if (perf === "Básico") return "🟠";
-  return "🔴";
+  if (perf === "AvanÃ§ado") return "ðŸŸ£";
+  if (perf === "Adequado") return "ðŸŸ¢";
+  if (perf === "BÃ¡sico") return "ðŸŸ ";
+  return "ðŸ”´";
 }
 
 /* ============================================================
@@ -173,45 +175,45 @@ const mockClassStudents: StudentRecord[] = [
   {
     id: "s1",
     name: "Pedro Henrique",
-    avatar: "🧙‍♂️",
+    avatar: "ðŸ§™â€â™‚ï¸",
     level: 5,
     xp: 1250,
     coins: 450,
     badge: "Mago das Letras",
-    turma: "9º Ano A",
+    turma: "9Âº Ano A",
     grades: {},
   },
   {
     id: "s2",
     name: "Beatriz Oliveira",
-    avatar: "🧝",
+    avatar: "ðŸ§",
     level: 7,
     xp: 1850,
     coins: 620,
     badge: "Arquimaga das Letras",
-    turma: "9º Ano A",
+    turma: "9Âº Ano A",
     grades: {},
   },
   {
     id: "s3",
     name: "Arthur Pendelton",
-    avatar: "🛡️",
+    avatar: "ðŸ›¡ï¸",
     level: 6,
     xp: 1600,
     coins: 530,
-    badge: "Guardião do Conhecimento",
-    turma: "9º Ano A",
+    badge: "GuardiÃ£o do Conhecimento",
+    turma: "9Âº Ano A",
     grades: {},
   },
   {
     id: "s4",
     name: "Gabriel Santos",
-    avatar: "⚡",
+    avatar: "âš¡",
     level: 4,
     xp: 980,
     coins: 340,
     badge: "Aventureiro",
-    turma: "9º Ano A",
+    turma: "9Âº Ano A",
     grades: {},
   },
 ];
@@ -219,11 +221,11 @@ const mockClassStudents: StudentRecord[] = [
 const initialQuests: Quest[] = [
   {
     id: "q1",
-    title: "Mestre da Frequência",
-    icon: "☀️",
+    title: "Mestre da FrequÃªncia",
+    icon: "â˜€ï¸",
     periodo: "Semanal",
     categoria: "Semanal",
-    requirement: "Manter frequência e participação durante a semana.",
+    requirement: "Manter frequÃªncia e participaÃ§Ã£o durante a semana.",
     xpReward: 100,
     coinReward: 50,
     status: "Em andamento",
@@ -235,10 +237,10 @@ const initialQuests: Quest[] = [
   {
     id: "q2",
     title: "Arquimaga das Letras",
-    icon: "📜",
-    periodo: "1º Bimestre",
+    icon: "ðŸ“œ",
+    periodo: "1Âº Bimestre",
     categoria: "Especial",
-    requirement: "Obter desempenho destacado nas atividades de Língua Portuguesa.",
+    requirement: "Obter desempenho destacado nas atividades de LÃ­ngua Portuguesa.",
     xpReward: 150,
     coinReward: 75,
     status: "Em andamento",
@@ -250,7 +252,7 @@ const initialQuests: Quest[] = [
   {
     id: "q3",
     title: "Explorador da Geometria",
-    icon: "⚔️",
+    icon: "âš”ï¸",
     periodo: "Mensal",
     categoria: "Mensal",
     requirement: "Completar as atividades de geometria propostas.",
@@ -267,11 +269,11 @@ const initialQuests: Quest[] = [
 const mockEvents: EventItem[] = [
   {
     id: "event1",
-    title: "Guardião dos Polígonos de Ouro",
-    type: "🐉 Boss Raid",
-    periodo: "1º Bimestre",
+    title: "GuardiÃ£o dos PolÃ­gonos de Ouro",
+    type: "ðŸ‰ Boss Raid",
+    periodo: "1Âº Bimestre",
     description:
-      "Desafio coletivo de Matemática para derrotar o Guardião dos Polígonos.",
+      "Desafio coletivo de Matematica para derrotar o GuardiÃ£o dos PolÃ­gonos.",
     rewardXp: 500,
     rewardCoins: 200,
     active: true,
@@ -299,7 +301,7 @@ function ObjectivesTab({
     <section className="space-y-6">
       <div className="rounded-3xl border border-amber-900/40 bg-gradient-to-br from-[#1b1e17] via-[#11150f] to-[#0a0d0a] p-6 sm:p-8 shadow-2xl">
         <div className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-500">
-          📜 Quadro do Aventureiro
+          ðŸ“œ Quadro do Aventureiro
         </div>
 
         <h2 className="mt-1 text-3xl font-black text-white">
@@ -307,18 +309,18 @@ function ObjectivesTab({
         </h2>
 
         <p className="mt-2 text-sm text-slate-400">
-          Complete os objetivos e aguarde a validação do Mestre.
+          Complete os objetivos e aguarde a validaÃ§Ã£o do Mestre.
         </p>
       </div>
 
       {studentQuests.length === 0 ? (
         <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-10 text-center">
-          <div className="text-5xl">📜</div>
+          <div className="text-5xl">ðŸ“œ</div>
           <h3 className="mt-3 text-lg font-black text-white">
-            Nenhum objetivo disponível
+            Nenhum objetivo disponÃ­vel
           </h3>
           <p className="mt-1 text-xs text-slate-500">
-            Novos objetivos aparecerão aqui quando forem atribuídos pelo
+            Novos objetivos aparecerÃ£o aqui quando forem atribuÃ­dos pelo
             professor.
           </p>
         </div>
@@ -341,7 +343,7 @@ function ObjectivesTab({
                     </h3>
 
                     <p className="text-[10px] text-slate-500">
-                      {quest.categoria} • {quest.periodo}
+                      {quest.categoria} â€¢ {quest.periodo}
                     </p>
                   </div>
                 </div>
@@ -392,7 +394,7 @@ function ObjectivesTab({
               {quest.status === "Em andamento" && (
                 <div className="mt-4 rounded-xl border border-purple-500/20 bg-purple-950/20 p-3 text-center">
                   <span className="text-[10px] font-bold text-purple-300">
-                    🧙 Aguarde a validação do Mestre
+                    ðŸ§™ Aguarde a validaÃ§Ã£o do Mestre
                   </span>
                 </div>
               )}
@@ -400,7 +402,7 @@ function ObjectivesTab({
               {quest.status === "Concluido" && (
                 <div className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-950/20 p-3 text-center">
                   <span className="text-[10px] font-bold text-emerald-300">
-                    🎉 Objetivo validado pelo professor!
+                    ðŸŽ‰ Objetivo validado pelo professor!
                   </span>
                 </div>
               )}
@@ -408,7 +410,7 @@ function ObjectivesTab({
               {quest.status === "Encerrado" && (
                 <div className="mt-4 rounded-xl border border-rose-500/20 bg-rose-950/20 p-3 text-center">
                   <span className="text-[10px] font-bold text-rose-300">
-                    🚫 Objetivo encerrado pelo professor.
+                    ðŸš« Objetivo encerrado pelo professor.
                   </span>
                 </div>
               )}
@@ -447,7 +449,7 @@ function TeacherPanel({
   const [toastMessage, setToastMessage] = useState("");
 
   const [selectedSubject, setSelectedSubject] =
-    useState<string>("Língua Portuguesa");
+    useState<string>("LÃ­ngua Portuguesa");
 
   const [newStudentName, setNewStudentName] = useState("");
   const [newStudentClass, setNewStudentClass] = useState("");
@@ -477,7 +479,7 @@ function TeacherPanel({
 
   const [questTitle, setQuestTitle] = useState("");
   const [questCategory, setQuestCategory] =
-    useState("Diário");
+    useState("DiÃ¡rio");
   const [questPeriodo, setQuestPeriodo] = useState("");
   const [questRequirement, setQuestRequirement] =
     useState("");
@@ -495,8 +497,8 @@ function TeacherPanel({
   }
 
   /* ============================================================
-     REGRA DE NEGÓCIO:
-     VALIDAÇÃO EXCLUSIVA DO PROFESSOR
+     REGRA DE NEGÃ“CIO:
+     VALIDAÃ‡ÃƒO EXCLUSIVA DO PROFESSOR
   ============================================================ */
 
   function handleValidateQuest(
@@ -508,15 +510,15 @@ function TeacherPanel({
     if (!quest) return;
 
     /*
-      REGRA DE SEGURANÇA:
+      REGRA DE SEGURANÃ‡A:
 
-      Só uma missão "Em andamento" pode ser validada.
+      SÃ³ uma missÃ£o "Em andamento" pode ser validada.
       Isso impede que o professor receba/reaplique
-      recompensas em uma missão já encerrada ou concluída.
+      recompensas em uma missÃ£o jÃ¡ encerrada ou concluÃ­da.
     */
     if (quest.status !== "Em andamento") {
       triggerToast(
-        "⚠️ Esta missão já foi finalizada e não pode ser validada novamente."
+        "âš ï¸ Esta missÃ£o jÃ¡ foi finalizada e nÃ£o pode ser validada novamente."
       );
 
       return;
@@ -539,16 +541,16 @@ function TeacherPanel({
       );
 
       triggerToast(
-        `🚫 Missão encerrada! ${
+        `ðŸš« MissÃ£o encerrada! ${
           quest.studentName || "O aluno"
-        } não recebeu recompensas.`
+        } nÃ£o recebeu recompensas.`
       );
 
       return;
     }
 
     /* ----------------------------------------------------------
-       CONCLUSÃO + RECOMPENSA
+       CONCLUSÃƒO + RECOMPENSA
     ---------------------------------------------------------- */
 
     const activeEvent = events.find((event) => event.active);
@@ -566,7 +568,7 @@ function TeacherPanel({
       quest.coinReward + bonusCoins;
 
     /*
-      Atualiza a missão.
+      Atualiza a missÃ£o.
     */
 
     setQuests((prev) =>
@@ -585,7 +587,7 @@ function TeacherPanel({
       Atualiza o aluno REALMENTE.
 
       Primeiro tentamos localizar pelo studentId.
-      Como segurança, também usamos studentName.
+      Como seguranÃ§a, tambÃ©m usamos studentName.
     */
 
     setStudents((prev) =>
@@ -605,8 +607,8 @@ function TeacherPanel({
         const newCoins = student.coins + totalCoins;
 
         /*
-          Regra simples de nível:
-          cada 500 XP representa um nível.
+          Regra simples de nÃ­vel:
+          cada 500 XP representa um nÃ­vel.
         */
         const newLevel =
           Math.floor(newXp / 500) + 1;
@@ -621,18 +623,18 @@ function TeacherPanel({
     );
 
     const bonusMessage = activeEvent
-      ? ` + Bônus do evento: ${bonusXp} XP e ${bonusCoins} moedas.`
+      ? ` + BÃ´nus do evento: ${bonusXp} XP e ${bonusCoins} moedas.`
       : "";
 
     triggerToast(
-      `🎉 Missão concluída! ${
+      `ðŸŽ‰ MissÃ£o concluÃ­da! ${
         quest.studentName || "O aluno"
       } recebeu +${totalXp} XP e +${totalCoins} moedas.${bonusMessage}`
     );
   }
 
   /* ============================================================
-     LANÇAMENTO DE NOTAS
+     LANÃ‡AMENTO DE NOTAS
   ============================================================ */
 
   function handleStudentGradeChange(
@@ -673,7 +675,7 @@ function TeacherPanel({
   }
 
   /* ============================================================
-     BÔNUS MANUAL
+     BÃ”NUS MANUAL
   ============================================================ */
 
   function rewardStudent(studentId: string) {
@@ -703,7 +705,7 @@ function TeacherPanel({
     );
 
     triggerToast(
-      `✨ 100 XP e 50 Moedas concedidos a ${
+      `âœ¨ 100 XP e 50 Moedas concedidos a ${
         student?.name || "aventureiro"
       }!`
     );
@@ -723,20 +725,20 @@ function TeacherPanel({
       !newStudentClass.trim()
     ) {
       triggerToast(
-        "⚠️ Preencha o nome e a turma do aluno!"
+        "âš ï¸ Preencha o nome e a turma do aluno!"
       );
 
       return;
     }
 
     const avatars = [
-      "🗡️",
-      "🧝",
-      "🛡️",
-      "🔮",
-      "⚡",
-      "🧙‍♂️",
-      "📜",
+      "ðŸ—¡ï¸",
+      "ðŸ§",
+      "ðŸ›¡ï¸",
+      "ðŸ”®",
+      "âš¡",
+      "ðŸ§™â€â™‚ï¸",
+      "ðŸ“œ",
     ];
 
     const randomAvatar =
@@ -762,7 +764,7 @@ function TeacherPanel({
     ]);
 
     triggerToast(
-      `🎉 Aluno ${newStudent.name} enturmado na turma ${newStudent.turma}!`
+      `ðŸŽ‰ Aluno ${newStudent.name} enturmado na turma ${newStudent.turma}!`
     );
 
     setNewStudentName("");
@@ -795,7 +797,7 @@ function TeacherPanel({
       !editClass.trim()
     ) {
       triggerToast(
-        "⚠️ Nome e turma não podem ficar em branco!"
+        "âš ï¸ Nome e turma nÃ£o podem ficar em branco!"
       );
 
       return;
@@ -814,8 +816,8 @@ function TeacherPanel({
     );
 
     /*
-      Também atualiza o nome nas missões existentes,
-      para evitar referências antigas.
+      TambÃ©m atualiza o nome nas missÃµes existentes,
+      para evitar referÃªncias antigas.
     */
 
     setQuests((prev) =>
@@ -832,7 +834,7 @@ function TeacherPanel({
     );
 
     triggerToast(
-      "✏️ Dados do aventureiro atualizados com sucesso!"
+      "âœï¸ Dados do aventureiro atualizados com sucesso!"
     );
 
     setEditingStudentId(null);
@@ -860,7 +862,7 @@ function TeacherPanel({
       );
 
       triggerToast(
-        `🗑️ ${studentName} foi removido da guilda.`
+        `ðŸ—‘ï¸ ${studentName} foi removido da guilda.`
       );
     }
   }
@@ -880,14 +882,14 @@ function TeacherPanel({
       !eventDescription.trim()
     ) {
       triggerToast(
-        "⚠️ Preencha todos os campos obrigatórios do evento."
+        "âš ï¸ Preencha todos os campos obrigatÃ³rios do evento."
       );
 
       return;
     }
 
     /*
-      Novo evento se torna o único evento ativo.
+      Novo evento se torna o Ãºnico evento ativo.
     */
 
     const newEvent: EventItem = {
@@ -913,7 +915,7 @@ function TeacherPanel({
     ]);
 
     triggerToast(
-      "🐉 Evento / Boss Raid invocado com sucesso para toda a turma!"
+      "ðŸ‰ Evento / Boss Raid invocado com sucesso para toda a turma!"
     );
 
     setEventTitle("");
@@ -938,14 +940,14 @@ function TeacherPanel({
       !questRequirement.trim()
     ) {
       triggerToast(
-        "⚠️ Preencha os campos obrigatórios da Quest."
+        "âš ï¸ Preencha os campos obrigatÃ³rios da Quest."
       );
 
       return;
     }
 
     /*
-      Se "todos" estiver selecionado, criamos uma missão
+      Se "todos" estiver selecionado, criamos uma missÃ£o
       para cada aluno cadastrado.
 
       Assim o professor consegue criar um objetivo
@@ -965,7 +967,7 @@ function TeacherPanel({
       !selectedStudent
     ) {
       triggerToast(
-        "⚠️ Não foi possível localizar o aluno selecionado."
+        "âš ï¸ NÃ£o foi possÃ­vel localizar o aluno selecionado."
       );
 
       return;
@@ -980,7 +982,7 @@ function TeacherPanel({
 
     if (studentsToReceive.length === 0) {
       triggerToast(
-        "⚠️ Cadastre pelo menos um aluno antes de criar uma Quest."
+        "âš ï¸ Cadastre pelo menos um aluno antes de criar uma Quest."
       );
 
       return;
@@ -991,7 +993,7 @@ function TeacherPanel({
         (student, index) => ({
           id: `quest-${Date.now()}-${index}`,
           title: questTitle.trim(),
-          icon: "🎯",
+          icon: "ðŸŽ¯",
           periodo: questPeriodo.trim(),
           categoria: questCategory,
           requirement:
@@ -1018,7 +1020,7 @@ function TeacherPanel({
     ]);
 
     triggerToast(
-      `🎯 Quest publicada para ${newQuests.length} aventureiro(s)!`
+      `ðŸŽ¯ Quest publicada para ${newQuests.length} aventureiro(s)!`
     );
 
     setQuestTitle("");
@@ -1042,7 +1044,7 @@ function TeacherPanel({
       )}
 
       {/* ======================================================
-          CABEÇALHO DO PROFESSOR
+          CABEÃ‡ALHO DO PROFESSOR
       ====================================================== */}
 
       <div className="rounded-3xl border border-purple-800/50 bg-gradient-to-br from-[#231538] via-[#150f24] to-[#0a0812] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
@@ -1050,7 +1052,7 @@ function TeacherPanel({
           <div className="flex items-center gap-5">
             <div className="relative shrink-0">
               <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-purple-500/60 bg-purple-950/50 text-5xl shadow-[0_0_30px_rgba(168,85,247,0.3)]">
-                🧙‍♂️
+                ðŸ§™â€â™‚ï¸
               </div>
 
               <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-purple-500 bg-purple-900 px-2 py-0.5 text-[8px] font-black uppercase text-purple-200">
@@ -1060,7 +1062,7 @@ function TeacherPanel({
 
             <div>
               <div className="inline-flex items-center gap-2 rounded-lg border border-purple-500/40 bg-purple-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-purple-300 mb-1">
-                ⚙️ Portal de Comando do Narrador
+                âš™ï¸ Portal de Comando do Narrador
               </div>
 
               <h2 className="text-3xl font-black text-white">
@@ -1070,7 +1072,7 @@ function TeacherPanel({
               <p className="text-xs text-purple-300/80 mt-0.5">
                 Turma:{" "}
                 <strong className="text-white">
-                  9º Ano A - Guilda dos
+                  9Âº Ano A - Guilda dos
                   Exploradores
                 </strong>
               </p>
@@ -1083,7 +1085,7 @@ function TeacherPanel({
               onClick={onSwitchRole}
               className="rounded-xl border border-purple-500/50 bg-purple-950/40 px-4 py-2 text-xs font-bold text-purple-200 hover:bg-purple-900/60 transition"
             >
-              🔄 Visão do Aluno
+              ðŸ”„ VisÃ£o do Aluno
             </button>
           </div>
         </div>
@@ -1096,7 +1098,7 @@ function TeacherPanel({
             </div>
 
             <div className="mt-2 text-xl font-black text-purple-200">
-              Nível Coletivo 14
+              NÃ­vel Coletivo 14
             </div>
 
             <div className="mt-2 h-2 w-full bg-purple-950 rounded-full overflow-hidden border border-purple-900">
@@ -1106,8 +1108,8 @@ function TeacherPanel({
 
           <div className="rounded-2xl border border-emerald-800/40 bg-emerald-950/30 p-3.5">
             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-emerald-400">
-              <span>Frequência / Mana da Sala</span>
-              <span>94% Presença</span>
+              <span>FrequÃªncia / Mana da Sala</span>
+              <span>94% PresenÃ§a</span>
             </div>
 
             <div className="mt-2 text-xl font-black text-emerald-300">
@@ -1122,7 +1124,7 @@ function TeacherPanel({
           <div className="rounded-2xl border border-amber-800/40 bg-amber-950/30 p-3.5">
             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-amber-400">
               <span>Desempenho Geral (HP)</span>
-              <span>8.2 Média</span>
+              <span>8.2 MÃ©dia</span>
             </div>
 
             <div className="mt-2 text-xl font-black text-amber-300">
@@ -1152,8 +1154,8 @@ function TeacherPanel({
               : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
           }`}
         >
-          <span>📊</span>
-          <span>Visão Geral</span>
+          <span>ðŸ“Š</span>
+          <span>VisÃ£o Geral</span>
         </button>
 
         <button
@@ -1167,8 +1169,8 @@ function TeacherPanel({
               : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
           }`}
         >
-          <span>📜</span>
-          <span>Mural de Validação</span>
+          <span>ðŸ“œ</span>
+          <span>Mural de ValidaÃ§Ã£o</span>
         </button>
 
         <button
@@ -1182,8 +1184,8 @@ function TeacherPanel({
               : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
           }`}
         >
-          <span>📖</span>
-          <span>Grimório de Notas</span>
+          <span>ðŸ“–</span>
+          <span>GrimÃ³rio de Notas</span>
         </button>
 <button
   type="button"
@@ -1196,8 +1198,8 @@ function TeacherPanel({
       : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
   }`}
 >
-  <span>🗺️</span>
-  <span>Mapa Acadêmico</span>
+  <span>ðŸ—ºï¸</span>
+  <span>Mapa AcadÃªmico</span>
 </button>
         <button
           type="button"
@@ -1210,7 +1212,7 @@ function TeacherPanel({
               : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
           }`}
         >
-          <span>🐉</span>
+          <span>ðŸ‰</span>
           <span>Invocar Boss / Evento</span>
         </button>
 
@@ -1225,8 +1227,8 @@ function TeacherPanel({
               : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
           }`}
         >
-          <span>🎯</span>
-          <span>Criar Missões</span>
+          <span>ðŸŽ¯</span>
+          <span>Criar MissÃµes</span>
         </button>
 
         <button
@@ -1240,12 +1242,12 @@ function TeacherPanel({
               : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
           }`}
         >
-          <span>➕</span>
+          <span>âž•</span>
           <span>Enturmar Aluno</span>
         </button>
       </div>
  {/* ======================================================
-          MAPA ACADÊMICO DO PROFESSOR
+          MAPA ACADÃŠMICO DO PROFESSOR
       ====================================================== */}
 
       {teacherTab === "map" && (
@@ -1257,16 +1259,16 @@ function TeacherPanel({
 
               <div>
                 <div className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400">
-                  Área exclusiva do professor
+                  Ãrea exclusiva do professor
                 </div>
 
                 <h3 className="mt-1 text-2xl font-black text-white">
-                  🗺️ Mapa da Reputação Acadêmica
+                  ðŸ—ºï¸ Mapa da ReputaÃ§Ã£o AcadÃªmica
                 </h3>
 
                 <p className="mt-2 text-xs leading-relaxed text-slate-400 max-w-2xl">
-                  Selecione uma região do mapa para acompanhar o
-                  desempenho acadêmico e editar as notas dos quatro
+                  Selecione uma regiÃ£o do mapa para acompanhar o
+                  desempenho acadÃªmico e editar as notas dos quatro
                   bimestres dos alunos.
                 </p>
               </div>
@@ -1278,7 +1280,7 @@ function TeacherPanel({
                 </div>
 
                 <div className="mt-1 text-xs font-black text-emerald-400">
-                  ✏️ PROFESSOR
+                  âœï¸ PROFESSOR
                 </div>
 
               </div>
@@ -1304,7 +1306,7 @@ function TeacherPanel({
       )}
 
       {/* ======================================================
-          VISÃO GERAL
+          VISÃƒO GERAL
       ====================================================== */}
 
       {teacherTab === "overview" && (
@@ -1312,15 +1314,15 @@ function TeacherPanel({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-4">
               <h3 className="font-black text-lg text-white flex items-center gap-2">
-                <span>🛡️</span>
-                Distribuição da Turma por Proficiência
+                <span>ðŸ›¡ï¸</span>
+                DistribuiÃ§Ã£o da Turma por ProficiÃªncia
               </h3>
 
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
                     <span className="text-purple-400">
-                      🟣 Avançado (9.0 - 10.0)
+                      ðŸŸ£ AvanÃ§ado (9.0 - 10.0)
                     </span>
                     <span className="text-slate-300">
                       12 alunos (40%)
@@ -1335,7 +1337,7 @@ function TeacherPanel({
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
                     <span className="text-green-400">
-                      🟢 Adequado (7.0 - 8.9)
+                      ðŸŸ¢ Adequado (7.0 - 8.9)
                     </span>
                     <span className="text-slate-300">
                       11 alunos (36%)
@@ -1350,7 +1352,7 @@ function TeacherPanel({
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
                     <span className="text-orange-400">
-                      🟠 Básico (5.0 - 6.9)
+                      ðŸŸ  BÃ¡sico (5.0 - 6.9)
                     </span>
                     <span className="text-slate-300">
                       5 alunos (17%)
@@ -1365,7 +1367,7 @@ function TeacherPanel({
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
                     <span className="text-red-400">
-                      🔴 Abaixo do Básico (0.0 - 4.9)
+                      ðŸ”´ Abaixo do BÃ¡sico (0.0 - 4.9)
                     </span>
                     <span className="text-slate-300">
                       2 alunos (7%)
@@ -1381,7 +1383,7 @@ function TeacherPanel({
 
             <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-4">
               <h3 className="font-black text-lg text-white flex items-center gap-2">
-                <span>⚡</span>
+                <span>âš¡</span>
                 Feitos Recentes do Reino
               </h3>
 
@@ -1389,7 +1391,7 @@ function TeacherPanel({
                 <div className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/50">
                   <div className="flex items-center gap-3">
                     <span className="text-xl">
-                      🏆
+                      ðŸ†
                     </span>
 
                     <div>
@@ -1398,21 +1400,21 @@ function TeacherPanel({
                       </strong>
 
                       <span className="text-slate-400">
-                        Conquistou a insígnia
+                        Conquistou a insÃ­gnia
                         &quot;Arquimaga das Letras&quot;
                       </span>
                     </div>
                   </div>
 
                   <span className="text-[10px] text-slate-500">
-                    Há 15m
+                    HÃ¡ 15m
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/50">
                   <div className="flex items-center gap-3">
                     <span className="text-xl">
-                      ⚔️
+                      âš”ï¸
                     </span>
 
                     <div>
@@ -1428,14 +1430,14 @@ function TeacherPanel({
                   </div>
 
                   <span className="text-[10px] text-slate-500">
-                    Há 2h
+                    HÃ¡ 2h
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/50">
                   <div className="flex items-center gap-3">
                     <span className="text-xl">
-                      ☀️
+                      â˜€ï¸
                     </span>
 
                     <div>
@@ -1444,14 +1446,14 @@ function TeacherPanel({
                       </strong>
 
                       <span className="text-slate-400">
-                        Completou a Missão Diária
-                        &quot;Mestre da Frequência&quot;
+                        Completou a MissÃ£o DiÃ¡ria
+                        &quot;Mestre da FrequÃªncia&quot;
                       </span>
                     </div>
                   </div>
 
                   <span className="text-[10px] text-slate-500">
-                    Há 4h
+                    HÃ¡ 4h
                   </span>
                 </div>
               </div>
@@ -1461,7 +1463,7 @@ function TeacherPanel({
       )}
 
    {/* ======================================================
-    MURAL DE VALIDAÇÃO
+    MURAL DE VALIDAÃ‡ÃƒO
     EXCLUSIVO DO PROFESSOR
     ESTILO MURAL DE QUESTS DA TAVERNA
 ====================================================== */}
@@ -1469,22 +1471,22 @@ function TeacherPanel({
 {teacherTab === "validation" && (
   <div className="space-y-6">
 
-    {/* CABEÇALHO DO MURAL */}
+    {/* CABEÃ‡ALHO DO MURAL */}
     <div className="rounded-2xl border border-purple-500/20 bg-[#11150f] p-6 shadow-xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
         <div>
           <div className="text-[9px] font-black uppercase tracking-[0.3em] text-purple-400">
-            📜 Quadro de Missões do Mestre
+            ðŸ“œ Quadro de MissÃµes do Mestre
           </div>
 
           <h3 className="text-2xl font-black text-white mt-1">
-            Mural de Validação
+            Mural de ValidaÃ§Ã£o
           </h3>
 
           <p className="text-xs text-slate-500 mt-2 max-w-2xl">
-            Revise as missões concluídas pelos aventureiros.
-            O Mestre é responsável por confirmar a realização
+            Revise as missÃµes concluÃ­das pelos aventureiros.
+            O Mestre Ã© responsÃ¡vel por confirmar a realizaÃ§Ã£o
             e conceder as recompensas de XP e Priantinas.
           </p>
         </div>
@@ -1534,15 +1536,15 @@ function TeacherPanel({
       <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-12 text-center">
 
         <div className="text-5xl mb-4">
-          🏚️
+          ðŸšï¸
         </div>
 
         <h3 className="text-lg font-black text-white">
-          O mural está vazio
+          O mural estÃ¡ vazio
         </h3>
 
         <p className="text-xs text-slate-500 mt-2">
-          Nenhuma missão foi publicada pelo Mestre ainda.
+          Nenhuma missÃ£o foi publicada pelo Mestre ainda.
         </p>
 
       </div>
@@ -1554,12 +1556,12 @@ function TeacherPanel({
         {quests.map((quest) => {
 
           /*
-            Identifica os alunos relacionados à Quest.
+            Identifica os alunos relacionados Ã  Quest.
 
             Se a Quest for destinada a "all", todos os alunos
             aparecem dentro da ficha.
 
-            Caso contrário, somente o aluno destinatário
+            Caso contrÃ¡rio, somente o aluno destinatÃ¡rio
             aparece.
           */
 
@@ -1588,14 +1590,14 @@ function TeacherPanel({
 
 
               {/* ==================================================
-                  CABEÇALHO DA QUEST
+                  CABEÃ‡ALHO DA QUEST
               ================================================== */}
 
               <div className="p-5 sm:p-7 border-b border-slate-800/80">
 
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
 
-                  {/* TÍTULO */}
+                  {/* TÃTULO */}
 
                   <div className="flex items-start gap-4">
 
@@ -1616,11 +1618,11 @@ function TeacherPanel({
                       <div className="flex flex-wrap items-center gap-2 mt-2">
 
                         <span className="rounded-md border border-purple-500/30 bg-purple-950/30 px-2 py-1 text-[10px] font-bold text-purple-300">
-📜 {quest.categoria}
+ðŸ“œ {quest.categoria}
                         </span>
 
                         <span className="rounded-md border border-slate-700 bg-slate-900/80 px-2 py-1 text-[10px] font-bold text-slate-400">
-                          📅 {quest.periodo}
+                          ðŸ“… {quest.periodo}
                         </span>
 
                         <span
@@ -1633,10 +1635,10 @@ function TeacherPanel({
                           }`}
                         >
                           {quest.status === "Concluido"
-                            ? "✓ Concluída"
+                            ? "âœ“ ConcluÃ­da"
                             : quest.status === "Encerrado"
-                            ? "🚫 Encerrada"
-                            : "⚔️ Em andamento"}
+                            ? "ðŸš« Encerrada"
+                            : "âš”ï¸ Em andamento"}
                         </span>
 
                       </div>
@@ -1652,11 +1654,11 @@ function TeacherPanel({
 
                     <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 px-4 py-2 text-center min-w-[90px]">
                       <div className="text-[9px] uppercase tracking-wider text-amber-500 font-black">
-                        Experiência
+                        ExperiÃªncia
                       </div>
 
                       <div className="text-sm font-black text-amber-300 mt-0.5">
-                        ✨ {quest.xpReward} XP
+                        âœ¨ {quest.xpReward} XP
                       </div>
                     </div>
 
@@ -1666,7 +1668,7 @@ function TeacherPanel({
                       </div>
 
                       <div className="text-sm font-black text-yellow-300 mt-0.5">
-                        🪙 {quest.coinReward}
+                        ðŸª™ {quest.coinReward}
                       </div>
                     </div>
 
@@ -1680,7 +1682,7 @@ function TeacherPanel({
                 <div className="mt-5 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
 
                   <div className="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-black mb-1">
-                    Objetivo da Missão
+                    Objetivo da MissÃ£o
                   </div>
 
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
@@ -1693,7 +1695,7 @@ function TeacherPanel({
 
 
               {/* ==================================================
-                  ÁREA DOS AVENTUREIROS
+                  ÃREA DOS AVENTUREIROS
               ================================================== */}
 
               <div className="p-5 sm:p-7">
@@ -1713,7 +1715,7 @@ function TeacherPanel({
                   </div>
 
                   <span className="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1 text-[10px] font-bold text-slate-400">
-                    👥 {questStudents.length}{" "}
+                    ðŸ‘¥ {questStudents.length}{" "}
                     {questStudents.length === 1
                       ? "aventureiro"
                       : "aventureiros"}
@@ -1727,7 +1729,7 @@ function TeacherPanel({
                   <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/30 p-8 text-center">
 
                     <div className="text-3xl">
-                      🏚️
+                      ðŸšï¸
                     </div>
 
                     <p className="text-xs text-slate-500 mt-2">
@@ -1748,7 +1750,7 @@ function TeacherPanel({
                         className="group relative rounded-2xl border border-slate-800 bg-[#0d120d] p-4 transition-all duration-200 hover:border-amber-500/30 hover:bg-[#11170f] hover:-translate-y-0.5"
                       >
 
-                        {/* MINI CABEÇALHO DO ALUNO */}
+                        {/* MINI CABEÃ‡ALHO DO ALUNO */}
 
                         <div className="flex items-center gap-3">
 
@@ -1791,11 +1793,11 @@ function TeacherPanel({
                               <div className="flex items-center justify-between">
 
                                 <span className="text-[9px] uppercase tracking-wider font-black text-emerald-400">
-                                  Missão Validada
+                                  MissÃ£o Validada
                                 </span>
 
                                 <span className="text-sm">
-                                  ✓
+                                  âœ“
                                 </span>
 
                               </div>
@@ -1817,7 +1819,7 @@ function TeacherPanel({
                                 </span>
 
                                 <span className="text-sm">
-                                  🚫
+                                  ðŸš«
                                 </span>
 
                               </div>
@@ -1835,7 +1837,7 @@ function TeacherPanel({
                               <div className="flex items-center justify-between">
 
                                 <span className="text-[9px] uppercase tracking-wider font-black text-amber-500">
-                                  Aguardando Validação
+                                  Aguardando ValidaÃ§Ã£o
                                 </span>
 
                                 <span className="text-[9px] font-bold text-slate-500">
@@ -1854,7 +1856,7 @@ function TeacherPanel({
                                 }
                                 className="w-full rounded-xl border border-emerald-500/30 bg-emerald-600/10 px-3 py-2.5 text-[10px] font-black text-emerald-300 hover:bg-emerald-600/20 hover:border-emerald-400/50 transition shadow-sm"
                               >
-                                🎁 Conceder Recompensa
+                                ðŸŽ Conceder Recompensa
                               </button>
 
                               <button
@@ -1867,7 +1869,7 @@ function TeacherPanel({
                                 }
                                 className="w-full rounded-xl border border-rose-500/20 bg-rose-950/20 px-3 py-2 text-[10px] font-bold text-rose-400 hover:bg-rose-900/30 transition"
                               >
-                                🚫 Encerrar Quest
+                                ðŸš« Encerrar Quest
                               </button>
 
                             </div>
@@ -1888,7 +1890,7 @@ function TeacherPanel({
 
 
               {/* ==================================================
-                  RODAPÉ DA QUEST
+                  RODAPÃ‰ DA QUEST
               ================================================== */}
 
               <div className="border-t border-slate-800/80 bg-slate-950/20 px-5 sm:px-7 py-3">
@@ -1896,16 +1898,16 @@ function TeacherPanel({
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
 
                   <div className="text-[9px] text-slate-600 font-bold">
-                    ⚔️ Registro oficial do Reino do Conhecimento
+                    âš”ï¸ Registro oficial do Reino do Conhecimento
                   </div>
 
                   <div className="text-[9px] text-slate-500">
                     Recompensa individual:
                     <span className="text-amber-400 font-black ml-1">
-                      ✨ {quest.xpReward} XP
+                      âœ¨ {quest.xpReward} XP
                     </span>
                     <span className="text-yellow-400 font-black ml-2">
-                      🪙 {quest.coinReward} Priantinas
+                      ðŸª™ {quest.coinReward} Priantinas
                     </span>
                   </div>
 
@@ -1926,7 +1928,7 @@ function TeacherPanel({
   </div>
 )}
       {/* ======================================================
-          GRIMÓRIO DE NOTAS
+          GRIMÃ“RIO DE NOTAS
       ====================================================== */}
 
       {teacherTab === "grades" && (
@@ -1934,11 +1936,11 @@ function TeacherPanel({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
             <div>
               <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">
-                Lançamento Rápido
+                LanÃ§amento RÃ¡pido
               </div>
 
               <h3 className="text-xl font-black text-white">
-                Grimório de Notas e HP dos
+                GrimÃ³rio de Notas e HP dos
                 Aventureiros
               </h3>
             </div>
@@ -1972,7 +1974,7 @@ function TeacherPanel({
                         value={subjectName}
                       >
                         {subjectInfo?.icon ||
-                          "📚"}{" "}
+                          "ðŸ“š"}{" "}
                         {subjectName}
                       </option>
                     );
@@ -1987,7 +1989,7 @@ function TeacherPanel({
               <thead className="bg-slate-900/80 uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
                 <tr>
                   <th className="p-3">
-                    Estudante / Título
+                    Estudante / TÃ­tulo
                   </th>
 
                   <th className="p-3 text-center">
@@ -1995,27 +1997,27 @@ function TeacherPanel({
                   </th>
 
                   <th className="p-3 text-center">
-                    1º Bim
+                    1Âº Bim
                   </th>
 
                   <th className="p-3 text-center">
-                    2º Bim
+                    2Âº Bim
                   </th>
 
                   <th className="p-3 text-center">
-                    3º Bim
+                    3Âº Bim
                   </th>
 
                   <th className="p-3 text-center">
-                    4º Bim
+                    4Âº Bim
                   </th>
 
                   <th className="p-3 text-center">
-                    Média / Status
+                    MÃ©dia / Status
                   </th>
 
                   <th className="p-3 text-center">
-                    Ações de Mestre
+                    AÃ§Ãµes de Mestre
                   </th>
                 </tr>
               </thead>
@@ -2053,9 +2055,9 @@ function TeacherPanel({
                             </div>
 
                             <div className="text-[10px] text-purple-400 font-normal">
-                              Nível{" "}
+                              NÃ­vel{" "}
                               {student.level}{" "}
-                              •{" "}
+                              â€¢{" "}
                               {student.badge}
                             </div>
                           </div>
@@ -2128,7 +2130,7 @@ function TeacherPanel({
                           }
                           className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-[10px] font-black text-amber-300 hover:bg-amber-500/20 transition"
                         >
-                          🎁 Bônus
+                          ðŸŽ BÃ´nus
                         </button>
                       </td>
                     </tr>
@@ -2148,7 +2150,7 @@ function TeacherPanel({
         <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-6">
           <div className="border-b border-slate-800 pb-4">
             <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">
-              Invocação de Desafios
+              InvocaÃ§Ã£o de Desafios
             </div>
 
             <h3 className="text-xl font-black text-white">
@@ -2157,7 +2159,7 @@ function TeacherPanel({
 
             <p className="text-xs text-slate-500 mt-1">
               Defina um desafio de tempo limitado
-              com período para unir a turma.
+              com perÃ­odo para unir a turma.
             </p>
           </div>
 
@@ -2167,7 +2169,7 @@ function TeacherPanel({
           >
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-300">
-                Título do Evento / Chefão
+                TÃ­tulo do Evento / ChefÃ£o
               </label>
 
               <input
@@ -2177,7 +2179,7 @@ function TeacherPanel({
                 onChange={(e) =>
                   setEventTitle(e.target.value)
                 }
-                placeholder="Ex: O Guardião dos Polígonos de Ouro"
+                placeholder="Ex: O GuardiÃ£o dos PolÃ­gonos de Ouro"
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
@@ -2195,27 +2197,27 @@ function TeacherPanel({
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               >
                 <option value="Boss Raid">
-                  🐉 Boss Raid (Batalha em
+                  ðŸ‰ Boss Raid (Batalha em
                   Equipe)
                 </option>
 
                 <option value="Maratona">
-                  📜 Maratona do Conhecimento
+                  ðŸ“œ Maratona do Conhecimento
                 </option>
 
                 <option value="Feira">
-                  ⚙️ Feira / Exposição
+                  âš™ï¸ Feira / ExposiÃ§Ã£o
                 </option>
 
                 <option value="Especial">
-                  ✨ Evento Especial
+                  âœ¨ Evento Especial
                 </option>
               </select>
             </div>
 
             <div className="space-y-1 md:col-span-2">
               <label className="text-xs font-bold text-slate-300">
-                Período do Evento
+                PerÃ­odo do Evento
               </label>
 
               <input
@@ -2227,14 +2229,14 @@ function TeacherPanel({
                     e.target.value
                   )
                 }
-                placeholder="Ex: 1º Bimestre, Até 25/10, Semanal..."
+                placeholder="Ex: 1Âº Bimestre, AtÃ© 25/10, Semanal..."
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
 
             <div className="md:col-span-2 space-y-1">
               <label className="text-xs font-bold text-slate-300">
-                Descrição do Desafio
+                DescriÃ§Ã£o do Desafio
               </label>
 
               <textarea
@@ -2246,7 +2248,7 @@ function TeacherPanel({
                     e.target.value
                   )
                 }
-                placeholder="Descreva as tarefas que a turma precisa realizar para derrotar o chefão..."
+                placeholder="Descreva as tarefas que a turma precisa realizar para derrotar o chefÃ£o..."
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
@@ -2291,7 +2293,7 @@ function TeacherPanel({
                 type="submit"
                 className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-3 text-xs font-black text-white shadow-lg hover:brightness-110 active:scale-95 transition"
               >
-                🔥 Lançar Evento para a
+                ðŸ”¥ LanÃ§ar Evento para a
                 Turma
               </button>
             </div>
@@ -2311,12 +2313,12 @@ function TeacherPanel({
             </div>
 
             <h3 className="text-xl font-black text-white">
-              Cadastrar Nova Missão (Quest)
+              Cadastrar Nova MissÃ£o (Quest)
             </h3>
 
             <p className="text-xs text-slate-500 mt-1">
               Adicione objetivos e configure o
-              período de realização para os
+              perÃ­odo de realizaÃ§Ã£o para os
               estudantes.
             </p>
           </div>
@@ -2327,7 +2329,7 @@ function TeacherPanel({
           >
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-300">
-                Título da Quest
+                TÃ­tulo da Quest
               </label>
 
               <input
@@ -2346,7 +2348,7 @@ function TeacherPanel({
 
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-300">
-                Categoria da Missão
+                Categoria da MissÃ£o
               </label>
 
               <select
@@ -2358,27 +2360,27 @@ function TeacherPanel({
                 }
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               >
-                <option value="Diário">
-                  ☀️ Diário
+                <option value="DiÃ¡rio">
+                  â˜€ï¸ DiÃ¡rio
                 </option>
 
                 <option value="Semanal">
-                  📅 Semanal
+                  ðŸ“… Semanal
                 </option>
 
                 <option value="Mensal">
-                  🗓️ Mensal
+                  ðŸ—“ï¸ Mensal
                 </option>
 
                 <option value="Especial (Mensal)">
-                  🌟 Especial (Mensal)
+                  ðŸŒŸ Especial (Mensal)
                 </option>
               </select>
             </div>
 
             <div className="space-y-1 md:col-span-2">
               <label className="text-xs font-bold text-slate-300">
-                Aventureiro / Destinatário
+                Aventureiro / DestinatÃ¡rio
               </label>
 
               <select
@@ -2391,7 +2393,7 @@ function TeacherPanel({
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               >
                 <option value="all">
-                  👥 Todos os alunos
+                  ðŸ‘¥ Todos os alunos
                 </option>
 
                 {students.map((student) => (
@@ -2400,7 +2402,7 @@ function TeacherPanel({
                     value={student.id}
                   >
                     {student.avatar}{" "}
-                    {student.name} —{" "}
+                    {student.name} â€”{" "}
                     {student.turma}
                   </option>
                 ))}
@@ -2409,7 +2411,7 @@ function TeacherPanel({
 
             <div className="space-y-1 md:col-span-2">
               <label className="text-xs font-bold text-slate-300">
-                Período da Atividade / Missão
+                PerÃ­odo da Atividade / MissÃ£o
               </label>
 
               <input
@@ -2421,14 +2423,14 @@ function TeacherPanel({
                     e.target.value
                   )
                 }
-                placeholder="Ex: 1º Bimestre, Até 20/05, Semanal..."
+                placeholder="Ex: 1Âº Bimestre, AtÃ© 20/05, Semanal..."
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
 
             <div className="md:col-span-2 space-y-1">
               <label className="text-xs font-bold text-slate-300">
-                Instruções / Requisitos
+                InstruÃ§Ãµes / Requisitos
               </label>
 
               <input
@@ -2440,14 +2442,14 @@ function TeacherPanel({
                     e.target.value
                   )
                 }
-                placeholder="Ex: Tirar nota maior que 8.0 em pelo menos 2 avaliações no período."
+                placeholder="Ex: Tirar nota maior que 8.0 em pelo menos 2 avaliaÃ§Ãµes no perÃ­odo."
                 className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
 
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-300">
-                Premiação em XP
+                PremiaÃ§Ã£o em XP
               </label>
 
               <input
@@ -2463,7 +2465,7 @@ function TeacherPanel({
 
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-300">
-                Premiação em Moedas
+                PremiaÃ§Ã£o em Moedas
               </label>
 
               <input
@@ -2484,7 +2486,7 @@ function TeacherPanel({
                 type="submit"
                 className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-3 text-xs font-black text-white shadow-lg hover:brightness-110 active:scale-95 transition"
               >
-                ✨ Publicar Quest no Mural
+                âœ¨ Publicar Quest no Mural
               </button>
             </div>
           </form>
@@ -2500,7 +2502,7 @@ function TeacherPanel({
           <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-6">
             <div className="border-b border-slate-800 pb-4">
               <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-purple-400">
-                Invocação de Aventureiros
+                InvocaÃ§Ã£o de Aventureiros
               </div>
 
               <h3 className="text-xl font-black text-white">
@@ -2508,9 +2510,9 @@ function TeacherPanel({
               </h3>
 
               <p className="text-xs text-slate-500 mt-1">
-                Cadastre e atribua estudantes às
+                Cadastre e atribua estudantes Ã s
                 suas respectivas turmas para
-                liberá-los no reino.
+                liberÃ¡-los no reino.
               </p>
             </div>
 
@@ -2539,7 +2541,7 @@ function TeacherPanel({
 
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-300">
-                  Turma (Digitável)
+                  Turma (DigitÃ¡vel)
                 </label>
 
                 <input
@@ -2551,7 +2553,7 @@ function TeacherPanel({
                       e.target.value
                     )
                   }
-                  placeholder="Ex: 9º Ano A, 3001, Turma B..."
+                  placeholder="Ex: 9Âº Ano A, 3001, Turma B..."
                   className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-purple-500"
                 />
               </div>
@@ -2561,7 +2563,7 @@ function TeacherPanel({
                   type="submit"
                   className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-3 text-xs font-black text-white shadow-lg hover:brightness-110 active:scale-95 transition"
                 >
-                  ⚡ Enturmar Aluno
+                  âš¡ Enturmar Aluno
                 </button>
               </div>
             </form>
@@ -2569,7 +2571,7 @@ function TeacherPanel({
 
           <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6 space-y-4">
             <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <span>👥</span>
+              <span>ðŸ‘¥</span>
               Alunos Cadastrados no Reino (
               {students.length})
             </h3>
@@ -2587,15 +2589,15 @@ function TeacherPanel({
                     </th>
 
                     <th className="p-3 text-center">
-                      Nível
+                      NÃ­vel
                     </th>
 
                     <th className="p-3 text-center">
-                      Insígnia
+                      InsÃ­gnia
                     </th>
 
                     <th className="p-3 text-center">
-                      Ações
+                      AÃ§Ãµes
                     </th>
                   </tr>
                 </thead>
@@ -2679,7 +2681,7 @@ function TeacherPanel({
                                 }
                                 className="rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 text-[10px] font-bold transition"
                               >
-                                ✓ Salvar
+                                âœ“ Salvar
                               </button>
 
                               <button
@@ -2689,7 +2691,7 @@ function TeacherPanel({
                                 }
                                 className="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 text-[10px] font-bold transition"
                               >
-                                ✕
+                                âœ•
                               </button>
                             </div>
                           ) : (
@@ -2704,7 +2706,7 @@ function TeacherPanel({
                                 className="rounded-lg border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 px-2 py-1 text-[10px] font-bold transition"
                                 title="Editar Nome e Turma"
                               >
-                                ✏️ Editar
+                                âœï¸ Editar
                               </button>
 
                               <button
@@ -2718,7 +2720,7 @@ function TeacherPanel({
                                 className="rounded-lg border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-2 py-1 text-[10px] font-bold transition"
                                 title="Remover Aluno"
                               >
-                                🗑️
+                                ðŸ—‘ï¸
                               </button>
                             </div>
                           )}
@@ -2737,12 +2739,15 @@ function TeacherPanel({
 }
 
 /* ============================================================
-   PÁGINA PRINCIPAL
+   PÃGINA PRINCIPAL
 ============================================================ */
 
 export default function Home() {
   const [role, setRole] =
     useState<UserRole>("teacher");
+
+  const [equippedAchievement, setEquippedAchievement] =
+    useState<string | null>(null);
 
   const [activeTab, setActiveTab] =
     useState<string>("inicio");
@@ -2761,6 +2766,11 @@ export default function Home() {
   const [events, setEvents] =
     useState<EventItem[]>(mockEvents);
 
+  function handleToggleEquip(id: string) {
+    setEquippedAchievement((current) =>
+      current === id ? null : id
+    );
+  }
   /*
     Notas utilizadas pelo mapa.
 
@@ -2771,25 +2781,25 @@ export default function Home() {
   const [grades, setGrades] = useState<
     Record<string, number>
   >({
-    "Língua Portuguesa": 92,
-    "Língua Inglesa": 79,
-    Matemática: 88,
-    História: 95,
+    "LÃ­ngua Portuguesa": 92,
+    "LÃ­ngua Inglesa": 79,
+    Matematica: 88,
+    Historia: 95,
     Geografia: 97,
-    "Educação Física": 86,
+    "EducaÃ§Ã£o FÃ­sica": 86,
     Artes: 91,
-    Ciências: 84,
+    CiÃªncias: 84,
     "Projeto de Vida": 90,
     Tecnologia: 94,
-    "Educação Financeira": 87,
-    Robótica: 89,
-    "Orientação de Estudos de Português": 85,
-    "Orientação de Estudos de Matemática": 83,
+    "EducaÃ§Ã£o Financeira": 87,
+    Robotica: 89,
+    "OrientaÃ§Ã£o de Estudos de PortuguÃªs": 85,
+    "OrientaÃ§Ã£o de Estudos de Matematica": 83,
   });
 
   /*
-    O aluno selecionado é derivado do estado.
-    Assim o XP/moedas mostrados no perfil são
+    O aluno selecionado Ã© derivado do estado.
+    Assim o XP/moedas mostrados no perfil sÃ£o
     os valores reais do StudentRecord.
   */
 
@@ -2806,14 +2816,14 @@ export default function Home() {
 
   /*
     Se um aluno for removido, garantimos que
-    ainda exista um aluno válido selecionado.
+    ainda exista um aluno vÃ¡lido selecionado.
   */
 
   const currentStudent =
     selectedStudent || {
       id: "temporary",
       name: "Aventureiro",
-      avatar: "🧙‍♂️",
+      avatar: "ðŸ§™â€â™‚ï¸",
       level: 1,
       xp: 0,
       coins: 0,
@@ -2825,21 +2835,21 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#0d100d] text-slate-100 flex flex-col justify-between">
       {/* ======================================================
-          CABEÇALHO
+          CABEÃ‡ALHO
       ====================================================== */}
 
       <header className="border-b border-slate-800 bg-[#11150f] p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="text-2xl">
             {role === "student"
-              ? "🧙‍♂️"
-              : "🎓"}
+              ? "ðŸ§™â€â™‚ï¸"
+              : "ðŸŽ“"}
           </div>
 
           <div>
             <div className="text-[9px] font-bold uppercase tracking-widest text-amber-500">
               {role === "student"
-                ? "Aventureiro Pedagógico"
+                ? "Aventureiro PedagÃ³gico"
                 : "Portal Educador"}
             </div>
 
@@ -2861,7 +2871,7 @@ export default function Home() {
             }
             className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition"
           >
-            <span>🔄</span>
+            <span>ðŸ”„</span>
 
             <span>
               {role === "student"
@@ -2878,13 +2888,13 @@ export default function Home() {
             }}
             className="rounded-lg border border-red-900/50 bg-red-950/30 px-3 py-1.5 text-xs font-bold text-red-400 hover:bg-red-900/40 transition"
           >
-            🚪 Sair
+            ðŸšª Sair
           </button>
         </div>
       </header>
 
       {/* ======================================================
-          CONTEÚDO
+          CONTEÃšDO
       ====================================================== */}
 
       <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
@@ -2903,7 +2913,7 @@ export default function Home() {
         ) : (
           <>
             {/* ==================================================
-                INÍCIO DO ALUNO
+                INÃCIO DO ALUNO
             ================================================== */}
 
             {activeTab === "inicio" && (
@@ -2952,7 +2962,7 @@ export default function Home() {
                               </span>
 
                               <div className="text-xl font-black text-amber-400">
-                                Nível{" "}
+                                NÃ­vel{" "}
                                 {currentStudent.level}
                               </div>
                             </div>
@@ -2986,7 +2996,7 @@ export default function Home() {
                           </div>
 
                           <div className="text-2xl font-black text-amber-400 mt-1 flex items-center justify-center gap-1">
-                            🪙{" "}
+                            ðŸª™{" "}
                             {currentStudent.coins}
                           </div>
 
@@ -2997,15 +3007,15 @@ export default function Home() {
 
                         <div className="rounded-2xl border border-purple-500/30 bg-purple-950/20 p-3.5 text-center">
                           <div className="text-[9px] font-black uppercase text-purple-400 tracking-wider">
-                            Reputação Total
+                            ReputaÃ§Ã£o Total
                           </div>
 
                           <div className="text-2xl font-black text-purple-300 mt-1 flex items-center justify-center gap-1">
-                            ⭐ 780
+                            â­ 780
                           </div>
 
                           <div className="text-[10px] font-bold text-slate-400">
-                            / 1000 Média
+                            / 1000 MÃ©dia
                           </div>
                         </div>
 
@@ -3027,13 +3037,13 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* SELEÇÃO DE AVENTUREIRO PARA TESTE */}
+                {/* SELEÃ‡ÃƒO DE AVENTUREIRO PARA TESTE */}
                 {students.length > 1 && (
                   <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <div className="text-[9px] font-black uppercase tracking-widest text-slate-500">
-                          Demonstração
+                          DemonstraÃ§Ã£o
                         </div>
 
                         <div className="text-xs font-bold text-white">
@@ -3060,7 +3070,7 @@ export default function Home() {
                                 student.id
                               }
                             >
-                              {student.name} —{" "}
+                              {student.name} â€”{" "}
                               {student.turma}
                             </option>
                           )
@@ -3070,20 +3080,22 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* CARDS DE STATUS */}
+                                {/* CARDS DE STATUS */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                  {/* STATUS DE PERFIL */}
                   <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
                     <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
                       Status de Perfil
                     </div>
 
                     <h3 className="text-lg font-black text-slate-200 mt-1">
-                      Conduta Acadêmica
+                      Conduta AcadÃªmica
                     </h3>
 
                     <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4 flex items-center gap-3">
                       <div className="text-3xl">
-                        🌟
+                        ðŸŒŸ
                       </div>
 
                       <div>
@@ -3092,16 +3104,16 @@ export default function Home() {
                         </div>
 
                         <p className="text-[10px] text-slate-400 mt-0.5">
-                          Atribuído pelo Conselho
-                          de Professores
+                          AtribuÃ­do pelo Conselho de Professores
                         </p>
                       </div>
                     </div>
                   </div>
 
+                  {/* CONQUISTAS EQUIPADAS */}
                   <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
                     <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                      Insígnias de Honra
+                      InsÃ­gnias de Honra
                     </div>
 
                     <h3 className="text-lg font-black text-slate-200 mt-1">
@@ -3109,41 +3121,56 @@ export default function Home() {
                     </h3>
 
                     <div className="mt-4 flex gap-2 justify-between">
-                      <div className="flex-1 rounded-xl border border-amber-500/30 bg-amber-950/20 p-3 text-center">
-                        <div className="text-2xl">
-                          📜
-                        </div>
+                      {equippedAchievement ? (
+                        (() => {
+                          const achievement =
+                            ACHIEVEMENTS.find(
+                              (item) =>
+                                item.id === equippedAchievement
+                            );
 
-                        <div className="text-[10px] font-bold text-amber-300 mt-1">
-                          Primeira Nota 10
-                        </div>
-                      </div>
+                          if (!achievement) {
+                            return null;
+                          }
 
-                      <div className="flex-1 rounded-xl border border-purple-500/30 bg-purple-950/20 p-3 text-center">
-                        <div className="text-2xl">
-                          ⚡
-                        </div>
+                          return (
+                            <div className="flex-1 rounded-xl border border-purple-500/30 bg-purple-950/20 p-3 text-center">
+                              <div className="text-2xl">
+                                {achievement.icon}
+                              </div>
 
-                        <div className="text-[10px] font-bold text-purple-300 mt-1">
-                          Lorde da Média
-                        </div>
-                      </div>
+                              <div className="text-[10px] font-bold text-purple-300 mt-1">
+                                {achievement.title}
+                              </div>
 
-                      <div className="flex-1 rounded-xl border border-slate-800 bg-slate-900/50 p-3 text-center opacity-40">
-                        <div className="text-2xl">
-                          🔒
-                        </div>
+                              <div className="text-[8px] font-bold uppercase tracking-wider text-purple-500 mt-1">
+                                Equipada
+                              </div>
+                            </div>
+                          );
+                        })()
+                      ) : (
+                        <div className="flex-1 rounded-xl border border-slate-800 bg-slate-900/50 p-3 text-center opacity-60">
+                          <div className="text-2xl">
+                            ðŸ”’
+                          </div>
 
-                        <div className="text-[10px] font-bold text-slate-500 mt-1">
-                          Bloqueado
+                          <div className="text-[10px] font-bold text-slate-500 mt-1">
+                            Nenhuma conquista equipada
+                          </div>
+
+                          <div className="text-[8px] font-bold uppercase tracking-wider text-slate-600 mt-1">
+                            Acesse Conquistas
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
 
+                  {/* RANKING */}
                   <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
                     <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                      Classificação Geral
+                      ClassificaÃ§Ã£o Geral
                     </div>
 
                     <h3 className="text-lg font-black text-slate-200 mt-1">
@@ -3151,9 +3178,10 @@ export default function Home() {
                     </h3>
 
                     <div className="mt-4 space-y-2">
+
                       <div className="flex items-center justify-between rounded-lg bg-slate-900/60 p-2 text-xs">
                         <span className="font-bold text-amber-400">
-                          🥇 1º Lugar
+                          ðŸ¥‡ 1Âº Lugar
                         </span>
 
                         <span className="font-black text-white">
@@ -3163,16 +3191,17 @@ export default function Home() {
 
                       <div className="flex items-center justify-between rounded-lg bg-amber-500/10 border border-amber-500/30 p-2 text-xs">
                         <span className="font-bold text-amber-300">
-                          🥉 Você
+                          ðŸ¥‰ VocÃª
                         </span>
 
                         <span className="font-black text-amber-300">
-                          {currentStudent.xp}{" "}
-                          XP
+                          {currentStudent.xp} XP
                         </span>
                       </div>
+
                     </div>
-                  </div>
+                </div>
+
                 </div>
               </section>
             )}
@@ -3206,7 +3235,7 @@ export default function Home() {
                 {events.length === 0 ? (
                   <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-10 text-center">
                     <div className="text-5xl">
-                      💤
+                      ðŸ’¤
                     </div>
 
                     <h3 className="mt-3 text-lg font-black text-white">
@@ -3231,7 +3260,7 @@ export default function Home() {
                             </span>
 
                             <span className="text-xs font-bold text-amber-300 border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 rounded-md">
-                              📅{" "}
+                              ðŸ“…{" "}
                               {event.periodo}
                             </span>
                           </div>
@@ -3246,7 +3275,7 @@ export default function Home() {
 
                           <div className="mt-4 flex items-center gap-3 text-xs font-bold">
                             <span className="text-amber-400">
-                              ✨ +
+                              âœ¨ +
                               {
                                 event.rewardXp
                               }{" "}
@@ -3254,7 +3283,7 @@ export default function Home() {
                             </span>
 
                             <span className="text-amber-300">
-                              🪙 +
+                              ðŸª™ +
                               {
                                 event.rewardCoins
                               }{" "}
@@ -3283,9 +3312,26 @@ export default function Home() {
                 CONQUISTAS
             ================================================== */}
 
-            {activeTab === "conquistas" && (
-              <AchievementsPanel />
-            )}
+           {activeTab === "conquistas" && (
+  <AchievementsPanel
+    unlockedAchievements={[
+      {
+        id: "primeiro-passo",
+        date: "22/08/2026",
+      },
+      {
+        id: "reputacao-800",
+        date: "22/08/2026",
+      },
+      {
+        id: "honra-do-reino",
+        date: "22/08/2026",
+      },
+    ]}
+    equippedAchievement={equippedAchievement}
+    onEquipAchievement={setEquippedAchievement}
+  />
+)}
 
             {/* ==================================================
                 OUTRAS ABAS
@@ -3299,15 +3345,15 @@ export default function Home() {
               activeTab !== "desempenho" && (
                 <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-slate-800 bg-slate-900/30">
                   <div className="text-4xl mb-2">
-                    🚧
+                    ðŸš§
                   </div>
 
                   <h3 className="text-lg font-bold">
-                    Módulo em Desenvolvimento
+                    MÃ³dulo em Desenvolvimento
                   </h3>
 
                   <p className="text-xs text-slate-500 mt-1">
-                    Esta seção estará disponível em breve.
+                    Esta seÃ§Ã£o estarÃ¡ disponÃ­vel em breve.
                   </p>
                 </div>
                          )}
@@ -3317,7 +3363,7 @@ export default function Home() {
       </main>
 
       {/* ======================================================
-          NAVEGAÇÃO INFERIOR DO ALUNO
+          NAVEGAÃ‡ÃƒO INFERIOR DO ALUNO
       ====================================================== */}
 
       {role === "student" && (
@@ -3335,11 +3381,11 @@ export default function Home() {
               }`}
             >
               <span className="text-lg">
-                🏠
+                ðŸ 
               </span>
 
               <span className="text-[10px] font-bold">
-                Início
+                InÃ­cio
               </span>
             </button>
 
@@ -3355,7 +3401,7 @@ export default function Home() {
               }`}
             >
               <span className="text-lg">
-                🗺️
+                ðŸ—ºï¸
               </span>
 
               <span className="text-[10px] font-bold">
@@ -3375,7 +3421,7 @@ export default function Home() {
               }`}
             >
               <span className="text-lg">
-                🔥
+                ðŸ”¥
               </span>
 
               <span className="text-[10px] font-bold">
@@ -3395,7 +3441,7 @@ export default function Home() {
               }`}
             >
               <span className="text-lg">
-                🎯
+                ðŸŽ¯
               </span>
 
               <span className="text-[10px] font-bold">
@@ -3415,7 +3461,7 @@ export default function Home() {
               }`}
             >
               <span className="text-lg">
-                🏆
+                ðŸ†
               </span>
 
               <span className="text-[10px] font-bold">
@@ -3435,7 +3481,7 @@ export default function Home() {
               }`}
             >
               <span className="text-lg">
-                📊
+                ðŸ“Š
               </span>
 
               <span className="text-[10px] font-bold">
@@ -3447,4 +3493,6 @@ export default function Home() {
       )}
     </div>
   );
+
 }
+
