@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { PainelAprovacaoProfessor } from '@/components/MissoesProfessor';
 import AdventureMap from "@/components/AdventureMap";
 import AchievementsPanel from "@/components/AchievementsPanel";
@@ -2659,6 +2660,10 @@ function TeacherPanel({
 ============================================================ */
 
 export default function Home() {
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
+  const [authNome, setAuthNome] = useState("");
+
   const [role, setRole] =
     useState<UserRole>("teacher");
 
@@ -2771,6 +2776,55 @@ const [events, setEvents] =
       grades: {},
     };
 
+  useEffect(() => {
+    async function carregarPerfil() {
+      setAuthLoading(true);
+
+      const { data: authData, error: authError } =
+        await supabase.auth.getUser();
+
+      if (authError || !authData.user) {
+        setAuthUserId(null);
+        setAuthNome("");
+        setAuthLoading(false);
+        return;
+      }
+
+      setAuthUserId(authData.user.id);
+
+      const { data: perfil, error: perfilError } = await supabase
+        .from("perfis")
+        .select("id, nome, email, tipo")
+        .eq("id", authData.user.id)
+        .single();
+
+      if (perfilError || !perfil) {
+        console.error(
+          "Não foi possível carregar o perfil:",
+          perfilError
+        );
+
+        setAuthNome("");
+        setAuthLoading(false);
+        return;
+      }
+
+      setAuthNome(perfil.nome);
+
+      if (perfil.tipo === "professor") {
+        setRole("teacher");
+      } else if (perfil.tipo === "aluno") {
+        setRole("student");
+      } else if (perfil.tipo === "gestor") {
+        setRole("manager");
+      }
+
+      setAuthLoading(false);
+    }
+
+    carregarPerfil();
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#0d100d] text-slate-100 flex flex-col justify-between">
       {/* ======================================================
@@ -2799,46 +2853,29 @@ const [events, setEvents] =
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() =>
-              setRole(
-                role === "student"
-                  ? "teacher"
-                  : "student"
-              )
-            }
-            className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition"
-          >
-            <span>🔄</span>
+          <div className="text-right">
+            <div className="text-xs font-bold text-slate-200">
+              {authNome || "Aventureiro"}
+            </div>
 
-            <span>
-              {role === "student"
-                ? "Modo Professor"
-                : "Modo Aluno"}
-            </span>
-          </button>
-
-<button
-  type="button"
-  onClick={() => {
-    setRole("manager");
-    setActiveTab("inicio");
-  }}
-  className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition"
->
-  👑 Gestor
-</button>
+            <div className="text-[9px] uppercase tracking-widest text-slate-500">
+              {role === "teacher"
+                ? "Professor"
+                : role === "student"
+                ? "Aluno"
+                : "Gestor"}
+            </div>
+          </div>
 
           <button
             type="button"
-            onClick={() => {
-              setRole("teacher");
-              setActiveTab("inicio");
+            onClick={async () => {
+              await supabase.auth.signOut();
+              window.location.href = "/login-teste";
             }}
             className="rounded-lg border border-red-900/50 bg-red-950/30 px-3 py-1.5 text-xs font-bold text-red-400 hover:bg-red-900/40 transition"
           >
-            🚗ª Sair
+            🚪 Sair
           </button>
         </div>
       </header>
@@ -2850,9 +2887,7 @@ const [events, setEvents] =
 <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
         {role === "teacher" ? (
           <TeacherPanel
-            onSwitchRole={() =>
-              setRole("student")
-            }
+            onSwitchRole={() => {}}
             students={students}
             setStudents={setStudents}
             quests={quests}
