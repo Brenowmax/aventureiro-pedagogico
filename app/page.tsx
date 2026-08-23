@@ -6,13 +6,14 @@ import AdventureMap from "@/components/AdventureMap";
 import AchievementsPanel from "@/components/AchievementsPanel";
 import CondutaProfessor from "@/components/CondutaProfessor";
 import TeacherSidebar from "@/components/TeacherSidebar";
+import ManagerPanel from "@/components/ManagerPanel";
 import { ACHIEVEMENTS } from "@/components/achievements";
 
 /* ============================================================
    TIPOS
 ============================================================ */
 
-type UserRole = "teacher" | "student";
+type UserRole = "teacher" | "student" | "manager";
 
 type TeacherTab =
   | "overview"
@@ -2818,6 +2819,17 @@ const [events, setEvents] =
             </span>
           </button>
 
+<button
+  type="button"
+  onClick={() => {
+    setRole("manager");
+    setActiveTab("inicio");
+  }}
+  className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition"
+>
+  👑 Gestor
+</button>
+
           <button
             type="button"
             onClick={() => {
@@ -2835,7 +2847,7 @@ const [events, setEvents] =
           CONTEÚDO
       ====================================================== */}
 
-      <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
+<main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
         {role === "teacher" ? (
           <TeacherPanel
             onSwitchRole={() =>
@@ -2847,6 +2859,10 @@ const [events, setEvents] =
             setQuests={setQuests}
             events={events}
             setEvents={setEvents}
+          />
+        ) : role === "manager" ? (
+          <ManagerPanel
+            students={students}
           />
         ) : (
           <>
