@@ -5,6 +5,7 @@ import { PainelAprovacaoProfessor } from '@/components/MissoesProfessor';
 import AdventureMap from "@/components/AdventureMap";
 import AchievementsPanel from "@/components/AchievementsPanel";
 import CondutaProfessor from "@/components/CondutaProfessor";
+import TeacherSidebar from "@/components/TeacherSidebar";
 import { ACHIEVEMENTS } from "@/components/achievements";
 
 /* ============================================================
@@ -1140,115 +1141,19 @@ function TeacherPanel({
         </div>
       </div>
 
-      {/* ======================================================
-          MENU DO PROFESSOR
+            {/* ======================================================
+          PAINEL DO PROFESSOR
       ====================================================== */}
 
-      <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
-        <button
-          type="button"
-          onClick={() =>
-            setTeacherTab("overview")
-          }
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
-            teacherTab === "overview"
-              ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
-              : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
-          }`}
-        >
-          <span>📊</span>
-          <span>Visão Geral</span>
-        </button>
+      <div className="flex flex-col md:flex-row gap-5">
 
-        <button
-          type="button"
-          onClick={() =>
-            setTeacherTab("validation")
-          }
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
-            teacherTab === "validation"
-              ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
-              : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
-          }`}
-        >
-          <span>📜</span>
-          <span>Mural de Validação</span>
-        </button>
+        <TeacherSidebar
+          activeTab={teacherTab}
+          onChange={setTeacherTab}
+        />
 
-        <button
-          type="button"
-          onClick={() =>
-            setTeacherTab("grades")
-          }
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
-            teacherTab === "grades"
-              ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
-              : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
-          }`}
-        >
-          <span>📖</span>
-          <span>Grimório de Notas</span>
-        </button>
-<button
-  type="button"
-  onClick={() =>
-    setTeacherTab("map")
-  }
-  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
-    teacherTab === "map"
-      ? "border-emerald-500 bg-emerald-900/30 text-emerald-300 shadow-lg"
-      : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
-  }`}
->
-  <span>🗺️</span>
-  <span>Mapa Acadêmico</span>
-</button>
-        <button
-          type="button"
-          onClick={() =>
-            setTeacherTab("create_event")
-          }
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
-            teacherTab === "create_event"
-              ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
-              : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
-          }`}
-        >
-          <span>🐉</span>
-          <span>Invocar Boss / Evento</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            setTeacherTab("quests")
-          }
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
-            teacherTab === "quests"
-              ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
-              : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
-          }`}
-        >
-          <span>🎯</span>
-          <span>Criar Missões</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            setTeacherTab("enturmar")
-          }
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
-            teacherTab === "enturmar"
-              ? "border-purple-500 bg-purple-900/30 text-purple-300 shadow-lg"
-              : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
-          }`}
-        >
-          <span>➕</span>
-          <span>Enturmar Aluno</span>
-        </button>
-      </div>
- {/* ======================================================
+        <div className="flex-1 min-w-0">
+{/* ======================================================
           MAPA ACADÊMICO DO PROFESSOR
       ====================================================== */}
 
@@ -2495,18 +2400,7 @@ function TeacherPanel({
         </div>
       )}
 
-<button
-  type="button"
-  onClick={() => setTeacherTab("conduta")}
-  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition border ${
-    teacherTab === "conduta"
-      ? "border-red-500 bg-red-900/30 text-red-300 shadow-lg"
-      : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
-  }`}
->
-  <span>⚖️</span>
-  <span>Conduta</span>
-</button>
+
 
 {teacherTab === "conduta" && (
   <CondutaProfessor alunos={students} />
@@ -2753,7 +2647,9 @@ function TeacherPanel({
           </div>
         </div>
       )}
-    </section>
+    
+        </div>
+      </div>    </section>
   );
 }
 
