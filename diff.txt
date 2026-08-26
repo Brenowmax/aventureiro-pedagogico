@@ -1,0 +1,142 @@
+diff --git a/app/page.tsx b/app/page.tsx
+index e980fa7..2a1bb2a 100644
+--- a/app/page.tsx
++++ b/app/page.tsx
+@@ -14,7 +14,7 @@ import { ACHIEVEMENTS } from "@/components/achievements";
+    TIPOS
+ ============================================================ */
+ 
+-type UserRole = "teacher" | "student" | "manager";
++type UserRole = "teacher" | "student" | "manager" | "developer";
+ 
+ type TeacherTab =
+   | "overview"
+@@ -2659,6 +2659,65 @@ function TeacherPanel({
+    PÃGINA PRINCIPAL
+ ============================================================ */
+ 
++
++function DeveloperPanel() {
++  return (
++    <section className="space-y-6">
++      <div className="rounded-3xl border border-amber-900/40 bg-gradient-to-br from-[#1b1e17] via-[#11150f] to-[#0a0d0a] p-6 sm:p-8 shadow-2xl">
++        <div className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-500">
++          👑 Administração da Plataforma
++        </div>
++
++        <h1 className="mt-2 text-3xl font-black text-white">
++          Painel do Desenvolvedor
++        </h1>
++
++        <p className="mt-2 text-sm text-slate-400">
++          Bem-vindo ao centro de administração do Aventureiro Pedagógico.
++        </p>
++      </div>
++
++      <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
++        <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6">
++          <div className="text-3xl">🏫</div>
++
++          <h2 className="mt-3 font-black text-white">
++            Escolas
++          </h2>
++
++          <p className="mt-1 text-xs text-slate-500">
++            Gerencie as escolas cadastradas na plataforma.
++          </p>
++        </div>
++
++        <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6">
++          <div className="text-3xl">👥</div>
++
++          <h2 className="mt-3 font-black text-white">
++            Usuários
++          </h2>
++
++          <p className="mt-1 text-xs text-slate-500">
++            Visualize e acompanhe os usuários da plataforma.
++          </p>
++        </div>
++
++        <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6">
++          <div className="text-3xl">⚙️</div>
++
++          <h2 className="mt-3 font-black text-white">
++            Sistema
++          </h2>
++
++          <p className="mt-1 text-xs text-slate-500">
++            Administração geral do Aventureiro Pedagógico.
++          </p>
++        </div>
++      </div>
++    </section>
++  );
++}
++
+ export default function Home() {
+   const [authLoading, setAuthLoading] = useState(true);
+   const [authUserId, setAuthUserId] = useState<string | null>(null);
+@@ -2807,15 +2866,17 @@ if (authError || !authData.user) {
+         return;
+       }
+ 
+-      setAuthNome(perfil.nome);
++setAuthNome(perfil.nome);
+ 
+-      if (perfil.tipo === "professor") {
+-        setRole("teacher");
+-      } else if (perfil.tipo === "aluno") {
+-        setRole("student");
+-      } else if (perfil.tipo === "gestor") {
+-        setRole("manager");
+-      }
++if (perfil.tipo === "professor") {
++  setRole("teacher");
++} else if (perfil.tipo === "aluno") {
++  setRole("student");
++} else if (perfil.tipo === "gestor") {
++  setRole("manager");
++} else if (perfil.tipo === "desenvolvedor") {
++  setRole("developer");
++}
+ 
+       setAuthLoading(false);
+     }
+@@ -2898,24 +2959,6 @@ if (!authUserId || !role) {
+       {/* ======================================================
+           CONTEÚDO
+       ====================================================== */}
+-
+-<main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
+-        {role === "teacher" ? (
+-          <TeacherPanel
+-            onSwitchRole={() => {}}
+-            students={students}
+-            setStudents={setStudents}
+-            quests={quests}
+-            setQuests={setQuests}
+-            events={events}
+-            setEvents={setEvents}
+-          />
+-        ) : role === "manager" ? (
+-          <ManagerPanel
+-            students={students}
+-          />
+-        ) : (
+-          <>
+             {/* ==================================================
+                 INÃCIO DO ALUNO
+             ================================================== */}
+@@ -3265,7 +3308,10 @@ if (!authUserId || !role) {
+   })}
+ </div>
+ 
+-                  </div>`r`n`r`n                  {/* RANKING */}
++                  </div>
++
++                  {/* RANKING */}
++
+                   <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
+                     <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                       Classificação Geral

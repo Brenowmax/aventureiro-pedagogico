@@ -12,7 +12,7 @@ export default function TesteSupabase() {
 
       if (!usuario.user) {
         setResultado(
-          "Nenhum usuário autenticado. Entre primeiro em /login."
+          "Nenhum usuário autenticado. Entre primeiro em /login-teste."
         );
         return;
       }

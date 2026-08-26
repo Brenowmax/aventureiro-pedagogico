@@ -14,7 +14,7 @@ import { ACHIEVEMENTS } from "@/components/achievements";
    TIPOS
 ============================================================ */
 
-type UserRole = "teacher" | "student" | "manager" | "developer";
+type UserRole = "teacher" | "student" | "manager";
 
 type TeacherTab =
   | "overview"
@@ -2659,451 +2659,6 @@ function TeacherPanel({
    PÃGINA PRINCIPAL
 ============================================================ */
 
-function DeveloperPanel() {
-  const [escolas, setEscolas] = useState<
-    {
-      id: string;
-      nome: string;
-      codigo: string;
-      ativa: boolean;
-      criado_em: string;
-    }[]
-  >([]);
-
-  const [carregandoEscolas, setCarregandoEscolas] =
-    useState(true);
-
-  const [mensagem, setMensagem] = useState("");
-
-  const [mostrarFormulario, setMostrarFormulario] =
-    useState(false);
-
-  const [nomeEscola, setNomeEscola] =
-    useState("");
-
-  const [codigoEscola, setCodigoEscola] =
-    useState("");
-
-  const [salvando, setSalvando] =
-    useState(false);
-
-  async function carregarEscolas() {
-    setCarregandoEscolas(true);
-    setMensagem("");
-
-    const { data, error } = await supabase
-      .from("escolas")
-      .select("id, nome, codigo, ativa, criado_em")
-      .order("nome", { ascending: true });
-
-    if (error) {
-      console.error(
-        "Erro ao carregar escolas:",
-        error
-      );
-
-      setMensagem(
-        "Não foi possível carregar as escolas."
-      );
-
-      setEscolas([]);
-    } else {
-      setEscolas(data || []);
-    }
-
-    setCarregandoEscolas(false);
-  }
-
-  useEffect(() => {
-    carregarEscolas();
-  }, []);
-
-  async function adicionarEscola(
-    event: React.FormEvent
-  ) {
-    event.preventDefault();
-
-    const nome = nomeEscola.trim();
-    const codigo = codigoEscola.trim();
-
-    if (!nome || !codigo) {
-      setMensagem(
-        "Preencha o nome e o código da escola."
-      );
-      return;
-    }
-
-    setSalvando(true);
-    setMensagem("");
-
-    const { error } = await supabase
-      .from("escolas")
-      .insert({
-        nome,
-        codigo,
-        ativa: true,
-      });
-
-    if (error) {
-      console.error(
-        "Erro ao adicionar escola:",
-        error
-      );
-
-      setMensagem(
-        error.code === "23505"
-          ? "Esse código de escola já está cadastrado."
-          : "Não foi possível cadastrar a escola."
-      );
-
-      setSalvando(false);
-      return;
-    }
-
-    setNomeEscola("");
-    setCodigoEscola("");
-    setMostrarFormulario(false);
-    setMensagem("Escola cadastrada com sucesso!");
-
-    setSalvando(false);
-
-    await carregarEscolas();
-  }
-
-  async function alterarStatusEscola(
-    escola: {
-      id: string;
-      nome: string;
-      ativa: boolean;
-    }
-  ) {
-    const novoStatus = !escola.ativa;
-
-    const confirmar = window.confirm(
-      novoStatus
-        ? `Deseja ativar a escola "${escola.nome}"?`
-        : `Deseja desativar a escola "${escola.nome}"?`
-    );
-
-    if (!confirmar) {
-      return;
-    }
-
-    setMensagem("");
-
-    const { error } = await supabase
-      .from("escolas")
-      .update({
-        ativa: novoStatus,
-      })
-      .eq("id", escola.id);
-
-    if (error) {
-      console.error(
-        "Erro ao alterar status da escola:",
-        error
-      );
-
-      setMensagem(
-        "Não foi possível alterar o status da escola."
-      );
-
-      return;
-    }
-
-    setMensagem(
-      novoStatus
-        ? "Escola ativada com sucesso!"
-        : "Escola desativada com sucesso!"
-    );
-
-    await carregarEscolas();
-  }
-
-  return (
-    <section className="space-y-6">
-
-      {/* ======================================================
-          CABEÇALHO
-      ====================================================== */}
-
-      <div className="rounded-3xl border border-amber-900/40 bg-gradient-to-br from-[#1b1e17] via-[#11150f] to-[#0a0d0a] p-6 sm:p-8 shadow-2xl">
-
-        <div className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-500">
-          👑 Administração da Plataforma
-        </div>
-
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-
-          <div>
-            <h1 className="mt-2 text-3xl font-black text-white">
-              Painel do Desenvolvedor
-            </h1>
-
-            <p className="mt-2 text-sm text-slate-400">
-              Administração das escolas do Aventureiro Pedagógico.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              setMensagem("");
-              setMostrarFormulario(
-                (valor) => !valor
-              );
-            }}
-            className="rounded-xl border border-amber-700/60 bg-amber-950/40 px-5 py-3 text-xs font-black uppercase tracking-wider text-amber-300 transition hover:bg-amber-900/50"
-          >
-            {mostrarFormulario
-              ? "✕ Fechar"
-              : "＋ Adicionar Escola"}
-          </button>
-
-        </div>
-      </div>
-
-
-      {/* ======================================================
-          MENSAGEM
-      ====================================================== */}
-
-      {mensagem && (
-        <div className="rounded-xl border border-slate-800 bg-[#11150f] px-4 py-3 text-sm font-bold text-slate-300">
-          {mensagem}
-        </div>
-      )}
-
-
-      {/* ======================================================
-          FORMULÁRIO
-      ====================================================== */}
-
-      {mostrarFormulario && (
-        <form
-          onSubmit={adicionarEscola}
-          className="rounded-3xl border border-amber-900/30 bg-[#11150f] p-6 shadow-xl"
-        >
-
-          <div className="mb-5">
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">
-              Nova Escola
-            </div>
-
-            <h2 className="mt-1 text-xl font-black text-white">
-              Cadastrar escola
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
-            <div>
-              <label className="mb-2 block text-xs font-bold text-slate-400">
-                Nome da escola
-              </label>
-
-              <input
-                type="text"
-                value={nomeEscola}
-                onChange={(event) =>
-                  setNomeEscola(
-                    event.target.value
-                  )
-                }
-                placeholder="Ex.: Escola José Maria Priante"
-                className="w-full rounded-xl border border-slate-700 bg-[#0a0d0a] px-4 py-3 text-sm text-white outline-none transition focus:border-amber-600"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-xs font-bold text-slate-400">
-                Código da escola
-              </label>
-
-              <input
-                type="text"
-                value={codigoEscola}
-                onChange={(event) =>
-                  setCodigoEscola(
-                    event.target.value.toUpperCase()
-                  )
-                }
-                placeholder="Ex.: JMP-001"
-                className="w-full rounded-xl border border-slate-700 bg-[#0a0d0a] px-4 py-3 text-sm uppercase text-white outline-none transition focus:border-amber-600"
-              />
-            </div>
-
-          </div>
-
-          <div className="mt-5 flex justify-end">
-
-            <button
-              type="submit"
-              disabled={salvando}
-              className="rounded-xl border border-emerald-700/60 bg-emerald-950/40 px-5 py-3 text-xs font-black uppercase tracking-wider text-emerald-300 transition hover:bg-emerald-900/50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {salvando
-                ? "Cadastrando..."
-                : "✓ Cadastrar Escola"}
-            </button>
-
-          </div>
-
-        </form>
-      )}
-
-
-      {/* ======================================================
-          LISTA DE ESCOLAS
-      ====================================================== */}
-
-      <div className="rounded-3xl border border-slate-800 bg-[#11150f] p-6 shadow-xl">
-
-        <div className="mb-6 flex items-center justify-between gap-4">
-
-          <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
-              Cadastro da Plataforma
-            </div>
-
-            <h2 className="mt-1 text-2xl font-black text-white">
-              Escolas
-            </h2>
-          </div>
-
-          <div className="rounded-xl border border-slate-800 bg-[#0a0d0a] px-4 py-2 text-xs font-black text-slate-400">
-            {escolas.length}{" "}
-            {escolas.length === 1
-              ? "escola"
-              : "escolas"}
-          </div>
-
-        </div>
-
-
-        {carregandoEscolas ? (
-
-          <div className="rounded-2xl border border-slate-800 bg-[#0a0d0a] p-8 text-center">
-
-            <div className="text-3xl">
-              ⚔️
-            </div>
-
-            <div className="mt-2 text-sm font-bold text-slate-400">
-              Carregando escolas...
-            </div>
-
-          </div>
-
-        ) : escolas.length === 0 ? (
-
-          <div className="rounded-2xl border border-dashed border-slate-700 bg-[#0a0d0a] p-10 text-center">
-
-            <div className="text-4xl">
-              🏫
-            </div>
-
-            <h3 className="mt-3 font-black text-white">
-              Nenhuma escola cadastrada
-            </h3>
-
-            <p className="mt-1 text-xs text-slate-500">
-              Use o botão acima para cadastrar a primeira escola.
-            </p>
-
-          </div>
-
-        ) : (
-
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-
-            {escolas.map((escola) => (
-
-              <div
-                key={escola.id}
-                className="rounded-2xl border border-slate-800 bg-[#0a0d0a] p-5"
-              >
-
-                <div className="flex items-start justify-between gap-4">
-
-                  <div className="flex items-start gap-3">
-
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-[#11150f] text-2xl">
-                      🏫
-                    </div>
-
-                    <div>
-                      <h3 className="font-black text-white">
-                        {escola.nome}
-                      </h3>
-
-                      <p className="mt-1 text-xs font-bold text-slate-500">
-                        Código: {escola.codigo}
-                      </p>
-                    </div>
-
-                  </div>
-
-                  <div
-                    className={
-                      escola.ativa
-                        ? "rounded-lg border border-emerald-800/60 bg-emerald-950/30 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-emerald-400"
-                        : "rounded-lg border border-red-800/60 bg-red-950/30 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-red-400"
-                    }
-                  >
-                    {escola.ativa
-                      ? "Ativa"
-                      : "Inativa"}
-                  </div>
-
-                </div>
-
-
-                <div className="mt-5 flex items-center justify-between gap-3 border-t border-slate-800 pt-4">
-
-                  <span className="text-[10px] text-slate-600">
-                    Cadastrada em{" "}
-                    {new Date(
-                      escola.criado_em
-                    ).toLocaleDateString(
-                      "pt-BR"
-                    )}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      alterarStatusEscola(
-                        escola
-                      )
-                    }
-                    className={
-                      escola.ativa
-                        ? "rounded-lg border border-red-800/50 bg-red-950/20 px-3 py-2 text-[10px] font-black uppercase text-red-400 transition hover:bg-red-900/30"
-                        : "rounded-lg border border-emerald-800/50 bg-emerald-950/20 px-3 py-2 text-[10px] font-black uppercase text-emerald-400 transition hover:bg-emerald-900/30"
-                    }
-                  >
-                    {escola.ativa
-                      ? "Desativar"
-                      : "Ativar"}
-                  </button>
-
-                </div>
-
-              </div>
-
-            ))}
-
-          </div>
-
-        )}
-
-      </div>
-
-    </section>
-  );
-}
-
 export default function Home() {
   const [authLoading, setAuthLoading] = useState(true);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
@@ -3252,17 +2807,15 @@ if (authError || !authData.user) {
         return;
       }
 
-setAuthNome(perfil.nome);
+      setAuthNome(perfil.nome);
 
-if (perfil.tipo === "professor") {
-  setRole("teacher");
-} else if (perfil.tipo === "aluno") {
-  setRole("student");
-} else if (perfil.tipo === "gestor") {
-  setRole("manager");
-} else if (perfil.tipo === "desenvolvedor") {
-  setRole("developer");
-}
+      if (perfil.tipo === "professor") {
+        setRole("teacher");
+      } else if (perfil.tipo === "aluno") {
+        setRole("student");
+      } else if (perfil.tipo === "gestor") {
+        setRole("manager");
+      }
 
       setAuthLoading(false);
     }
@@ -3333,7 +2886,7 @@ if (!authUserId || !role) {
             type="button"
             onClick={async () => {
               await supabase.auth.signOut();
-              window.location.href = "/login";
+              window.location.href = "/login-teste";
             }}
             className="rounded-lg border border-red-900/50 bg-red-950/30 px-3 py-1.5 text-xs font-bold text-red-400 hover:bg-red-900/40 transition"
           >
@@ -3346,10 +2899,8 @@ if (!authUserId || !role) {
           CONTEÚDO
       ====================================================== */}
 
-      <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
-        {role === "developer" ? (
-          <DeveloperPanel />
-        ) : role === "teacher" ? (
+<main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
+        {role === "teacher" ? (
           <TeacherPanel
             onSwitchRole={() => {}}
             students={students}
@@ -3365,6 +2916,10 @@ if (!authUserId || !role) {
           />
         ) : (
           <>
+            {/* ==================================================
+                INÃCIO DO ALUNO
+            ================================================== */}
+
             {activeTab === "inicio" && (
               <section className="space-y-6">
                 <div className="rounded-3xl border border-amber-900/40 bg-gradient-to-b from-[#161c14] to-[#0f140e] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
@@ -3710,10 +3265,7 @@ if (!authUserId || !role) {
   })}
 </div>
 
-                  </div>
-
-                  {/* RANKING */}
-
+                  </div>`r`n`r`n                  {/* RANKING */}
                   <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
                     <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
                       Classificação Geral

@@ -3,11 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-type TipoPerfil =
-  | "aluno"
-  | "professor"
-  | "gestor"
-  | "desenvolvedor";
+type TipoPerfil = "aluno" | "professor" | "gestor";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -58,7 +54,7 @@ export default function LoginPage() {
 
     const tipo = perfil.tipo as TipoPerfil;
 
-if (!["aluno", "professor", "gestor", "desenvolvedor"].includes(tipo)) {
+    if (!["aluno", "professor", "gestor"].includes(tipo)) {
       setMensagem("Tipo de perfil inválido.");
       await supabase.auth.signOut();
       setCarregando(false);
