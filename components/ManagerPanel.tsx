@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import CalendarioGuilda from "@/components/CalendarioGuilda";
 
 type Student = {
   id: string;
@@ -26,7 +27,8 @@ type ManagerTab =
   | "performance"
   | "map"
   | "events"
-  | "objectives";
+  | "objectives"
+  | "calendar";
 
 const tabs: {
   id: ManagerTab;
@@ -81,6 +83,12 @@ const tabs: {
     icon: "🎯",
     label: "Objetivos Coletivos",
     group: "Gestão",
+  },
+  {
+    id: "calendar",
+    icon: "📅",
+    label: "Calendário da Guilda",
+    group: "Acadêmico",
   },
 ];
 
@@ -2317,6 +2325,9 @@ export default function ManagerPanel({
 
       case "objectives":
         return renderObjectives();
+
+      case "calendar":
+        return <CalendarioGuilda />;
 
       case "overview":
       default:

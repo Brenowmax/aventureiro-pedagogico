@@ -874,20 +874,14 @@ export default function AdventureMap({
       {/* MAPA */}
 
       <div className="p-3 sm:p-5">
-<div
-  className="relative overflow-hidden rounded-2xl border border-amber-900/40 bg-[#11150f]"
-  style={{
-    aspectRatio: "16 / 10",
-  }}
->
-  <img
-    src="/images/mapa-reino-conhecimento.png"
-    alt="Mapa do Reino do Conhecimento"
-    className="absolute inset-0 h-full w-full object-cover"
-  />
-
-  <div className="absolute inset-0 bg-black/10" />
-
+        <div
+          className="relative overflow-hidden rounded-2xl border border-amber-900/40"
+          style={{
+            aspectRatio: "16 / 10",
+            background:
+              "radial-gradient(circle at 50% 45%, #27351f 0%, #172017 35%, #0d120d 75%, #080b08 100%)",
+          }}
+        >
           {/* GRID */}
 
           <div className="pointer-events-none absolute inset-0 opacity-20">

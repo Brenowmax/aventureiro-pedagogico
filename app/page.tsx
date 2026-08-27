@@ -9,6 +9,7 @@ import CondutaProfessor from "@/components/CondutaProfessor";
 import TeacherSidebar from "@/components/TeacherSidebar";
 import ManagerPanel from "@/components/ManagerPanel";
 import { ACHIEVEMENTS } from "@/components/achievements";
+import CalendarioGuilda from "@/components/CalendarioGuilda";
 
 /* ============================================================
    TIPOS
@@ -24,7 +25,8 @@ type TeacherTab =
   | "conduta"
   | "create_event"
   | "quests"
-  | "enturmar";
+  | "enturmar"
+  | "calendar";
 
 type Grades = [string, string, string, string];
 
@@ -2650,6 +2652,10 @@ function TeacherPanel({
         </div>
       )}
     
+      {teacherTab === "calendar" && (
+        <CalendarioGuilda />
+      )}
+
         </div>
       </div>    </section>
   );
@@ -3877,6 +3883,14 @@ if (!authUserId || !role) {
     equippedAchievements={equippedAchievements}
     onEquipAchievement={handleToggleEquip}
   />
+)}
+
+{/* ==================================================
+    CALENDÁRIO DA GUILDA
+================================================== */}
+
+{activeTab === "desempenho" && (
+  <CalendarioGuilda />
 )}
 
             {/* ==================================================

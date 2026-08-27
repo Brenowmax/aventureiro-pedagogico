@@ -5,10 +5,11 @@ type TeacherTab =
   | "validation"
   | "grades"
   | "map"
+  | "conduta"
   | "create_event"
   | "quests"
   | "enturmar"
-  | "conduta";
+  | "calendar";
 
 type TeacherSidebarProps = {
   activeTab: TeacherTab;
@@ -23,6 +24,11 @@ const sections = [
         id: "overview" as TeacherTab,
         icon: "📊",
         label: "Visão Geral",
+      },
+      {
+        id: "calendar" as TeacherTab,
+        icon: "📅",
+        label: "Calendário da Guilda",
       },
     ],
   },
