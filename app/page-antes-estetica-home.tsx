@@ -3366,695 +3366,392 @@ if (!authUserId || !role) {
           />
         ) : (
           <>
-{activeTab === "inicio" && (
-  <section className="space-y-6">
-
-    {/* ======================================================
-        FICHA PRINCIPAL DO AVENTUREIRO
-    ====================================================== */}
-    <div className="relative overflow-hidden rounded-[2rem] border border-amber-700/40 bg-gradient-to-br from-[#241b0e] via-[#15130e] to-[#0b0d0a] shadow-2xl">
-
-      {/* textura/decoracao superior */}
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-amber-500/70 to-transparent" />
-      <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-amber-500/5 blur-3xl" />
-      <div className="absolute -left-20 bottom-0 h-56 w-56 rounded-full bg-purple-500/5 blur-3xl" />
-
-      <div className="relative p-5 sm:p-7 lg:p-8">
-
-        {/* titulo da ficha */}
-        <div className="mb-6 flex items-center justify-between gap-4 border-b border-amber-900/40 pb-4">
-
-          <div>
-            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-amber-500">
-              <span>✦</span>
-              <span>Guilda do Reino</span>
-              <span>✦</span>
-            </div>
-
-            <h2 className="mt-1 text-xl sm:text-2xl font-black text-amber-100">
-              Ficha do Aventureiro
-            </h2>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-2 rounded-xl border border-amber-700/30 bg-black/20 px-3 py-2">
-            <span className="text-lg">🛡️</span>
-
-            <div>
-              <div className="text-[8px] font-black uppercase tracking-wider text-slate-500">
-                Patente
-              </div>
-
-              <div className="text-xs font-black text-amber-300">
-                Aventureiro
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-
-        {/* corpo principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-[230px_1fr] gap-7 lg:gap-9">
-
-          {/* ==================================================
-              RETRATO
-          ================================================== */}
-          <div className="flex justify-center">
-
-            <div className="relative w-full max-w-[230px]">
-
-              {/* placa externa */}
-              <div className="absolute -inset-1 rounded-[1.5rem] bg-gradient-to-b from-amber-500/40 via-amber-700/10 to-transparent blur-[1px]" />
-
-              <div className="relative overflow-hidden rounded-[1.5rem] border-2 border-amber-700/50 bg-[#080a08] shadow-xl">
-
-                {/* topo da placa */}
-                <div className="border-b border-amber-900/40 bg-amber-950/20 px-3 py-2 text-center">
-                  <span className="text-[8px] font-black uppercase tracking-[0.25em] text-amber-500">
-                    Aventureiro
-                  </span>
-                </div>
-
-                {/* personagem */}
-                <div className="flex h-52 sm:h-56 items-center justify-center bg-gradient-to-b from-[#11150f] to-[#070907]">
-
-                  <div className="select-none text-[7rem] sm:text-[8rem] leading-none drop-shadow-2xl">
-                    {currentStudent.avatar}
-                  </div>
-
-                </div>
-
-                {/* nome da patente */}
-                <div className="border-t border-slate-800 bg-black/40 px-3 py-3 text-center">
-
-                  <div className="truncate text-sm font-black text-white">
-                    {currentStudent.badge}
-                  </div>
-
-                  <div className="mt-1 text-[8px] font-bold uppercase tracking-widest text-slate-500">
-                    Título atual
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* pequenos ornamentos */}
-              <div className="absolute -left-2 top-10 text-amber-500/50">
-                ◆
-              </div>
-
-              <div className="absolute -right-2 bottom-10 text-amber-500/50">
-                ◆
-              </div>
-
-            </div>
-
-          </div>
-
-
-          {/* ==================================================
-              INFORMACOES DO AVENTUREIRO
-          ================================================== */}
-          <div className="flex min-w-0 flex-col">
-
-            {/* nome */}
-            <div>
-
-              <div className="text-[9px] font-black uppercase tracking-[0.25em] text-amber-600">
-                Personagem Principal
-              </div>
-
-              <h3 className="mt-1 break-words text-3xl sm:text-4xl font-black tracking-tight text-white">
-                {currentStudent.name}
-              </h3>
-
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-
-                <span className="text-xs font-bold text-slate-400">
-                  {currentStudent.turma}
-                </span>
-
-                <span className="text-slate-700">
-                  •
-                </span>
-
-                <span className="text-xs font-bold text-emerald-400">
-                  Jornada acadêmica ativa
-                </span>
-
-              </div>
-
-            </div>
-
-
-            {/* nivel */}
-            <div className="mt-7 rounded-2xl border border-amber-800/30 bg-black/20 p-4">
-
-              <div className="flex items-end justify-between gap-4">
-
-                <div>
-
-                  <div className="text-[9px] font-black uppercase tracking-widest text-slate-500">
-                    Nível do Aventureiro
-                  </div>
-
-                  <div className="mt-1 flex items-baseline gap-2">
-                    <span className="text-3xl font-black text-amber-400">
-                      {currentStudent.level}
-                    </span>
-
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                      nível
-                    </span>
-                  </div>
-
-                </div>
-
-                <div className="text-right">
-
-                  <div className="text-[9px] font-black uppercase tracking-widest text-slate-500">
-                    Experiência
-                  </div>
-
-                  <div className="mt-1 text-sm font-black text-emerald-400">
-                    {currentStudent.xp} XP
-                  </div>
-
-                </div>
-
-              </div>
-
-
-              {/* barra XP */}
-              <div className="mt-4">
-
-                <div className="h-4 overflow-hidden rounded-full border border-slate-700 bg-[#050705] p-[2px] shadow-inner">
-
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-amber-600 via-amber-400 to-emerald-400 shadow-lg transition-all duration-500"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        (currentStudent.xp % 500) / 5
-                      )}%`,
-                    }}
-                  />
-
-                </div>
-
-                <div className="mt-2 flex justify-between text-[8px] font-bold uppercase tracking-wider text-slate-600">
-                  <span>Experiência atual</span>
-                  <span>Próximo nível</span>
-                </div>
-
-              </div>
-
-            </div>
-
-
-            {/* atributos */}
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-
-              {/* moedas */}
-              <div className="rounded-2xl border border-amber-600/30 bg-amber-950/20 p-4">
-
-                <div className="flex items-center justify-between">
-                  <span className="text-[8px] font-black uppercase tracking-widest text-amber-600">
-                    Tesouro
-                  </span>
-
-                  <span className="text-lg">
-                    🪙
-                  </span>
-                </div>
-
-                <div className="mt-2 text-2xl font-black text-amber-300">
-                  {currentStudent.coins}
-                </div>
-
-                <div className="text-[9px] font-bold text-slate-500">
-                  Priantinas
-                </div>
-
-              </div>
-
-
-              {/* reputacao */}
-              <div className="rounded-2xl border border-purple-600/30 bg-purple-950/20 p-4">
-
-                <div className="flex items-center justify-between">
-                  <span className="text-[8px] font-black uppercase tracking-widest text-purple-400">
-                    Reputação
-                  </span>
-
-                  <span className="text-lg">
-                    ✦
-                  </span>
-                </div>
-
-                <div className="mt-2 text-2xl font-black text-purple-300">
-                  780
-                </div>
-
-                <div className="text-[9px] font-bold text-slate-500">
-                  de 1000 pontos
-                </div>
-
-              </div>
-
-
-              {/* patente */}
-              <div className="rounded-2xl border border-blue-600/30 bg-blue-950/20 p-4">
-
-                <div className="flex items-center justify-between">
-                  <span className="text-[8px] font-black uppercase tracking-widest text-blue-400">
-                    Classe
-                  </span>
-
-                  <span className="text-lg">
-                    ⚔️
-                  </span>
-                </div>
-
-                <div className="mt-2 truncate text-lg font-black text-blue-300">
-                  Aventureiro
-                </div>
-
-                <div className="text-[9px] font-bold text-slate-500">
-                  Classe ativa
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-    {/* ======================================================
-        SELEÇÃO DE AVENTUREIRO — DEMONSTRAÇÃO
-    ====================================================== */}
-    {students.length > 1 && (
-      <div className="rounded-2xl border border-slate-800 bg-[#10140f] p-4 shadow-lg">
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-          <div>
-            <div className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-600">
-              Modo demonstração
-            </div>
-
-            <div className="mt-1 text-xs font-bold text-slate-300">
-              Aventureiro conectado
-            </div>
-          </div>
-
-          <select
-            value={currentStudent.id}
-            onChange={(e) =>
-              setSelectedStudentId(e.target.value)
-            }
-            className="w-full sm:w-auto rounded-xl border border-slate-700 bg-[#080b08] px-4 py-2.5 text-xs font-bold text-white outline-none transition focus:border-amber-600"
-          >
-            {students.map((student) => (
-              <option
-                key={student.id}
-                value={student.id}
-              >
-                {student.name} — {student.turma}
-              </option>
-            ))}
-          </select>
-
-        </div>
-
-      </div>
-    )}
-
-
-    {/* ======================================================
-        PAINÉIS DA GUILDA
-    ====================================================== */}
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-
-      {/* ====================================================
-          CONDUTA
-      ==================================================== */}
-      <div className="relative overflow-hidden rounded-2xl border border-emerald-800/40 bg-gradient-to-br from-[#101712] to-[#0a0d0a] p-5 shadow-xl">
-
-        <div className="absolute right-3 top-3 text-emerald-500/10 text-5xl">
-          🛡️
-        </div>
-
-        <div className="relative">
-
-          <div className="flex items-center gap-2">
-            <span className="text-xl">
-              🛡️
-            </span>
-
-            <div>
-              <div className="text-[8px] font-black uppercase tracking-[0.2em] text-emerald-500">
-                Registro da Guilda
-              </div>
-
-              <h3 className="text-lg font-black text-white">
-                Conduta Acadêmica
-              </h3>
-            </div>
-          </div>
-
-
-          {(() => {
-            const condutasAluno = condutas.filter(
-              (registro) =>
-                registro.alunoId === currentStudent.id
-            );
-
-            const ultimoRegistro = condutasAluno[0];
-
-            if (!ultimoRegistro) {
-              return (
-                <div className="mt-5 rounded-xl border border-emerald-700/30 bg-emerald-950/20 p-4">
-
-                  <div className="flex items-center gap-3">
-
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-700/30 bg-emerald-950/40 text-xl">
-                      ✦
+            {activeTab === "inicio" && (
+              <section className="space-y-6">
+                <div className="rounded-3xl border border-amber-900/40 bg-gradient-to-b from-[#161c14] to-[#0f140e] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+                  <div className="flex flex-col lg:flex-row items-center lg:items-stretch gap-8">
+                    <div className="flex flex-col items-center">
+                      <div className="relative group cursor-pointer">
+                        <div className="w-48 h-56 sm:w-56 sm:h-64 rounded-2xl bg-[#090d08] border-4 border-amber-600/60 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden p-2">
+                          <div className="text-7xl sm:text-8xl relative z-10 select-none">
+                            {currentStudent.avatar}
+                          </div>
+
+                          <div className="absolute bottom-2 inset-x-2 bg-slate-900/90 border border-slate-700/80 rounded-lg py-1 text-center backdrop-blur-sm z-20">
+                            <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider">
+                              {currentStudent.badge}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div>
-                      <div className="text-xs font-black text-emerald-400">
-                        Registro limpo
+                    <div className="flex-1 flex flex-col justify-between space-y-6 w-full">
+                      <div>
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+                          <div>
+                            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-500">
+                              Personagem Principal
+                            </div>
+
+                            <h2 className="text-3xl font-black text-white mt-0.5">
+                              {currentStudent.name}
+                            </h2>
+
+                            <p className="text-xs text-slate-500 mt-1">
+                              {currentStudent.turma}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-5 space-y-2">
+                          <div className="flex justify-between items-end">
+                            <div>
+                              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                                Progresso Geral
+                              </span>
+
+                              <div className="text-xl font-black text-amber-400">
+                                Nível{" "}
+                                {currentStudent.level}
+                              </div>
+                            </div>
+
+                            <span className="text-xs font-black text-emerald-400 bg-emerald-950/40 px-2.5 py-1 rounded-md border border-emerald-800/50">
+                              {currentStudent.xp}{" "}
+                              XP
+                            </span>
+                          </div>
+
+                          <div className="w-full bg-slate-900 h-5 rounded-xl p-1 border border-slate-800 shadow-inner overflow-hidden">
+                            <div
+                              className="bg-gradient-to-r from-amber-500 via-emerald-500 to-emerald-400 h-full rounded-lg transition-all duration-500"
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  (currentStudent.xp %
+                                    500) /
+                                    5
+                                )}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
 
-                      <p className="mt-1 text-[9px] leading-relaxed text-slate-500">
-                        Nenhuma ocorrência registrada pelo Conselho de Professores.
-                      </p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div className="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-center">
+                          <div className="text-[9px] font-black uppercase text-amber-500 tracking-wider">
+                            Moeda Escolar
+                          </div>
+
+                          <div className="text-2xl font-black text-amber-400 mt-1 flex items-center justify-center gap-1">
+                            🪙{" "}
+                            {currentStudent.coins}
+                          </div>
+
+                          <div className="text-[10px] font-bold text-slate-400">
+                            Priantinas
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-purple-500/30 bg-purple-950/20 p-3.5 text-center">
+                          <div className="text-[9px] font-black uppercase text-purple-400 tracking-wider">
+                            Reputação Total
+                          </div>
+
+                          <div className="text-2xl font-black text-purple-300 mt-1 flex items-center justify-center gap-1">
+                            ⭐ 780
+                          </div>
+
+                          <div className="text-[10px] font-bold text-slate-400">
+                            / 1000 Média
+                          </div>
+                        </div>
+
+                        <div className="col-span-2 sm:col-span-1 rounded-2xl border border-blue-500/30 bg-blue-950/20 p-3.5 text-center">
+                          <div className="text-[9px] font-black uppercase text-blue-400 tracking-wider">
+                            Patente de Reino
+                          </div>
+
+                          <div className="text-lg font-black text-blue-300 mt-1.5 truncate">
+                            Aventureiro
+                          </div>
+
+                          <div className="text-[10px] font-bold text-slate-400">
+                            Classe Ativa
+                          </div>
+                        </div>
+                      </div>
                     </div>
-
                   </div>
-
-                </div>
-              );
-            }
-
-            const configuracao = {
-              positiva: {
-                icone: "🟢",
-                titulo: "Conduta positiva",
-                classe:
-                  "border-emerald-500/30 bg-emerald-950/20",
-                texto: "text-emerald-400",
-              },
-              advertencia: {
-                icone: "🟡",
-                titulo: "Advertência",
-                classe:
-                  "border-amber-500/30 bg-amber-950/20",
-                texto: "text-amber-400",
-              },
-              demerito: {
-                icone: "🔴",
-                titulo: "Demérito",
-                classe:
-                  "border-red-500/30 bg-red-950/20",
-                texto: "text-red-400",
-              },
-            }[
-              ultimoRegistro.tipo as
-                | "positiva"
-                | "advertencia"
-                | "demerito"
-            ];
-
-            return (
-              <div
-                className={`mt-5 rounded-xl border p-4 ${
-                  configuracao?.classe ||
-                  "border-slate-700 bg-slate-900/40"
-                }`}
-              >
-
-                <div className="flex items-start gap-3">
-
-                  <div className="text-2xl">
-                    {configuracao?.icone || "📋"}
-                  </div>
-
-                  <div className="min-w-0">
-
-                    <div
-                      className={`text-xs font-black ${
-                        configuracao?.texto ||
-                        "text-slate-300"
-                      }`}
-                    >
-                      {configuracao?.titulo ||
-                        ultimoRegistro.tipo}
-                    </div>
-
-                    <p className="mt-1 text-sm font-bold text-slate-200">
-                      {ultimoRegistro.motivo}
-                    </p>
-
-                    {ultimoRegistro.descricao && (
-                      <p className="mt-1 text-[9px] leading-relaxed text-slate-400">
-                        {ultimoRegistro.descricao}
-                      </p>
-                    )}
-
-                    <p className="mt-2 text-[8px] font-bold uppercase tracking-wider text-slate-600">
-                      {new Date(
-                        ultimoRegistro.data
-                      ).toLocaleDateString("pt-BR")}
-                    </p>
-
-                  </div>
-
                 </div>
 
-                {condutasAluno.length > 1 && (
-                  <div className="mt-3 border-t border-slate-700/50 pt-3 text-[8px] font-bold uppercase tracking-wider text-slate-600">
-                    {condutasAluno.length} registros no Conselho
+                {/* SELEÇÃO DE AVENTUREIRO PARA TESTE */}
+                {students.length > 1 && (
+                  <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="text-[9px] font-black uppercase tracking-widest text-slate-500">
+                          Demonstração
+                        </div>
+
+                        <div className="text-xs font-bold text-white">
+                          Aventureiro conectado
+                        </div>
+                      </div>
+
+                      <select
+                        value={
+                          currentStudent.id
+                        }
+                        onChange={(e) =>
+                          setSelectedStudentId(
+                            e.target.value
+                          )
+                        }
+                        className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-white"
+                      >
+                        {students.map(
+                          (student) => (
+                            <option
+                              key={student.id}
+                              value={
+                                student.id
+                              }
+                            >
+                              {student.name} —{" "}
+                              {student.turma}
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </div>
                   </div>
                 )}
 
-              </div>
-            );
-          })()}
+                                {/* CARDS DE STATUS */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
+                 {/* STATUS DE PERFIL */}
+<div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
+  <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+    Status de Perfil
+  </div>
+
+  <h3 className="text-lg font-black text-slate-200 mt-1">
+    Conduta Acadêmica
+  </h3>
+
+  {(() => {
+    const condutasAluno = condutas.filter(
+      (registro) =>
+        registro.alunoId === currentStudent.id
+    );
+
+    const ultimoRegistro = condutasAluno[0];
+
+    if (!ultimoRegistro) {
+      return (
+        <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4 flex items-center gap-3">
+          <div className="text-3xl">
+            🌟
+          </div>
+
+          <div>
+            <div className="text-xs font-bold text-emerald-400">
+              Sem registros
+            </div>
+
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              Nenhuma ocorrência registrada pelo Conselho de Professores.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    const configuracao = {
+      positiva: {
+        icone: "🟢",
+        titulo: "Conduta positiva",
+        classe:
+          "border-emerald-500/30 bg-emerald-950/20",
+        texto: "text-emerald-400",
+      },
+      advertencia: {
+        icone: "🟡",
+        titulo: "Advertência",
+        classe:
+          "border-amber-500/30 bg-amber-950/20",
+        texto: "text-amber-400",
+      },
+      demerito: {
+        icone: "🔴",
+        titulo: "Demérito",
+        classe:
+          "border-red-500/30 bg-red-950/20",
+        texto: "text-red-400",
+      },
+    }[ultimoRegistro.tipo as
+      | "positiva"
+      | "advertencia"
+      | "demerito"];
+
+    return (
+      <div
+        className={`mt-4 rounded-xl border p-4 ${configuracao?.classe || "border-slate-700 bg-slate-900/40"}`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="text-3xl">
+            {configuracao?.icone || "📋"}
+          </div>
+
+          <div className="min-w-0">
+            <div
+              className={`text-xs font-bold ${
+                configuracao?.texto || "text-slate-300"
+              }`}
+            >
+              {configuracao?.titulo ||
+                ultimoRegistro.tipo}
+            </div>
+
+            <p className="mt-1 text-sm font-bold text-slate-200">
+              {ultimoRegistro.motivo}
+            </p>
+
+            {ultimoRegistro.descricao && (
+              <p className="mt-1 text-[10px] text-slate-400">
+                {ultimoRegistro.descricao}
+              </p>
+            )}
+
+            <p className="mt-2 text-[9px] text-slate-500">
+              {new Date(
+                ultimoRegistro.data
+              ).toLocaleDateString("pt-BR")}
+            </p>
+          </div>
         </div>
 
+        {condutasAluno.length > 1 && (
+          <div className="mt-3 border-t border-slate-700/50 pt-3 text-[10px] font-bold text-slate-500">
+            {condutasAluno.length} registros de conduta
+          </div>
+        )}
       </div>
+    );
+  })()}
+</div>
 
+                  {/* CONQUISTAS EQUIPADAS */}
+                  <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      Insígnias de Honra
+                    </div>
 
-      {/* ====================================================
-          CONQUISTAS
-      ==================================================== */}
-      <div className="relative overflow-hidden rounded-2xl border border-purple-800/40 bg-gradient-to-br from-[#15111b] to-[#0a0d0a] p-5 shadow-xl">
+                    <h3 className="text-lg font-black text-slate-200 mt-1">
+                      Conquistas Equipadas
+                    </h3>
 
-        <div className="absolute right-3 top-3 text-purple-500/10 text-5xl">
-          🏆
-        </div>
+                    <div className="mt-4 grid grid-cols-3 gap-2">
+  {[0, 1, 2].map((slot) => {
+    const achievementId =
+      equippedAchievements[slot];
 
-        <div className="relative">
+    const achievement =
+      achievementId
+        ? ACHIEVEMENTS.find(
+            (item) =>
+              item.id === achievementId
+          )
+        : null;
 
-          <div className="flex items-center gap-2">
-
-            <span className="text-xl">
-              🏆
-            </span>
-
-            <div>
-              <div className="text-[8px] font-black uppercase tracking-[0.2em] text-purple-500">
-                Salão de Honra
-              </div>
-
-              <h3 className="text-lg font-black text-white">
-                Conquistas Equipadas
-              </h3>
+    return (
+      <div
+        key={slot}
+        className={`min-h-[110px] rounded-xl border p-3 text-center ${
+          achievement
+            ? "border-purple-500/30 bg-purple-950/20"
+            : "border-slate-800 bg-slate-900/50 opacity-60"
+        }`}
+      >
+        {achievement ? (
+          <>
+            <div className="text-2xl">
+              {achievement.icon}
             </div>
 
-          </div>
+            <div className="text-[9px] font-bold text-purple-300 mt-1">
+              {achievement.title}
+            </div>
 
+            <div className="text-[8px] font-bold uppercase tracking-wider text-purple-500 mt-1">
+              Equipada
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="text-2xl">
+              ??
+            </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-2">
+            <div className="text-[9px] font-bold text-slate-500 mt-2">
+              Slot vazio
+            </div>
 
-            {[0, 1, 2].map((slot) => {
-
-              const achievementId =
-                equippedAchievements[slot];
-
-              const achievement =
-                achievementId
-                  ? ACHIEVEMENTS.find(
-                      (item) =>
-                        item.id === achievementId
-                    )
-                  : null;
-
-              return (
-                <div
-                  key={slot}
-                  className={`flex min-h-[120px] flex-col items-center justify-center rounded-xl border p-2 text-center transition ${
-                    achievement
-                      ? "border-purple-500/40 bg-purple-950/30 shadow-lg"
-                      : "border-slate-800 bg-black/20"
-                  }`}
-                >
-
-                  {achievement ? (
-                    <>
-                      <div className="text-3xl">
-                        {achievement.icon}
-                      </div>
-
-                      <div className="mt-2 line-clamp-2 text-[8px] font-black leading-tight text-purple-200">
-                        {achievement.title}
-                      </div>
-
-                      <div className="mt-2 text-[7px] font-black uppercase tracking-wider text-purple-500">
-                        Equipada
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-xl text-slate-700">
-                        ?
-                      </div>
-
-                      <div className="mt-2 text-[8px] font-bold text-slate-600">
-                        Slot vazio
-                      </div>
-
-                      <div className="mt-1 text-[7px] uppercase tracking-wider text-slate-700">
-                        Equipar
-                      </div>
-                    </>
-                  )}
-
-                </div>
-              );
-            })}
-
-          </div>
-
-        </div>
-
+            <div className="text-[8px] font-bold uppercase tracking-wider text-slate-600 mt-1">
+              Equipar conquista
+            </div>
+          </>
+        )}
       </div>
+    );
+  })}
+</div>
 
-
-      {/* ====================================================
-          RANKING
-      ==================================================== */}
-      <div className="relative overflow-hidden rounded-2xl border border-amber-800/40 bg-gradient-to-br from-[#19150d] to-[#0a0d0a] p-5 shadow-xl">
-
-        <div className="absolute right-3 top-3 text-amber-500/10 text-5xl">
-          ⚔️
-        </div>
-
-        <div className="relative">
-
-          <div className="flex items-center gap-2">
-
-            <span className="text-xl">
-              ⚔️
-            </span>
-
-            <div>
-              <div className="text-[8px] font-black uppercase tracking-[0.2em] text-amber-500">
-                Conselho dos Aventureiros
-              </div>
-
-              <h3 className="text-lg font-black text-white">
-                Ranking do Reino
-              </h3>
-            </div>
-
-          </div>
-
-
-          <div className="mt-5 space-y-2">
-
-            <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-black/20 p-3">
-
-              <div className="flex items-center gap-3">
-
-                <div className="text-xl">
-                  🥇
-                </div>
-
-                <div>
-                  <div className="text-[9px] font-black text-amber-400">
-                    1º Lugar
                   </div>
 
-                  <div className="text-[8px] uppercase tracking-wider text-slate-600">
-                    Campeão do Reino
-                  </div>
+                  {/* RANKING */}
+
+                  <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      Classificação Geral
+                    </div>
+
+                    <h3 className="text-lg font-black text-slate-200 mt-1">
+                      Ranking do Reino
+                    </h3>
+
+                    <div className="mt-4 space-y-2">
+
+                      <div className="flex items-center justify-between rounded-lg bg-slate-900/60 p-2 text-xs">
+                        <span className="font-bold text-amber-400">
+                          🥇 1º Lugar
+                        </span>
+
+                        <span className="font-black text-white">
+                          2.850 XP
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between rounded-lg bg-amber-500/10 border border-amber-500/30 p-2 text-xs">
+                        <span className="font-bold text-amber-300">
+                          🥈 Você
+                        </span>
+
+                        <span className="font-black text-amber-300">
+                          {currentStudent.xp} XP
+                        </span>
+                      </div>
+
+                    </div>
                 </div>
 
-              </div>
-
-              <div className="text-sm font-black text-white">
-                2.850 XP
-              </div>
-
-            </div>
-
-
-            <div className="flex items-center justify-between rounded-xl border border-amber-500/30 bg-amber-950/20 p-3 shadow-inner">
-
-              <div className="flex items-center gap-3">
-
-                <div className="text-xl">
-                  🥈
                 </div>
-
-                <div>
-                  <div className="text-[9px] font-black text-amber-300">
-                    Você
-                  </div>
-
-                  <div className="text-[8px] uppercase tracking-wider text-slate-600">
-                    Posição atual
-                  </div>
-                </div>
-
-              </div>
-
-              <div className="text-sm font-black text-amber-300">
-                {currentStudent.xp} XP
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <div className="mt-4 rounded-xl border border-slate-800/70 bg-black/20 px-3 py-2 text-center">
-            <span className="text-[8px] font-bold uppercase tracking-widest text-slate-600">
-              Continue sua jornada para subir no ranking
-            </span>
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
-)}
+              </section>
+            )}
 
             {/* ==================================================
                 MAPA
