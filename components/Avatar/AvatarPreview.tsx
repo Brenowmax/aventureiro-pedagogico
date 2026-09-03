@@ -21,10 +21,8 @@ export default function AvatarPreview({
     <div
       className={`relative h-full w-full overflow-hidden ${className}`}
     >
-      {/* =====================================================
-          CORPO BASE
-      ===================================================== */}
-      <div className="absolute inset-0">
+      {/* CORPO BASE */}
+      <div className="absolute inset-0 z-10">
         <Image
           src={bodySrc}
           alt="Personagem do aventureiro"
@@ -35,13 +33,9 @@ export default function AvatarPreview({
         />
       </div>
 
-      {/* =====================================================
-          CABEÇA
-          Futuramente:
-          cabelos, gorros, capacetes, capuzes etc.
-      ===================================================== */}
+      {/* HEAD */}
       {headSrc && (
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 z-20">
           <Image
             src={headSrc}
             alt=""
@@ -52,13 +46,9 @@ export default function AvatarPreview({
         </div>
       )}
 
-      {/* =====================================================
-          CORPO COMPLETO
-          Uma única peça:
-          roupa, fantasia ou armadura.
-      ===================================================== */}
+      {/* SKIN */}
       {outfitSrc && (
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 z-30">
           <Image
             src={outfitSrc}
             alt=""
@@ -69,17 +59,14 @@ export default function AvatarPreview({
         </div>
       )}
 
-      {/* =====================================================
-          BUDDY
-          Companheiro do aventureiro.
-      ===================================================== */}
+      {/* BUDDY */}
       {buddySrc && (
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 z-40">
           <Image
             src={buddySrc}
             alt=""
-            fill
             className="object-contain"
+            fill
             sizes="(max-width: 640px) 70vw, 320px"
           />
         </div>
