@@ -9,6 +9,7 @@ import CondutaProfessor from "@/components/CondutaProfessor";
 import TeacherSidebar from "@/components/TeacherSidebar";
 import ManagerPanel from "@/components/ManagerPanel";
 import { ACHIEVEMENTS } from "@/components/achievements";
+import AvatarPreview from "@/components/Avatar/AvatarPreview";
 
 /* ============================================================
    TIPOS
@@ -3438,10 +3439,7 @@ if (!authUserId || !role) {
                 {/* personagem */}
                 <div className="flex h-52 sm:h-56 items-center justify-center bg-gradient-to-b from-[#11150f] to-[#070907]">
 
-                  <div className="select-none text-[7rem] sm:text-[8rem] leading-none drop-shadow-2xl">
-                    {currentStudent.avatar}
-                  </div>
-
+<AvatarPreview className="h-full w-full" />
                 </div>
 
                 {/* nome da patente */}
