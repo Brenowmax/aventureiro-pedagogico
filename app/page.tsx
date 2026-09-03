@@ -10,6 +10,8 @@ import TeacherSidebar from "@/components/TeacherSidebar";
 import ManagerPanel from "@/components/ManagerPanel";
 import { ACHIEVEMENTS } from "@/components/achievements";
 import AvatarPreview from "@/components/Avatar/AvatarPreview";
+import LojaGuilda from "@/components/Avatar/LojaGuilda";
+import MeusEquipamentos from "@/components/Avatar/MeusEquipamentos";
 
 /* ============================================================
    TIPOS
@@ -3111,6 +3113,10 @@ export default function Home() {
   const [authUserId, setAuthUserId] = useState<string | null>(null);
   const [authNome, setAuthNome] = useState("");
 
+const [equipamentoHead, setEquipamentoHead] = useState<string | undefined>();
+const [equipamentoSkin, setEquipamentoSkin] = useState<string | undefined>();
+const [equipamentoBuddy, setEquipamentoBuddy] = useState<string | undefined>();
+
   const [role, setRole] =
     useState<UserRole | null>(null);
 
@@ -3438,13 +3444,16 @@ if (!authUserId || !role) {
 
                 {/* personagem */}
                 <div className="flex h-52 sm:h-56 items-center justify-center bg-gradient-to-b from-[#11150f] to-[#070907]">
-
-<AvatarPreview className="h-full w-full" />
+                  <AvatarPreview
+  className="h-full w-full"
+  headSrc={equipamentoHead}
+  outfitSrc={equipamentoSkin}
+  buddySrc={equipamentoBuddy}
+/>
                 </div>
 
                 {/* nome da patente */}
                 <div className="border-t border-slate-800 bg-black/40 px-3 py-3 text-center">
-
                   <div className="truncate text-sm font-black text-white">
                     {currentStudent.badge}
                   </div>
@@ -3452,24 +3461,36 @@ if (!authUserId || !role) {
                   <div className="mt-1 text-[8px] font-bold uppercase tracking-widest text-slate-500">
                     Título atual
                   </div>
-
                 </div>
 
               </div>
 
               {/* pequenos ornamentos */}
               <div className="absolute -left-2 top-10 text-amber-500/50">
-                ◆
+                
               </div>
 
               <div className="absolute -right-2 bottom-10 text-amber-500/50">
-                ◆
+                
               </div>
 
             </div>
 
-          </div>
+            {/* =====================================================
+                MEUS EQUIPAMENTOS
+            ===================================================== */}
+            <div className="mt-4">
+              <MeusEquipamentos
+                equipamentoHead={equipamentoHead}
+                equipamentoSkin={equipamentoSkin}
+                equipamentoBuddy={equipamentoBuddy}
+                onEquiparHead={setEquipamentoHead}
+                onEquiparSkin={setEquipamentoSkin}
+                onEquiparBuddy={setEquipamentoBuddy}
+              />
+            </div>
 
+          </div>
 
           {/* ==================================================
               INFORMACOES DO AVENTUREIRO
@@ -4181,16 +4202,30 @@ if (!authUserId || !role) {
   />
 )}
 
+{/* ==================================================
+    LOJA
+================================================== */}
+
+{activeTab === "loja" && (
+  <LojaGuilda
+    saldo={0}
+    itensComprados={[]}
+    onComprar={() => {}}
+  />
+)}
+
             {/* ==================================================
                 OUTRAS ABAS
             ================================================== */}
 
-                       {activeTab !== "inicio" &&
-              activeTab !== "mapa" &&
-              activeTab !== "eventos" &&
-              activeTab !== "objetivos" &&
-              activeTab !== "conquistas" &&
-              activeTab !== "desempenho" && (
+{activeTab !== "inicio" &&
+  activeTab !== "mapa" &&
+  activeTab !== "eventos" &&
+  activeTab !== "objetivos" &&
+  activeTab !== "conquistas" &&
+  activeTab !== "desempenho" &&
+  activeTab !== "loja" && (
+
                 <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-slate-800 bg-slate-900/30">
                   <div className="text-4xl mb-2">
                     🚗§
@@ -4331,24 +4366,35 @@ if (!authUserId || !role) {
               <span className="text-lg">
                 📊
               </span>
-
               <span className="text-[10px] font-bold">
                 Desempenho
               </span>
             </button>
+
+            {/* ==================================================
+                LOJA
+            ================================================== */}
+            <button
+              type="button"
+              onClick={() => setActiveTab("loja")}
+              className={
+                activeTab === "loja"
+                  ? "flex flex-col items-center gap-1 p-2 rounded-xl transition bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                  : "flex flex-col items-center gap-1 p-2 rounded-xl transition text-slate-500"
+              }
+            >
+              <span className="text-lg">
+                🏰
+              </span>
+
+              <span className="text-[10px] font-bold">
+                Loja
+              </span>
+            </button>
+
           </div>
         </nav>
       )}
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
