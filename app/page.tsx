@@ -3113,9 +3113,17 @@ export default function Home() {
   const [authUserId, setAuthUserId] = useState<string | null>(null);
   const [authNome, setAuthNome] = useState("");
 
-const [equipamentoHead, setEquipamentoHead] = useState<string | undefined>();
-const [equipamentoSkin, setEquipamentoSkin] = useState<string | undefined>();
-const [equipamentoBuddy, setEquipamentoBuddy] = useState<string | undefined>();
+const [equipamentoHead, setEquipamentoHead] =
+  useState<string | undefined>();
+
+const [equipamentoSkin, setEquipamentoSkin] =
+  useState<string | undefined>();
+
+const [equipamentoBuddy, setEquipamentoBuddy] =
+  useState<string | undefined>();
+
+const [itensComprados, setItensComprados] =
+  useState<string[]>([]);
 
   const [role, setRole] =
     useState<UserRole | null>(null);
@@ -3167,6 +3175,35 @@ const [events, setEvents] =
       return [...current, id];
     });
   }
+
+function handleComprarItem(item: {
+  id: string;
+  preco: number;
+}) {
+  if (itensComprados.includes(item.id)) {
+    return;
+  }
+
+  if (currentStudent.coins < item.preco) {
+    return;
+  }
+
+  setItensComprados((prev) => [
+    ...prev,
+    item.id,
+  ]);
+
+  setStudents((prev) =>
+    prev.map((student) =>
+      student.id === currentStudent.id
+        ? {
+            ...student,
+            coins: student.coins - item.preco,
+          }
+        : student
+    )
+  );
+}
 
   /*
     Notas utilizadas pelo mapa.
@@ -3303,12 +3340,11 @@ if (!authUserId || !role) {
 
       <header className="border-b border-slate-800 bg-[#11150f] p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="text-2xl">
-            {role === "student"
-              ? "🧙‍♂️"
-              : "🎓“"}
-          </div>
-
+<div className="text-2xl">
+  {role === "student"
+    ? "🧙‍♂️"
+    : "🎓"}
+</div>
           <div>
             <div className="text-[9px] font-bold uppercase tracking-widest text-amber-500">
               {role === "student"
@@ -3472,31 +3508,16 @@ if (!authUserId || !role) {
 
               <div className="absolute -right-2 bottom-10 text-amber-500/50">
                 
-              </div>
-
-            </div>
-
-            {/* =====================================================
-                MEUS EQUIPAMENTOS
-            ===================================================== */}
-            <div className="mt-4">
-              <MeusEquipamentos
-                equipamentoHead={equipamentoHead}
-                equipamentoSkin={equipamentoSkin}
-                equipamentoBuddy={equipamentoBuddy}
-                onEquiparHead={setEquipamentoHead}
-                onEquiparSkin={setEquipamentoSkin}
-                onEquiparBuddy={setEquipamentoBuddy}
-              />
             </div>
 
           </div>
+
+ </div>
 
           {/* ==================================================
               INFORMACOES DO AVENTUREIRO
           ================================================== */}
           <div className="flex min-w-0 flex-col">
-
             {/* nome */}
             <div>
 
@@ -3628,7 +3649,7 @@ if (!authUserId || !role) {
                   </span>
 
                   <span className="text-lg">
-                    ✦
+                    
                   </span>
                 </div>
 
@@ -4207,13 +4228,32 @@ if (!authUserId || !role) {
 ================================================== */}
 
 {activeTab === "loja" && (
-  <LojaGuilda
-    saldo={0}
-    itensComprados={[]}
-    onComprar={() => {}}
-  />
-)}
+  <div className="space-y-6">
 
+    {/* ==================================================
+        LOJA DA GUILDA
+    ================================================== */}
+    <LojaGuilda
+      saldo={currentStudent.coins}
+      itensComprados={itensComprados}
+      onComprar={handleComprarItem}
+    />
+
+    {/* ==================================================
+        MEUS EQUIPAMENTOS
+    ================================================== */}
+    <MeusEquipamentos
+      equipamentoHead={equipamentoHead}
+      equipamentoSkin={equipamentoSkin}
+      equipamentoBuddy={equipamentoBuddy}
+      itensComprados={itensComprados}
+      onEquiparHead={setEquipamentoHead}
+      onEquiparSkin={setEquipamentoSkin}
+      onEquiparBuddy={setEquipamentoBuddy}
+    />
+
+  </div>
+)}
             {/* ==================================================
                 OUTRAS ABAS
             ================================================== */}

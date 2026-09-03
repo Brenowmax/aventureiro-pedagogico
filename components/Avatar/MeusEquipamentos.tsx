@@ -4,6 +4,9 @@ type MeusEquipamentosProps = {
   equipamentoHead?: string;
   equipamentoSkin?: string;
   equipamentoBuddy?: string;
+
+  itensComprados: string[];
+
   onEquiparHead: (src: string | undefined) => void;
   onEquiparSkin: (src: string | undefined) => void;
   onEquiparBuddy: (src: string | undefined) => void;
@@ -12,16 +15,20 @@ type MeusEquipamentosProps = {
 const equipamentos = {
   head: [
     {
+      id: "head-1",
       nome: "Cabelo 1",
       src: "/head/Head1.png",
     },
     {
+      id: "head-2",
       nome: "Cabelo 2",
       src: "/head/Head2.png",
     },
   ],
+
   skin: [
     {
+      id: "skin-1",
       nome: "Uniforme 1",
       src: "/skin/Uniforme1.png",
     },
@@ -32,12 +39,22 @@ export default function MeusEquipamentos({
   equipamentoHead,
   equipamentoSkin,
   equipamentoBuddy,
+  itensComprados,
   onEquiparHead,
   onEquiparSkin,
   onEquiparBuddy,
 }: MeusEquipamentosProps) {
+  const headsComprados = equipamentos.head.filter((item) =>
+    itensComprados.includes(item.id)
+  );
+
+  const skinsCompradas = equipamentos.skin.filter((item) =>
+    itensComprados.includes(item.id)
+  );
+
   return (
     <div className="w-full rounded-2xl border border-amber-900/50 bg-[#11150f] p-4 shadow-xl">
+      {/* CABEÇALHO */}
       <div className="mb-4 border-b border-amber-900/40 pb-3">
         <div className="text-xs font-black uppercase tracking-[0.25em] text-amber-500">
           Meus Equipamentos
@@ -66,42 +83,56 @@ export default function MeusEquipamentos({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          {equipamentos.head.map((item) => {
-            const equipado = equipamentoHead === item.src;
+        {headsComprados.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-800 bg-black/20 p-5 text-center">
+            <div className="text-2xl opacity-30">+</div>
 
-            return (
-              <button
-                key={item.src}
-                type="button"
-                onClick={() => onEquiparHead(item.src)}
-                className={`rounded-xl border p-2 text-left transition ${
-                  equipado
-                    ? "border-amber-500 bg-amber-950/40"
-                    : "border-slate-800 bg-black/30 hover:border-amber-900"
-                }`}
-              >
-                <div className="flex h-24 items-center justify-center rounded-lg bg-black/30">
-                  <img
-                    src={item.src}
-                    alt={item.nome}
-                    className="h-full w-full object-contain"
-                  />
-                </div>
+            <div className="mt-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+              Nenhum Head adquirido
+            </div>
 
-                <div className="mt-2 text-[9px] font-bold text-white">
-                  {item.nome}
-                </div>
+            <div className="mt-1 text-[9px] text-slate-600">
+              Visite a Loja da Guilda para adquirir novos itens.
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            {headsComprados.map((item) => {
+              const equipado = equipamentoHead === item.src;
 
-                {equipado && (
-                  <div className="mt-1 text-[8px] font-black uppercase text-amber-400">
-                    Equipado
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onEquiparHead(item.src)}
+                  className={`rounded-xl border p-2 text-left transition ${
+                    equipado
+                      ? "border-amber-500 bg-amber-950/40"
+                      : "border-slate-800 bg-black/30 hover:border-amber-900"
+                  }`}
+                >
+                  <div className="flex h-24 items-center justify-center rounded-lg bg-black/30">
+                    <img
+                      src={item.src}
+                      alt={item.nome}
+                      className="h-full w-full object-contain"
+                    />
                   </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
+
+                  <div className="mt-2 text-[9px] font-bold text-white">
+                    {item.nome}
+                  </div>
+
+                  {equipado && (
+                    <div className="mt-1 text-[8px] font-black uppercase text-amber-400">
+                      Equipado
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* SKIN */}
@@ -122,42 +153,56 @@ export default function MeusEquipamentos({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          {equipamentos.skin.map((item) => {
-            const equipado = equipamentoSkin === item.src;
+        {skinsCompradas.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-800 bg-black/20 p-5 text-center">
+            <div className="text-2xl opacity-30">+</div>
 
-            return (
-              <button
-                key={item.src}
-                type="button"
-                onClick={() => onEquiparSkin(item.src)}
-                className={`rounded-xl border p-2 text-left transition ${
-                  equipado
-                    ? "border-amber-500 bg-amber-950/40"
-                    : "border-slate-800 bg-black/30 hover:border-amber-900"
-                }`}
-              >
-                <div className="flex h-24 items-center justify-center rounded-lg bg-black/30">
-                  <img
-                    src={item.src}
-                    alt={item.nome}
-                    className="h-full w-full object-contain"
-                  />
-                </div>
+            <div className="mt-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+              Nenhuma Skin adquirida
+            </div>
 
-                <div className="mt-2 text-[9px] font-bold text-white">
-                  {item.nome}
-                </div>
+            <div className="mt-1 text-[9px] text-slate-600">
+              Visite a Loja da Guilda para adquirir novos visuais.
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            {skinsCompradas.map((item) => {
+              const equipado = equipamentoSkin === item.src;
 
-                {equipado && (
-                  <div className="mt-1 text-[8px] font-black uppercase text-amber-400">
-                    Equipado
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onEquiparSkin(item.src)}
+                  className={`rounded-xl border p-2 text-left transition ${
+                    equipado
+                      ? "border-amber-500 bg-amber-950/40"
+                      : "border-slate-800 bg-black/30 hover:border-amber-900"
+                  }`}
+                >
+                  <div className="flex h-24 items-center justify-center rounded-lg bg-black/30">
+                    <img
+                      src={item.src}
+                      alt={item.nome}
+                      className="h-full w-full object-contain"
+                    />
                   </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
+
+                  <div className="mt-2 text-[9px] font-bold text-white">
+                    {item.nome}
+                  </div>
+
+                  {equipado && (
+                    <div className="mt-1 text-[8px] font-black uppercase text-amber-400">
+                      Equipado
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* BUDDY */}
