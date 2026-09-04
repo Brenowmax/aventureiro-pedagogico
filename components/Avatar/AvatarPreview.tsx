@@ -65,8 +65,8 @@ export default function AvatarPreview({
           <Image
             src={buddySrc}
             alt=""
-            className="object-contain"
             fill
+            className="object-contain"
             sizes="(max-width: 640px) 70vw, 320px"
           />
         </div>

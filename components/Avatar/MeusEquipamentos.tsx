@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 type MeusEquipamentosProps = {
   equipamentoHead?: string;
@@ -17,12 +17,12 @@ const equipamentos = {
     {
       id: "head-1",
       nome: "Cabelo 1",
-      src: "/head/Head1.png",
+      src: "/avatar/alinhados/Head1.png",
     },
     {
       id: "head-2",
       nome: "Cabelo 2",
-      src: "/head/Head2.png",
+      src: "/avatar/alinhados/Head2.png",
     },
   ],
 
@@ -30,7 +30,7 @@ const equipamentos = {
     {
       id: "skin-1",
       nome: "Uniforme 1",
-      src: "/skin/Uniforme1.png",
+      src: "/avatar/alinhados/Uniforme1.png",
     },
   ],
 };
@@ -54,14 +54,14 @@ export default function MeusEquipamentos({
 
   return (
     <div className="w-full rounded-2xl border border-amber-900/50 bg-[#11150f] p-4 shadow-xl">
-      {/* CABEÇALHO */}
+      {/* CABEÃ‡ALHO */}
       <div className="mb-4 border-b border-amber-900/40 pb-3">
         <div className="text-xs font-black uppercase tracking-[0.25em] text-amber-500">
           Meus Equipamentos
         </div>
 
         <div className="mt-1 text-[10px] text-slate-500">
-          Itens disponíveis para o seu aventureiro
+          Itens disponÃ­veis para o seu aventureiro
         </div>
       </div>
 
@@ -227,11 +227,11 @@ export default function MeusEquipamentos({
           <div className="text-2xl opacity-40">?</div>
 
           <div className="mt-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
-            Nenhum Buddy disponível
+            Nenhum Buddy disponÃ­vel
           </div>
 
           <div className="mt-1 text-[9px] text-slate-600">
-            Novos companheiros poderão ser adquiridos na Loja da Guilda.
+            Novos companheiros poderÃ£o ser adquiridos na Loja da Guilda.
           </div>
         </div>
       </section>
