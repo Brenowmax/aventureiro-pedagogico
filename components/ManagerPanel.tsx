@@ -13,10 +13,25 @@ type Student = {
   badge?: string;
   avatar?: string;
   grades?: Record<string, [string, string, string, string]>;
+
+  // DADOS DO ANO LETIVO
+  anoLetivo?: number;
+
+  // TUTOR ATUAL
+  tutorId?: string;
+  tutorNome?: string;
+};
+
+type Tutor = {
+  id: string;
+  nome: string;
+  capacidadeMaxima: number;
+  ativo: boolean;
 };
 
 type ManagerPanelProps = {
   students: Student[];
+  tutors: Tutor[];
 };
 
 type ManagerTab =
@@ -149,18 +164,6 @@ const mockTeachers = [
   },
 ];
 
-const mockTeacherAssignments: Record<
-  string,
-  string[]
-> = {
-  "Professor(a) Arcano": ["s1"],
-  "Mestre das Letras": ["s2"],
-  "Guardião dos Números": ["s3"],
-  "Cartógrafo do Reino": ["s4"],
-  "Mestre das Ciências": [],
-  "Mentor das Artes": [],
-};
-
 const subjects = [
   "Língua Portuguesa",
   "Língua Inglesa",
@@ -223,7 +226,9 @@ function getPerformanceLabel(
 
 export default function ManagerPanel({
   students,
+  tutors = [],
 }: ManagerPanelProps) {
+
   const [activeTab, setActiveTab] =
     useState<ManagerTab>("overview");
 
@@ -259,6 +264,59 @@ export default function ManagerPanel({
 
   const [objectiveCreated, setObjectiveCreated] =
     useState(false);
+
+  /*
+   ============================================================
+   CONFIGURAÇÃO DOS TUTORES
+   ============================================================
+  */
+
+  const [tutorConfigs, setTutorConfigs] =
+    useState<Tutor[]>(tutors);
+
+  function getTutorConfig(
+    teacherId: string
+  ): Tutor | undefined {
+    return tutorConfigs.find(
+      (tutor) => tutor.id === teacherId
+    );
+  }
+
+  function updateTutorCapacity(
+    teacherId: string,
+    value: number
+  ) {
+    const capacity = Math.max(
+      0,
+      Math.floor(value)
+    );
+
+    setTutorConfigs((current) =>
+      current.map((tutor) =>
+        tutor.id === teacherId
+          ? {
+              ...tutor,
+              capacidadeMaxima: capacity,
+            }
+          : tutor
+      )
+    );
+  }
+
+  function toggleTutor(
+    teacherId: string
+  ) {
+    setTutorConfigs((current) =>
+      current.map((tutor) =>
+        tutor.id === teacherId
+          ? {
+              ...tutor,
+              ativo: !tutor.ativo,
+            }
+          : tutor
+      )
+    );
+  }
 
   /*
    ============================================================
@@ -313,6 +371,22 @@ export default function ManagerPanel({
       return matchesSearch && matchesClass;
     });
   }, [students, search, classFilter]);
+
+  /*
+   ============================================================
+   TUTORADOS DO ANO LETIVO
+   ============================================================
+  */
+
+  function getTutorStudents(
+    tutorId: string
+  ): Student[] {
+    return students.filter(
+      (student) =>
+        student.anoLetivo === 2026 &&
+        student.tutorId === tutorId
+    );
+  }
 
   /*
    ============================================================
@@ -714,9 +788,11 @@ export default function ManagerPanel({
   */
 
   function renderStudents() {
-    const classes = Array.from(
+    const classOptions = Array.from(
       new Set(
-        students.map((student) => student.turma || "Sem Turma")
+        students.map(
+          (student) => student.turma || "Sem Turma"
+        )
       )
     ).sort();
 
@@ -727,7 +803,8 @@ export default function ManagerPanel({
 
       const matchesClass =
         studentClassFilter === "Todas" ||
-        (student.turma || "Sem Turma") === studentClassFilter;
+        (student.turma || "Sem Turma") ===
+          studentClassFilter;
 
       return matchesSearch && matchesClass;
     });
@@ -971,7 +1048,7 @@ export default function ManagerPanel({
                 Todas as turmas
               </option>
 
-              {classes.map((className) => (
+              {classOptions.map((className) => (
                 <option
                   key={className}
                   value={className}
@@ -998,29 +1075,12 @@ export default function ManagerPanel({
             <table className="w-full text-left text-xs">
               <thead className="border-b border-slate-800 bg-slate-900/80 text-[10px] uppercase tracking-wider text-slate-500">
                 <tr>
-                  <th className="p-4">
-                    Aluno
-                  </th>
-
-                  <th className="p-4 text-center">
-                    Turma
-                  </th>
-
-                  <th className="p-4 text-center">
-                    Nível
-                  </th>
-
-                  <th className="p-4 text-center">
-                    Insígnia
-                  </th>
-
-                  <th className="p-4 text-center">
-                    Status
-                  </th>
-
-                  <th className="p-4 text-center">
-                    Ação
-                  </th>
+                  <th className="p-4">Aluno</th>
+                  <th className="p-4 text-center">Turma</th>
+                  <th className="p-4 text-center">Nível</th>
+                  <th className="p-4 text-center">Insígnia</th>
+                  <th className="p-4 text-center">Status</th>
+                  <th className="p-4 text-center">Ação</th>
                 </tr>
               </thead>
 
@@ -1082,9 +1142,7 @@ export default function ManagerPanel({
                       colSpan={6}
                       className="p-10 text-center"
                     >
-                      <div className="text-3xl">
-                        🔎
-                      </div>
+                      <div className="text-3xl">🔎</div>
 
                       <div className="mt-3 text-xs font-black text-slate-300">
                         Nenhum aluno encontrado
@@ -1147,11 +1205,23 @@ export default function ManagerPanel({
       );
 
       if (teacher) {
-        const teacherStudents =
-          students.filter((student) =>
-            teacher.studentIds.includes(
-              student.id
-            )
+const teacherStudents =
+  getTutorStudents(teacher.id);
+
+        const tutorConfig =
+          getTutorConfig(teacher.id);
+
+        const tutorCapacity =
+          tutorConfig?.capacidadeMaxima ?? 0;
+
+        const tutorActive =
+          tutorConfig?.ativo ?? false;
+
+        const availableSlots =
+          Math.max(
+            0,
+            tutorCapacity -
+              teacherStudents.length
           );
 
         return (
@@ -1178,7 +1248,7 @@ export default function ManagerPanel({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
               <div className="rounded-2xl border border-purple-800/40 bg-purple-950/20 p-5">
                 <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
                   Tutorados
@@ -1223,16 +1293,152 @@ export default function ManagerPanel({
 
               <div className="rounded-2xl border border-amber-800/40 bg-amber-950/20 p-5">
                 <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                  Status
+                  Capacidade
                 </div>
 
-                <div className="mt-2 text-2xl font-black text-amber-300">
-  {teacher.status}
-</div>
+                <div className="mt-2 text-3xl font-black text-amber-300">
+                  {tutorCapacity}
+                </div>
 
                 <div className="mt-1 text-[10px] text-slate-500">
-                  situação institucional
+                  tutorados máximos
                 </div>
+              </div>
+
+              <div
+                className={`rounded-2xl border p-5 ${
+                  tutorActive
+                    ? "border-emerald-800/40 bg-emerald-950/20"
+                    : "border-red-800/40 bg-red-950/20"
+                }`}
+              >
+                <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  Tutoria
+                </div>
+
+                <div
+                  className={`mt-2 text-2xl font-black ${
+                    tutorActive
+                      ? "text-emerald-300"
+                      : "text-red-300"
+                  }`}
+                >
+                  {tutorActive
+                    ? "Disponível"
+                    : "Inativo"}
+                </div>
+
+                <div className="mt-1 text-[10px] text-slate-500">
+                  {availableSlots} vagas restantes
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-indigo-800/40 bg-indigo-950/10 p-6">
+              <div className="text-[9px] font-black uppercase tracking-[0.25em] text-indigo-400">
+                Configuração de Tutoria
+              </div>
+
+              <h4 className="mt-1 text-lg font-black text-white">
+                Capacidade do Tutor
+              </h4>
+
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Defina quantos aventureiros este professor
+                poderá acompanhar no ano letivo.
+              </p>
+
+              <div className="mt-5 grid grid-cols-1 md:grid-cols-[1fr_180px] gap-4">
+                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                        Ocupação atual
+                      </div>
+
+                      <div className="mt-1 text-sm font-black text-white">
+                        {teacherStudents.length} de{" "}
+                        {tutorCapacity} tutorados
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="text-[9px] uppercase text-slate-500">
+                        Vagas
+                      </div>
+
+                      <div className="mt-1 text-xl font-black text-emerald-300">
+                        {availableSlots}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-900">
+                    <div
+                      className="h-full rounded-full bg-indigo-500"
+                      style={{
+                        width: `${
+                          tutorCapacity > 0
+                            ? Math.min(
+                                100,
+                                (teacherStudents.length /
+                                  tutorCapacity) *
+                                  100
+                              )
+                            : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+                    Capacidade máxima
+                  </label>
+
+                  <input
+                    type="number"
+                    min={0}
+                    value={tutorCapacity}
+                    onChange={(e) =>
+                      updateTutorCapacity(
+                        teacher.id,
+                        Number(e.target.value)
+                      )
+                    }
+                    className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm font-black text-white outline-none transition focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+                <div>
+                  <div className="text-xs font-black text-white">
+                    Participação na distribuição anual
+                  </div>
+
+                  <div className="mt-1 text-[10px] leading-5 text-slate-500">
+                    Professores inativos não serão considerados
+                    pelo Conselho da Guilda.
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    toggleTutor(teacher.id)
+                  }
+                  className={`rounded-xl border px-4 py-2.5 text-[10px] font-black transition ${
+                    tutorActive
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
+                      : "border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+                  }`}
+                >
+                  {tutorActive
+                    ? "🟢 Tutor disponível"
+                    : "🔴 Tutor inativo"}
+                </button>
               </div>
             </div>
 
@@ -1425,15 +1631,26 @@ export default function ManagerPanel({
       mockTeachers.length;
 
     const activeTeachers =
-  mockTeachers.filter(
-    (teacher) => teacher.status === "Ativo"
+      mockTeachers.filter(
+        (teacher) => teacher.status === "Ativo"
+      ).length;
+
+const totalTutorados =
+  students.filter(
+    (student) =>
+      student.anoLetivo === 2026 &&
+      !!student.tutorId
   ).length;
 
-    const totalTutorados =
-      mockTeachers.reduce(
-        (total, teacher) =>
-          total +
-          teacher.studentIds.length,
+    const activeTutors =
+      tutorConfigs.filter(
+        (tutor) => tutor.ativo
+      ).length;
+
+    const totalTutorCapacity =
+      tutorConfigs.reduce(
+        (total, tutor) =>
+          total + tutor.capacidadeMaxima,
         0
       );
 
@@ -1454,7 +1671,7 @@ export default function ManagerPanel({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
           <div className="rounded-2xl border border-purple-800/40 bg-purple-950/20 p-5">
             <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
               Professores
@@ -1496,13 +1713,41 @@ export default function ManagerPanel({
               vínculos de tutoria
             </div>
           </div>
+
+          <div className="rounded-2xl border border-amber-800/40 bg-amber-950/20 p-5">
+            <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Capacidade
+            </div>
+
+            <div className="mt-2 text-3xl font-black text-amber-300">
+              {totalTutorCapacity}
+            </div>
+
+            <div className="mt-1 text-[10px] text-slate-500">
+              vagas configuradas
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-indigo-800/40 bg-indigo-950/20 p-5">
+            <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Tutores disponíveis
+            </div>
+
+            <div className="mt-2 text-3xl font-black text-indigo-300">
+              {activeTutors}
+            </div>
+
+            <div className="mt-1 text-[10px] text-slate-500">
+              aptos à distribuição
+            </div>
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-amber-800/40 bg-amber-950/20 px-4 py-3 text-[10px] leading-5 text-amber-300">
+        <div className="rounded-xl border border-amber-800/40 bg-amber-950/20 px-4 py-3 text-[10px] leading-5 text-amber-300">
           ⚠️ Os professores ainda são registros
-          de protótipo. A estrutura já está preparada
-          para receber posteriormente os perfis
-          institucionais da escola.
+          de protótipo. A configuração de tutoria
+          nesta etapa funciona somente durante a
+          sessão atual.
         </div>
 
         <div>
@@ -1522,85 +1767,131 @@ export default function ManagerPanel({
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredTeachers.map(
-            (teacher) => (
-              <div
-                key={teacher.id}
-                className="rounded-2xl border border-slate-800 bg-[#11150f] p-5 transition hover:border-purple-800/60 hover:bg-purple-950/10"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-purple-800/50 bg-purple-950/30 text-2xl">
-                    🧙
-                  </div>
+            (teacher) => {
+              const tutorConfig =
+                getTutorConfig(teacher.id);
 
-                  <div className="min-w-0">
-                    <div className="truncate font-black text-white">
-                      {teacher.name}
-                    </div>
+              const capacity =
+                tutorConfig?.capacidadeMaxima ?? 0;
 
-                    <div className="mt-1 truncate text-[10px] text-slate-500">
-                      {teacher.email}
-                    </div>
-                  </div>
-                </div>
+              const active =
+                tutorConfig?.ativo ?? false;
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {teacher.subjects.map(
-                    (subject) => (
-                      <span
-                        key={subject}
-                        className="rounded-md border border-blue-800/40 bg-blue-950/30 px-2 py-1 text-[9px] font-bold text-blue-300"
-                      >
-                        {subject}
-                      </span>
-                    )
-                  )}
-                </div>
+const current =
+  getTutorStudents(teacher.id).length;
 
-                <div className="mt-5 grid grid-cols-2 gap-2">
-                  <div className="rounded-lg bg-slate-900/60 p-3">
-                    <div className="text-[9px] uppercase text-slate-500">
-                      Tutorados
-                    </div>
+              const available =
+                Math.max(
+                  0,
+                  capacity - current
+                );
 
-                    <div className="mt-1 text-lg font-black text-white">
-                      {
-                        teacher
-                          .studentIds
-                          .length
-                      }
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg bg-slate-900/60 p-3">
-                    <div className="text-[9px] uppercase text-slate-500">
-                      Status
-                    </div>
-
-                    <div
-                      className={`mt-1 text-xs font-black ${
-  teacher.status === "Ativo"
-    ? "text-emerald-400"
-    : "text-red-400"
-}`}
-                    >
-                      {teacher.status}
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSearch(
-                      `teacher:${teacher.id}`
-                    )
-                  }
-                  className="mt-4 w-full rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-[10px] font-black text-purple-300 transition hover:bg-purple-500/20"
+              return (
+                <div
+                  key={teacher.id}
+                  className="rounded-2xl border border-slate-800 bg-[#11150f] p-5 transition hover:border-purple-800/60 hover:bg-purple-950/10"
                 >
-                  🧙 Ver perfil do professor
-                </button>
-              </div>
-            )
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-purple-800/50 bg-purple-950/30 text-2xl">
+                      🧙
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="truncate font-black text-white">
+                        {teacher.name}
+                      </div>
+
+                      <div className="mt-1 truncate text-[10px] text-slate-500">
+                        {teacher.email}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {teacher.subjects.map(
+                      (subject) => (
+                        <span
+                          key={subject}
+                          className="rounded-md border border-blue-800/40 bg-blue-950/30 px-2 py-1 text-[9px] font-bold text-blue-300"
+                        >
+                          {subject}
+                        </span>
+                      )
+                    )}
+                  </div>
+
+                  <div className="mt-5 grid grid-cols-2 gap-2">
+                    <div className="rounded-lg bg-slate-900/60 p-3">
+                      <div className="text-[9px] uppercase text-slate-500">
+                        Tutorados
+                      </div>
+
+                      <div className="mt-1 text-lg font-black text-white">
+                        {current}
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg bg-slate-900/60 p-3">
+                      <div className="text-[9px] uppercase text-slate-500">
+                        Capacidade
+                      </div>
+
+                      <div className="mt-1 text-lg font-black text-amber-300">
+                        {capacity}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <div
+                      className={`rounded-lg p-3 ${
+                        active
+                          ? "bg-emerald-950/30"
+                          : "bg-red-950/30"
+                      }`}
+                    >
+                      <div className="text-[9px] uppercase text-slate-500">
+                        Tutoria
+                      </div>
+
+                      <div
+                        className={`mt-1 text-xs font-black ${
+                          active
+                            ? "text-emerald-400"
+                            : "text-red-400"
+                        }`}
+                      >
+                        {active
+                          ? "Disponível"
+                          : "Inativo"}
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg bg-slate-900/60 p-3">
+                      <div className="text-[9px] uppercase text-slate-500">
+                        Vagas
+                      </div>
+
+                      <div className="mt-1 text-xs font-black text-indigo-300">
+                        {available}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSearch(
+                        `teacher:${teacher.id}`
+                      )
+                    }
+                    className="mt-4 w-full rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-[10px] font-black text-purple-300 transition hover:bg-purple-500/20"
+                  >
+                    🧙 Gerenciar professor
+                  </button>
+                </div>
+              );
+            }
           )}
 
           {!filteredTeachers.length && (

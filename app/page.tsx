@@ -204,6 +204,7 @@ function getPerformanceIcon(perf: string): string {
    DADOS INICIAIS
 ============================================================ */
 const ANO_LETIVO_ATUAL = 2026;
+
 const mockClassStudents: StudentRecord[] = [
   {
     id: "s1",
@@ -223,7 +224,7 @@ const mockClassStudents: StudentRecord[] = [
   {
     id: "s2",
     name: "Beatriz Oliveira",
-    avatar: "🧠",
+    avatar: "🧠",
     level: 7,
     xp: 1850,
     coins: 620,
@@ -238,7 +239,7 @@ const mockClassStudents: StudentRecord[] = [
   {
     id: "s3",
     name: "Arthur Pendelton",
-    avatar: "🛡️",
+    avatar: "🛡️",
     level: 6,
     xp: 1600,
     coins: 530,
@@ -264,6 +265,45 @@ const mockClassStudents: StudentRecord[] = [
     tutorNome: undefined,
     historicoTutorias: [],
     grades: {},
+  },
+];
+
+const mockTutors: TutorRecord[] = [
+  {
+    id: "p1",
+    nome: "Professor(a) Arcano",
+    capacidadeMaxima: 10,
+    ativo: true,
+  },
+  {
+    id: "p2",
+    nome: "Mestre das Letras",
+    capacidadeMaxima: 10,
+    ativo: true,
+  },
+  {
+    id: "p3",
+    nome: "Guardião dos Números",
+    capacidadeMaxima: 10,
+    ativo: true,
+  },
+  {
+    id: "p4",
+    nome: "Cartógrafo do Reino",
+    capacidadeMaxima: 10,
+    ativo: true,
+  },
+  {
+    id: "p5",
+    nome: "Mestre das Ciências",
+    capacidadeMaxima: 10,
+    ativo: true,
+  },
+  {
+    id: "p6",
+    nome: "Mentor das Artes",
+    capacidadeMaxima: 10,
+    ativo: true,
   },
 ];
 
@@ -3454,9 +3494,10 @@ if (!authUserId || !role) {
             setEvents={setEvents}
           />
         ) : role === "manager" ? (
-          <ManagerPanel
-            students={students}
-          />
+<ManagerPanel
+  students={students}
+  tutors={mockTutors}
+/>
         ) : (
           <>
 {activeTab === "inicio" && (
