@@ -59,18 +59,20 @@ export default function AvatarPreview({
         </div>
       )}
 
-      {/* BUDDY */}
-      {buddySrc && (
-        <div className="absolute inset-0 z-40">
-          <Image
-            src={buddySrc}
-            alt=""
-            fill
-            className="object-contain"
-            sizes="(max-width: 640px) 70vw, 320px"
-          />
-        </div>
-      )}
+{/* BUDDY */}
+{buddySrc && (
+  <div className="absolute inset-0 z-40">
+    <div className="absolute bottom-[-2%] right-[-6%] h-[58%] w-[58%]">
+      <Image
+        src={buddySrc}
+        alt="Companheiro do aventureiro"
+        fill
+        className="object-contain"
+        sizes="200px"
+      />
+    </div>
+  </div>
+)}
     </div>
   );
 }

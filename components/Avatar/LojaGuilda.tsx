@@ -42,10 +42,11 @@ const itensLoja: LojaItem[] = [
   },
   {
     id: "buddy-1",
-    nome: "Companheiro Misterioso",
+    nome: "Capy Capivara",
     categoria: "Buddy",
+    src: "/buddy/Capy%20Capivara.png",
     preco: 0,
-    descricao: "Em breve: um companheiro para acompanhar sua aventura.",
+    descricao: "Cheirin bão de bergamota",
   },
 ];
 
