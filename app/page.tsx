@@ -32,6 +32,19 @@ type TeacherTab =
 
 type Grades = [string, string, string, string];
 
+type StudentTutorHistory = {
+  anoLetivo: number;
+  tutorId: string;
+  tutorNome: string;
+};
+
+type TutorRecord = {
+  id: string;
+  nome: string;
+  capacidadeMaxima: number;
+  ativo: boolean;
+};
+
 type StudentRecord = {
   id: string;
   name: string;
@@ -41,6 +54,17 @@ type StudentRecord = {
   coins: number;
   badge: string;
   turma: string;
+
+  // DADOS INSTITUCIONAIS
+  anoLetivo: number;
+
+  // TUTOR ATUAL
+  tutorId?: string;
+  tutorNome?: string;
+
+  // HISTÓRICO DE TUTORIA
+  historicoTutorias: StudentTutorHistory[];
+
   grades: Record<string, Grades>;
 };
 
@@ -179,7 +203,7 @@ function getPerformanceIcon(perf: string): string {
 /* ============================================================
    DADOS INICIAIS
 ============================================================ */
-
+const ANO_LETIVO_ATUAL = 2026;
 const mockClassStudents: StudentRecord[] = [
   {
     id: "s1",
@@ -190,6 +214,10 @@ const mockClassStudents: StudentRecord[] = [
     coins: 450,
     badge: "Mago das Letras",
     turma: "9º Ano A",
+    anoLetivo: ANO_LETIVO_ATUAL,
+    tutorId: undefined,
+    tutorNome: undefined,
+    historicoTutorias: [],
     grades: {},
   },
   {
@@ -201,6 +229,10 @@ const mockClassStudents: StudentRecord[] = [
     coins: 620,
     badge: "Arquimaga das Letras",
     turma: "9º Ano A",
+    anoLetivo: ANO_LETIVO_ATUAL,
+    tutorId: undefined,
+    tutorNome: undefined,
+    historicoTutorias: [],
     grades: {},
   },
   {
@@ -212,6 +244,10 @@ const mockClassStudents: StudentRecord[] = [
     coins: 530,
     badge: "Guardião do Conhecimento",
     turma: "9º Ano A",
+    anoLetivo: ANO_LETIVO_ATUAL,
+    tutorId: undefined,
+    tutorNome: undefined,
+    historicoTutorias: [],
     grades: {},
   },
   {
@@ -223,6 +259,10 @@ const mockClassStudents: StudentRecord[] = [
     coins: 340,
     badge: "Aventureiro",
     turma: "9º Ano A",
+    anoLetivo: ANO_LETIVO_ATUAL,
+    tutorId: undefined,
+    tutorNome: undefined,
+    historicoTutorias: [],
     grades: {},
   },
 ];
@@ -755,17 +795,23 @@ function TeacherPanel({
         Math.floor(Math.random() * avatars.length)
       ];
 
-    const newStudent: StudentRecord = {
-      id: `s-${Date.now()}`,
-      name: newStudentName.trim(),
-      avatar: randomAvatar,
-      level: 1,
-      xp: 0,
-      coins: 0,
-      badge: "Iniciante do Reino",
-      turma: newStudentClass.trim(),
-      grades: {},
-    };
+const newStudent: StudentRecord = {
+  id: `s-${Date.now()}`,
+  name: newStudentName.trim(),
+  avatar: randomAvatar,
+  level: 1,
+  xp: 0,
+  coins: 0,
+  badge: "Iniciante do Reino",
+  turma: newStudentClass.trim(),
+
+  anoLetivo: ANO_LETIVO_ATUAL,
+  tutorId: undefined,
+  tutorNome: undefined,
+  historicoTutorias: [],
+
+  grades: {},
+};
 
     setStudents((prev) => [
       newStudent,
@@ -3263,6 +3309,10 @@ function handleComprarItem(item: {
       coins: 0,
       badge: "Iniciante",
       turma: "Sem Turma",
+    anoLetivo: ANO_LETIVO_ATUAL,
+    tutorId: undefined,
+    tutorNome: undefined,
+    historicoTutorias: [],
       grades: {},
     };
 
