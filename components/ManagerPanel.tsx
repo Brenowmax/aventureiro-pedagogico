@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import CalendarioGuilda from "@/components/CalendarioGuilda";
+import GestaoTutoria from "@/components/GestaoTutoria";
 
 type Student = {
   id: string;
@@ -43,6 +44,7 @@ type ManagerTab =
   | "map"
   | "events"
   | "objectives"
+  | "tutoria"
   | "calendar";
 
 const tabs: {
@@ -99,6 +101,12 @@ const tabs: {
     label: "Objetivos Coletivos",
     group: "Gestão",
   },
+  {
+  id: "tutoria",
+  icon: "🏰",
+  label: "Gestão de Tutoria",
+  group: "Escola",
+},
   {
     id: "calendar",
     icon: "📅",
@@ -274,6 +282,9 @@ export default function ManagerPanel({
   const [tutorConfigs, setTutorConfigs] =
     useState<Tutor[]>(tutors);
 
+const [preferenciasTutoria, setPreferenciasTutoria] =
+  useState<Record<string, string[]>>({});
+
   function getTutorConfig(
     teacherId: string
   ): Tutor | undefined {
@@ -378,15 +389,38 @@ export default function ManagerPanel({
    ============================================================
   */
 
-  function getTutorStudents(
-    tutorId: string
-  ): Student[] {
-    return students.filter(
-      (student) =>
-        student.anoLetivo === 2026 &&
-        student.tutorId === tutorId
-    );
-  }
+function getTutorStudents(
+  tutorId: string
+): Student[] {
+  return students.filter(
+    (student) =>
+      student.anoLetivo === 2026 &&
+      student.tutorId === tutorId
+  );
+}
+
+function atualizarPreferenciasTutoria(
+  studentId: string,
+  preferencias: string[]
+) {
+  const preferenciasUnicas = preferencias
+    .filter(
+      (id, index) =>
+        preferencias.indexOf(id) === index
+    )
+    .slice(0, 4);
+
+  setPreferenciasTutoria((current) => ({
+    ...current,
+    [studentId]: preferenciasUnicas,
+  }));
+}
+
+function getProfessoresDisponiveis() {
+  return mockTeachers.filter(
+    (teacher) => teacher.status === "Ativo"
+  );
+}
 
   /*
    ============================================================
@@ -2616,6 +2650,14 @@ const current =
 
       case "objectives":
         return renderObjectives();
+
+      case "tutoria":
+        return (
+          <GestaoTutoria
+            students={students}
+            tutors={tutorConfigs}
+          />
+        );
 
       case "calendar":
         return <CalendarioGuilda />;

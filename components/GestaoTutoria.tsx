@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+
+/* ============================================================
+   TIPOS
+============================================================ */
 
 type Student = {
   id: string;
@@ -9,7 +13,6 @@ type Student = {
   anoLetivo?: number;
   tutorId?: string;
   tutorNome?: string;
-  preferenciasTutor?: string[];
 };
 
 type Tutor = {
@@ -19,860 +22,1661 @@ type Tutor = {
   ativo: boolean;
 };
 
-type ElectionStatus = "aberta" | "encerrada";
-
-type ElectionConfig = {
-  anoLetivo: number;
-  status: ElectionStatus;
-  periodoInicio: string;
-  periodoFim: string;
-  maxPreferencias: number;
+type Preference = {
+  studentId: string;
+  first?: string;
+  second?: string;
+  third?: string;
+  fourth?: string;
 };
-
-type PreferenceMap = Record<string, string[]>;
-
-type DistributionStatus = "proposta" | "confirmado";
 
 type Distribution = {
   studentId: string;
-  studentName: string;
   tutorId: string;
-  tutorNome: string;
-  preferencia: number;
-  status: DistributionStatus;
-  origem: "eleicao" | "manual";
+  status: "proposta" | "confirmado";
 };
 
-type Props = {
+type GestaoTutoriaProps = {
   students: Student[];
   tutors: Tutor[];
-  setStudents: React.Dispatch<React.SetStateAction<Student[]>>;
 };
+
+/* ============================================================
+   CONSTANTES
+============================================================ */
 
 const ANO_LETIVO_ATUAL = 2026;
-const MAX_PREFERENCIAS = 4;
-const MAX_TUTORADOS_PADRAO = 20;
+const CAPACIDADE_PADRAO_TUTOR = 20;
 
-const ELECTION_KEY = `aventureiro-eleicao-tutoria-${ANO_LETIVO_ATUAL}`;
-const PREFS_KEY = `aventureiro-preferencias-tutoria-${ANO_LETIVO_ATUAL}`;
-const DISTRIBUTION_KEY = `aventureiro-distribuicao-tutoria-${ANO_LETIVO_ATUAL}`;
+type Tab =
+  | "configuracao"
+  | "preferencias"
+  | "distribuicao"
+  | "resultado";
 
-const DEFAULT_ELECTION: ElectionConfig = {
-  anoLetivo: ANO_LETIVO_ATUAL,
-  status: "aberta",
-  periodoInicio: "2026-01-15",
-  periodoFim: "2026-02-15",
-  maxPreferencias: MAX_PREFERENCIAS,
-};
-
-function readStorage<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-
-  try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function saveStorage<T>(key: string, value: T) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(key, JSON.stringify(value));
-}
+/* ============================================================
+   COMPONENTE
+============================================================ */
 
 export default function GestaoTutoria({
   students,
   tutors,
-  setStudents,
-}: Props) {
-  const [config, setConfig] = useState<ElectionConfig>(
-    DEFAULT_ELECTION
-  );
+}: GestaoTutoriaProps) {
+  const [activeTab, setActiveTab] =
+    useState<Tab>("configuracao");
+
+  /* ==========================================================
+     CONFIGURAÇÃO
+  ========================================================== */
+
+  const [tutoriaAberta, setTutoriaAberta] =
+    useState(true);
+
+  const [maxPreferencias, setMaxPreferencias] =
+    useState(4);
+
+  const [periodoInicio, setPeriodoInicio] =
+    useState("2026-01-15");
+
+  const [periodoFim, setPeriodoFim] =
+    useState("2026-02-15");
+
+  const [configSaved, setConfigSaved] =
+    useState(false);
+
+  /* ==========================================================
+     PREFERÊNCIAS
+  ========================================================== */
 
   const [preferences, setPreferences] =
-    useState<PreferenceMap>({});
+    useState<Preference[]>([]);
+
+  const [preferenceSearch, setPreferenceSearch] =
+    useState("");
+
+  const [preferenceClassFilter, setPreferenceClassFilter] =
+    useState("Todas");
+
+  /* ==========================================================
+     DISTRIBUIÇÃO
+  ========================================================== */
 
   const [distributions, setDistributions] =
     useState<Distribution[]>([]);
 
-  const [activeTab, setActiveTab] = useState<
-    "configuracao" | "preferencias" | "distribuicao" | "resultado"
-  >("configuracao");
+  const [distributionGenerated, setDistributionGenerated] =
+    useState(false);
 
-  const [manualStudentId, setManualStudentId] =
-    useState("");
+  const [distributionConfirmed, setDistributionConfirmed] =
+    useState(false);
 
-  const [manualTutorId, setManualTutorId] =
-    useState("");
+  const [
+    selectedStudentForDistribution,
+    setSelectedStudentForDistribution,
+  ] = useState<string | null>(null);
 
-  const [message, setMessage] = useState("");
+  /* ==========================================================
+     ALUNOS E TUTORES ATUAIS
+  ========================================================== */
 
-  useEffect(() => {
-    setConfig(readStorage(ELECTION_KEY, DEFAULT_ELECTION));
-    setPreferences(readStorage(PREFS_KEY, {}));
-    setDistributions(readStorage(DISTRIBUTION_KEY, []));
-  }, []);
-
-  useEffect(() => {
-    saveStorage(ELECTION_KEY, config);
-  }, [config]);
-
-  useEffect(() => {
-    saveStorage(PREFS_KEY, preferences);
-  }, [preferences]);
-
-  useEffect(() => {
-    saveStorage(DISTRIBUTION_KEY, distributions);
-  }, [distributions]);
-
-  const eligibleStudents = useMemo(
-    () =>
-      students.filter(
-        (student) => student.anoLetivo === ANO_LETIVO_ATUAL
-      ),
-    [students]
-  );
-
-  const activeTutors = useMemo(
-    () =>
-      tutors.filter(
-        (tutor) =>
-          tutor.ativo &&
-          tutor.capacidadeMaxima > 0
-      ),
-    [tutors]
-  );
-
-  const electionStudents = useMemo(
-    () =>
-      eligibleStudents.filter(
-        (student) =>
-          (preferences[student.id] || []).length > 0
-      ),
-    [eligibleStudents, preferences]
-  );
-
-  const confirmedDistributions = useMemo(
-    () =>
-      distributions.filter(
-        (item) => item.status === "confirmado"
-      ),
-    [distributions]
-  );
-
-  const tutorCount = (tutorId: string) =>
-    students.filter(
+  const eligibleStudents = useMemo(() => {
+    return students.filter(
       (student) =>
-        student.anoLetivo === ANO_LETIVO_ATUAL &&
-        student.tutorId === tutorId
-    ).length;
+        student.anoLetivo === ANO_LETIVO_ATUAL
+    );
+  }, [students]);
 
-  function notify(text: string) {
-    setMessage(text);
-    window.setTimeout(() => setMessage(""), 4000);
-  }
+  const activeTutors = useMemo(() => {
+    return tutors.filter(
+      (tutor) => tutor.ativo
+    );
+  }, [tutors]);
 
-  function updateConfig(
-    field: "periodoInicio" | "periodoFim",
-    value: string
-  ) {
-    setConfig((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  }
-
-  function closeElection() {
-    if (config.status === "encerrada") return;
-
-    const totalRespondentes = electionStudents.length;
-
-    const confirmed = window.confirm(
-      `Encerrar a eleição de Professor-Tutor para ${ANO_LETIVO_ATUAL}?\\n\\n${totalRespondentes} aluno(s) já registraram preferências. Depois do encerramento, os alunos não poderão mais alterar suas escolhas.`
+  const classes = useMemo(() => {
+    const unique = Array.from(
+      new Set(
+        eligibleStudents.map(
+          (student) =>
+            student.turma || "Sem Turma"
+        )
+      )
     );
 
-    if (!confirmed) return;
-
-    setConfig((current) => ({
-      ...current,
-      status: "encerrada",
-    }));
-
-    setActiveTab("distribuicao");
-    notify(
-      "🔒 Eleição encerrada. As preferências dos alunos estão bloqueadas."
+    return unique.sort((a, b) =>
+      a.localeCompare(b)
     );
-  }
+  }, [eligibleStudents]);
 
-  function openElection() {
-    if (config.status === "aberta") return;
+  /* ==========================================================
+     ALUNOS FILTRADOS
+  ========================================================== */
 
-    const confirmed = window.confirm(
-      "Reabrir a eleição permitirá novamente que os alunos alterem suas preferências. Essa ação deve ser usada somente antes da confirmação da distribuição."
-    );
+  const filteredPreferenceStudents =
+    useMemo(() => {
+      const normalizedSearch =
+        preferenceSearch
+          .trim()
+          .toLowerCase();
 
-    if (!confirmed) return;
+      return eligibleStudents.filter(
+        (student) => {
+          const matchesSearch =
+            !normalizedSearch ||
+            student.name
+              .toLowerCase()
+              .includes(normalizedSearch);
 
-    setConfig((current) => ({
-      ...current,
-      status: "aberta",
-    }));
+          const matchesClass =
+            preferenceClassFilter ===
+              "Todas" ||
+            (student.turma ||
+              "Sem Turma") ===
+              preferenceClassFilter;
 
-    notify("🗳️ Eleição reaberta pelo Gestor.");
-  }
-
-  function calculateDistribution() {
-    if (config.status !== "encerrada") {
-      notify(
-        "⚠️ Primeiro encerre a eleição para processar a distribuição."
+          return (
+            matchesSearch &&
+            matchesClass
+          );
+        }
       );
-      return;
-    }
+    }, [
+      eligibleStudents,
+      preferenceSearch,
+      preferenceClassFilter,
+    ]);
 
-    const occupied = new Map<string, number>();
+  /* ==========================================================
+     FUNÇÕES DE PREFERÊNCIA
+  ========================================================== */
 
-    activeTutors.forEach((tutor) => {
-      occupied.set(tutor.id, tutorCount(tutor.id));
-    });
-
-    const proposals: Distribution[] = [];
-
-    const orderedStudents = [...eligibleStudents].sort((a, b) =>
-      a.name.localeCompare(b.name)
+  function getPreference(
+    studentId: string
+  ): Preference {
+    return (
+      preferences.find(
+        (preference) =>
+          preference.studentId ===
+          studentId
+      ) || {
+        studentId,
+      }
     );
+  }
 
-    orderedStudents.forEach((student) => {
-      const prefs = preferences[student.id] || [];
-
-      if (student.tutorId) return;
-
-      for (let index = 0; index < prefs.length; index += 1) {
-        const tutorId = prefs[index];
-        const tutor = activeTutors.find(
-          (item) => item.id === tutorId
+  function updatePreference(
+    studentId: string,
+    position:
+      | "first"
+      | "second"
+      | "third"
+      | "fourth",
+    tutorId: string
+  ) {
+    setPreferences((current) => {
+      const existing =
+        current.find(
+          (preference) =>
+            preference.studentId ===
+            studentId
         );
 
-        if (!tutor) continue;
+      if (!existing) {
+        return [
+          ...current,
+          {
+            studentId,
+            [position]:
+              tutorId || undefined,
+          },
+        ];
+      }
 
-        const current = occupied.get(tutor.id) || 0;
-        const capacity =
-          tutor.capacidadeMaxima || MAX_TUTORADOS_PADRAO;
+      return current.map(
+        (preference) =>
+          preference.studentId ===
+          studentId
+            ? {
+                ...preference,
+                [position]:
+                  tutorId || undefined,
+              }
+            : preference
+      );
+    });
 
-        if (current >= capacity) continue;
+    setDistributionGenerated(false);
+    setDistributionConfirmed(false);
+  }
 
-        occupied.set(tutor.id, current + 1);
+  /* ==========================================================
+     ESTATÍSTICAS DAS PREFERÊNCIAS
+  ========================================================== */
 
-        proposals.push({
-          studentId: student.id,
-          studentName: student.name,
-          tutorId: tutor.id,
-          tutorNome: tutor.nome,
-          preferencia: index + 1,
-          status: "proposta",
-          origem: "eleicao",
-        });
+  const studentsWithPreferences =
+    useMemo(() => {
+      return eligibleStudents.filter(
+        (student) => {
+          const preference =
+            getPreference(student.id);
 
-        break;
+          return Boolean(
+            preference.first ||
+              preference.second ||
+              preference.third ||
+              preference.fourth
+          );
+        }
+      ).length;
+    }, [
+      eligibleStudents,
+      preferences,
+    ]);
+
+  const studentsWithoutPreferences =
+    eligibleStudents.length -
+    studentsWithPreferences;
+
+  /* ==========================================================
+     CONTAGEM DE PREFERÊNCIAS POR TUTOR
+  ========================================================== */
+
+  const preferenceCounts = useMemo(() => {
+    const counts: Record<
+      string,
+      {
+        first: number;
+        total: number;
+      }
+    > = {};
+
+    activeTutors.forEach((tutor) => {
+      counts[tutor.id] = {
+        first: 0,
+        total: 0,
+      };
+    });
+
+    preferences.forEach((preference) => {
+      if (
+        preference.first &&
+        counts[preference.first]
+      ) {
+        counts[preference.first].first++;
+        counts[preference.first].total++;
+      }
+
+      if (
+        preference.second &&
+        counts[preference.second]
+      ) {
+        counts[preference.second].total++;
+      }
+
+      if (
+        preference.third &&
+        counts[preference.third]
+      ) {
+        counts[preference.third].total++;
+      }
+
+      if (
+        preference.fourth &&
+        counts[preference.fourth]
+      ) {
+        counts[preference.fourth].total++;
       }
     });
 
-    setDistributions(proposals);
-    setActiveTab("distribuicao");
+    return counts;
+  }, [
+    preferences,
+    activeTutors,
+  ]);
 
-    notify(
-      `⚖️ Distribuição calculada: ${proposals.length} proposta(s).`
+  /* ==========================================================
+     DISTRIBUIÇÃO
+     
+     Regra:
+     1ª preferência primeiro.
+     Depois 2ª.
+     Depois 3ª.
+     Depois 4ª.
+
+     A distribuição respeita a capacidade máxima
+     definida para cada Professor-Tutor.
+  ========================================================== */
+
+  function generateDistribution() {
+    const newDistribution: Distribution[] = [];
+
+    const occupied: Record<
+      string,
+      number
+    > = {};
+
+    activeTutors.forEach((tutor) => {
+      occupied[tutor.id] =
+        tutor.capacidadeMaxima ||
+        CAPACIDADE_PADRAO_TUTOR;
+    });
+
+    const currentOccupied: Record<
+      string,
+      number
+    > = {};
+
+    activeTutors.forEach((tutor) => {
+      currentOccupied[tutor.id] = 0;
+    });
+
+    const orderedStudents = [
+      ...eligibleStudents,
+    ];
+
+    orderedStudents.forEach((student) => {
+      const preference =
+        getPreference(student.id);
+
+      const options = [
+        preference.first,
+        preference.second,
+        preference.third,
+        preference.fourth,
+      ].filter(
+        (value): value is string =>
+          Boolean(value)
+      );
+
+      let assignedTutor:
+        | string
+        | undefined;
+
+      for (const tutorId of options) {
+        const tutor =
+          activeTutors.find(
+            (item) =>
+              item.id === tutorId
+          );
+
+        if (!tutor) continue;
+
+        const capacidade =
+          tutor.capacidadeMaxima ||
+          CAPACIDADE_PADRAO_TUTOR;
+
+        if (
+          currentOccupied[tutorId] <
+          capacidade
+        ) {
+          assignedTutor = tutorId;
+          break;
+        }
+      }
+
+      if (assignedTutor) {
+        currentOccupied[assignedTutor]++;
+
+        newDistribution.push({
+          studentId:
+            student.id,
+          tutorId:
+            assignedTutor,
+          status: "proposta",
+        });
+      }
+    });
+
+    setDistributions(
+      newDistribution
+    );
+
+    setDistributionGenerated(true);
+    setDistributionConfirmed(false);
+  }
+
+  /* ==========================================================
+     DISTRIBUIÇÃO ATUAL DO ALUNO
+  ========================================================== */
+
+  function getDistribution(
+    studentId: string
+  ) {
+    return distributions.find(
+      (distribution) =>
+        distribution.studentId ===
+        studentId
     );
   }
 
-  function confirmDistribution() {
-    if (config.status !== "encerrada") {
-      notify("⚠️ A eleição precisa estar encerrada.");
+  /* ==========================================================
+     ALTERAÇÃO MANUAL PELO GESTOR
+  ========================================================== */
+
+  function manuallyAssignTutor(
+    studentId: string,
+    tutorId: string
+  ) {
+    const tutor =
+      activeTutors.find(
+        (item) =>
+          item.id === tutorId
+      );
+
+    if (!tutor) return;
+
+    const capacidade =
+      tutor.capacidadeMaxima ||
+      CAPACIDADE_PADRAO_TUTOR;
+
+    const currentCount =
+      distributions.filter(
+        (distribution) =>
+          distribution.tutorId ===
+            tutorId &&
+          distribution.studentId !==
+            studentId
+      ).length;
+
+    if (
+      currentCount >= capacidade
+    ) {
       return;
     }
 
-    const pending = distributions.filter(
-      (item) => item.status === "proposta"
-    );
-
-    if (!pending.length) {
-      notify("⚠️ Não há propostas pendentes para confirmar.");
-      return;
-    }
-
-    const confirmed = window.confirm(
-      `Confirmar ${pending.length} atribuição(ões) de Professor-Tutor? Depois da confirmação, elas passam a ser o vínculo oficial do aluno.`
-    );
-
-    if (!confirmed) return;
-
-    setStudents((current) =>
-      current.map((student) => {
-        const distribution = pending.find(
-          (item) => item.studentId === student.id
+    setDistributions((current) => {
+      const exists =
+        current.some(
+          (distribution) =>
+            distribution.studentId ===
+            studentId
         );
 
-        if (!distribution) return student;
+      if (exists) {
+        return current.map(
+          (distribution) =>
+            distribution.studentId ===
+            studentId
+              ? {
+                  ...distribution,
+                  tutorId,
+                  status:
+                    "proposta",
+                }
+              : distribution
+        );
+      }
 
-        return {
-          ...student,
-          tutorId: distribution.tutorId,
-          tutorNome: distribution.tutorNome,
-        };
-      })
-    );
+      return [
+        ...current,
+        {
+          studentId,
+          tutorId,
+          status:
+            "proposta",
+        },
+      ];
+    });
+
+    setDistributionConfirmed(false);
+  }
+
+  /* ==========================================================
+     CONFIRMAR DISTRIBUIÇÃO
+  ========================================================== */
+
+  function confirmDistribution() {
+    if (
+      !distributionGenerated ||
+      distributions.length === 0
+    ) {
+      return;
+    }
 
     setDistributions((current) =>
-      current.map((item) =>
-        item.status === "proposta"
-          ? {
-              ...item,
-              status: "confirmado",
-            }
-          : item
+      current.map(
+        (distribution) => ({
+          ...distribution,
+          status:
+            "confirmado",
+        })
       )
     );
 
-    setActiveTab("resultado");
-    notify(
-      "🏆 Distribuição confirmada. Os vínculos de tutoria foram atualizados."
-    );
+    setDistributionConfirmed(true);
   }
 
-  function assignManualTutor() {
-    const student = students.find(
-      (item) => item.id === manualStudentId
-    );
+  /* ==========================================================
+     SALVAR CONFIGURAÇÃO
+  ========================================================== */
 
-    const tutor = activeTutors.find(
-      (item) => item.id === manualTutorId
-    );
+  function saveConfiguration() {
+    setConfigSaved(true);
 
-    if (!student || !tutor) {
-      notify("⚠️ Selecione o aluno e o Professor-Tutor.");
-      return;
-    }
-
-    if (student.tutorId) {
-      notify(
-        "⚠️ Este aluno já possui um Professor-Tutor."
-      );
-      return;
-    }
-
-    const current = tutorCount(tutor.id);
-    const capacity =
-      tutor.capacidadeMaxima || MAX_TUTORADOS_PADRAO;
-
-    if (current >= capacity) {
-      notify(
-        `⚠️ ${tutor.nome} já atingiu o limite de ${capacity} tutorados.`
-      );
-      return;
-    }
-
-    setStudents((currentStudents) =>
-      currentStudents.map((item) =>
-        item.id === student.id
-          ? {
-              ...item,
-              tutorId: tutor.id,
-              tutorNome: tutor.nome,
-            }
-          : item
-      )
-    );
-
-    setDistributions((current) => [
-      ...current,
-      {
-        studentId: student.id,
-        studentName: student.name,
-        tutorId: tutor.id,
-        tutorNome: tutor.nome,
-        preferencia: 0,
-        status: "confirmado",
-        origem: "manual",
-      },
-    ]);
-
-    setManualStudentId("");
-    setManualTutorId("");
-
-    notify(
-      `➕ ${student.name} foi adicionado manualmente a ${tutor.nome}.`
-    );
+    setTimeout(() => {
+      setConfigSaved(false);
+    }, 3000);
   }
 
-  function removeProposal(studentId: string) {
-    setDistributions((current) =>
-      current.filter(
-        (item) =>
-          !(
-            item.studentId === studentId &&
-            item.status === "proposta"
-          )
-      )
-    );
+  /* ==========================================================
+     CONTAGEM DE TUTORADOS
+  ========================================================== */
 
-    notify("✏️ Proposta removida para ajuste manual.");
+  function getAssignedCount(
+    tutorId: string
+  ) {
+    return distributions.filter(
+      (distribution) =>
+        distribution.tutorId ===
+        tutorId
+    ).length;
   }
 
-  return (
-    <section className="space-y-6">
-      {message && (
-        <div className="fixed right-5 top-5 z-50 max-w-sm rounded-2xl border border-amber-500/40 bg-[#161c14] p-4 text-xs font-black text-amber-300 shadow-2xl">
-          {message}
-        </div>
-      )}
+  /* ==========================================================
+     ALUNOS SEM DISTRIBUIÇÃO
+  ========================================================== */
 
-      <div className="rounded-3xl border border-indigo-800/50 bg-gradient-to-br from-[#1a1830] via-[#11150f] to-[#0a0d0a] p-6 shadow-2xl">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="text-[9px] font-black uppercase tracking-[0.3em] text-indigo-400">
-              🏰 Conselho da Guilda
-            </div>
-            <h2 className="mt-1 text-3xl font-black text-white">
-              Gestão de Tutoria
-            </h2>
-            <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">
-              Organize a eleição anual, processe as quatro preferências dos
-              alunos e confirme os vínculos oficiais de Professor-Tutor.
-            </p>
+  const studentsWithoutDistribution =
+    eligibleStudents.filter(
+      (student) =>
+        !getDistribution(student.id)
+    );
+
+  /* ==========================================================
+     RENDER — CONFIGURAÇÃO
+  ========================================================== */
+
+  function renderConfiguracao() {
+    return (
+      <div className="space-y-6">
+        <div>
+          <div className="text-[9px] font-black uppercase tracking-[0.25em] text-amber-500">
+            🏰 Conselho da Guilda
           </div>
 
-          <div
-            className={
-              config.status === "aberta"
-                ? "rounded-2xl border border-emerald-500/30 bg-emerald-950/30 px-5 py-4 text-center"
-                : "rounded-2xl border border-slate-600/40 bg-slate-950/50 px-5 py-4 text-center"
-            }
-          >
-            <div className="text-[9px] font-black uppercase tracking-wider text-slate-500">
-              Eleição {ANO_LETIVO_ATUAL}
+          <h2 className="mt-1 text-2xl font-black text-white">
+            Configuração da Tutoria
+          </h2>
+
+          <p className="mt-1 text-xs text-slate-500">
+            Defina as regras da escolha de
+            Professores-Tutores para o ano
+            letivo.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-amber-800/40 bg-amber-950/20 p-5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="text-sm font-black text-white">
+                Período de escolha
+              </div>
+
+              <div className="mt-1 text-[10px] text-slate-500">
+                Os alunos poderão registrar suas
+                preferências durante o período
+                definido.
+              </div>
             </div>
-            <div
-              className={
-                config.status === "aberta"
-                  ? "mt-1 text-lg font-black text-emerald-300"
-                  : "mt-1 text-lg font-black text-slate-300"
+
+            <button
+              type="button"
+              onClick={() =>
+                setTutoriaAberta(
+                  (value) => !value
+                )
               }
+              className={`rounded-xl border px-4 py-2 text-[10px] font-black ${
+                tutoriaAberta
+                  ? "border-emerald-500/40 bg-emerald-950/40 text-emerald-300"
+                  : "border-rose-500/40 bg-rose-950/40 text-rose-300"
+              }`}
             >
-              {config.status === "aberta"
-                ? "🟢 Aberta"
-                : "🔒 Encerrada"}
+              {tutoriaAberta
+                ? "● ABERTA"
+                : "● FECHADA"}
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
+            <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Ano letivo
+            </label>
+
+            <div className="mt-2 rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm font-black text-white">
+              {ANO_LETIVO_ATUAL}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
+            <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Máximo de preferências
+            </label>
+
+            <select
+              value={maxPreferencias}
+              onChange={(event) =>
+                setMaxPreferencias(
+                  Number(
+                    event.target.value
+                  )
+                )
+              }
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm font-bold text-white outline-none"
+            >
+              <option value={1}>
+                1 preferência
+              </option>
+
+              <option value={2}>
+                2 preferências
+              </option>
+
+              <option value={3}>
+                3 preferências
+              </option>
+
+              <option value={4}>
+                4 preferências
+              </option>
+            </select>
+
+            <div className="mt-2 text-[9px] text-slate-600">
+              Padrão atual: 4 preferências.
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="flex flex-wrap gap-2">
-        {[
-          ["configuracao", "⚙️ Configuração"],
-          ["preferencias", "🗳️ Preferências"],
-          ["distribuicao", "⚖️ Distribuição"],
-          ["resultado", "🏆 Resultado"],
-        ].map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() =>
-              setActiveTab(
-                id as
-                  | "configuracao"
-                  | "preferencias"
-                  | "distribuicao"
-                  | "resultado"
-              )
-            }
-            className={
-              activeTab === id
-                ? "rounded-xl border border-indigo-500/40 bg-indigo-500/15 px-4 py-2.5 text-[10px] font-black text-indigo-300"
-                : "rounded-xl border border-slate-800 bg-[#11150f] px-4 py-2.5 text-[10px] font-black text-slate-500 transition hover:text-slate-300"
-            }
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+        <div className="rounded-2xl border border-amber-800/30 bg-amber-950/10 p-5">
+          <div className="text-[10px] font-black uppercase tracking-wider text-amber-500">
+            Capacidade dos Professores-Tutores
+          </div>
 
-      {activeTab === "configuracao" && (
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
-              <div className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+          <div className="mt-2 text-xs text-slate-500">
+            O limite recomendado para cada
+            Professor-Tutor é de até{" "}
+            <span className="font-black text-amber-300">
+              {CAPACIDADE_PADRAO_TUTOR}
+            </span>{" "}
+            tutorandos.
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
+          <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+            Período de escolha
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[10px] text-slate-500">
                 Início
-              </div>
+              </label>
+
               <input
                 type="date"
-                value={config.periodoInicio}
+                value={periodoInicio}
                 onChange={(event) =>
-                  updateConfig("periodoInicio", event.target.value)
+                  setPeriodoInicio(
+                    event.target.value
+                  )
                 }
-                disabled={config.status === "encerrada"}
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-bold text-white outline-none"
+                className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white"
               />
             </div>
 
-            <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
-              <div className="text-[9px] font-black uppercase tracking-wider text-slate-500">
-                Encerramento previsto
-              </div>
+            <div>
+              <label className="text-[10px] text-slate-500">
+                Encerramento
+              </label>
+
               <input
                 type="date"
-                value={config.periodoFim}
+                value={periodoFim}
                 onChange={(event) =>
-                  updateConfig("periodoFim", event.target.value)
+                  setPeriodoFim(
+                    event.target.value
+                  )
                 }
-                disabled={config.status === "encerrada"}
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-bold text-white outline-none"
+                className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white"
               />
-            </div>
-
-            <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
-              <div className="text-[9px] font-black uppercase tracking-wider text-slate-500">
-                Preferências por aluno
-              </div>
-              <div className="mt-2 text-3xl font-black text-indigo-300">
-                {config.maxPreferencias}
-              </div>
-              <div className="text-[10px] text-slate-500">
-                máximo permitido
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-indigo-800/40 bg-indigo-950/15 p-5">
-            <div className="text-sm font-black text-white">
-              🗳️ Regra anual
-            </div>
-            <p className="mt-2 text-xs leading-6 text-slate-400">
-              A eleição ocorre uma única vez no ano letivo. O aluno escolhe
-              até quatro professores durante o período definido. O Gestor
-              encerra a eleição e, depois disso, as escolhas ficam bloqueadas.
-            </p>
-
-            <div className="mt-4 flex flex-wrap gap-3">
-              {config.status === "aberta" ? (
-                <button
-                  type="button"
-                  onClick={closeElection}
-                  className="rounded-xl border border-rose-500/40 bg-rose-950/30 px-5 py-3 text-xs font-black text-rose-300 transition hover:bg-rose-900/30"
-                >
-                  🔒 Encerrar eleição
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={openElection}
-                  disabled={distributions.some(
-                    (item) => item.status === "confirmado"
-                  )}
-                  className="rounded-xl border border-amber-500/40 bg-amber-950/30 px-5 py-3 text-xs font-black text-amber-300 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  🗳️ Reabrir antes da confirmação
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
-              <div className="text-[9px] uppercase tracking-wider text-slate-500">
-                Alunos elegíveis
-              </div>
-              <div className="mt-1 text-3xl font-black text-white">
-                {eligibleStudents.length}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
-              <div className="text-[9px] uppercase tracking-wider text-slate-500">
-                Responderam
-              </div>
-              <div className="mt-1 text-3xl font-black text-indigo-300">
-                {electionStudents.length}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
-              <div className="text-[9px] uppercase tracking-wider text-slate-500">
-                Professores ativos
-              </div>
-              <div className="mt-1 text-3xl font-black text-emerald-300">
-                {activeTutors.length}
-              </div>
             </div>
           </div>
         </div>
-      )}
 
-      {activeTab === "preferencias" && (
-        <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6">
-          <div className="mb-5">
-            <div className="text-[9px] font-black uppercase tracking-[0.25em] text-indigo-400">
-              Respostas registradas
-            </div>
-            <h3 className="mt-1 text-xl font-black text-white">
-              Preferências dos Aventureiros
-            </h3>
+        <div>
+          <div className="mb-3 text-[10px] font-black uppercase tracking-wider text-slate-500">
+            Professores-Tutores participantes
           </div>
 
-          <div className="space-y-3">
-            {eligibleStudents.map((student) => {
-              const prefs = preferences[student.id] || [];
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {tutors.map((tutor) => {
+              const assigned =
+                getAssignedCount(
+                  tutor.id
+                );
+
+              const capacidade =
+                tutor.capacidadeMaxima ||
+                CAPACIDADE_PADRAO_TUTOR;
 
               return (
                 <div
-                  key={student.id}
-                  className="rounded-xl border border-slate-800 bg-slate-950/40 p-4"
+                  key={tutor.id}
+                  className="rounded-2xl border border-slate-800 bg-[#11150f] p-5"
                 >
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="font-black text-white">
-                        {student.name}
+                        {tutor.nome}
                       </div>
-                      <div className="mt-1 text-[9px] text-slate-500">
-                        {student.turma || "Sem turma"}
+
+                      <div className="mt-1 text-[10px] text-slate-500">
+                        Capacidade:{" "}
+                        {capacidade}
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      {Array.from({
-                        length: MAX_PREFERENCIAS,
-                      }).map((_, index) => {
-                        const tutorId = prefs[index];
-                        const tutor = tutors.find(
-                          (item) => item.id === tutorId
-                        );
+                    <span
+                      className={`rounded-lg border px-2 py-1 text-[9px] font-black ${
+                        tutor.ativo
+                          ? "border-emerald-500/30 bg-emerald-950/30 text-emerald-300"
+                          : "border-rose-500/30 bg-rose-950/30 text-rose-300"
+                      }`}
+                    >
+                      {tutor.ativo
+                        ? "ATIVO"
+                        : "INATIVO"}
+                    </span>
+                  </div>
 
-                        return (
-                          <span
-                            key={index}
-                            className="rounded-lg border border-indigo-800/40 bg-indigo-950/30 px-3 py-2 text-[9px] font-bold text-indigo-300"
-                          >
-                            {index + 1}ª{" "}
-                            {tutor?.nome || "Não escolhida"}
-                          </span>
-                        );
-                      })}
-                    </div>
+                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-900">
+                    <div
+                      className="h-full rounded-full bg-amber-500"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          capacidade
+                            ? (assigned /
+                                capacidade) *
+                                100
+                            : 0
+                        )}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="mt-2 text-[10px] text-slate-500">
+                    {assigned} /{" "}
+                    {capacidade} vagas ocupadas
                   </div>
                 </div>
               );
             })}
-
-            {!eligibleStudents.length && (
-              <div className="p-8 text-center text-xs text-slate-500">
-                Nenhum aluno elegível.
-              </div>
-            )}
           </div>
         </div>
-      )}
 
-      {activeTab === "distribuicao" && (
-        <div className="space-y-5">
-          <div className="rounded-2xl border border-amber-800/40 bg-amber-950/10 p-5">
-            <div className="text-sm font-black text-white">
-              ⚖️ Distribuição por ordem de preferência
-            </div>
-            <p className="mt-2 text-xs leading-6 text-slate-400">
-              O sistema tenta a 1ª, depois a 2ª, 3ª e 4ª preferência,
-              respeitando a capacidade de 20 tutorados por Professor-Tutor.
-              O Gestor pode remover uma proposta e fazer o vínculo manual.
-            </p>
+        <button
+          type="button"
+          onClick={saveConfiguration}
+          className="rounded-xl border border-amber-500/40 bg-amber-600/20 px-5 py-3 text-[10px] font-black uppercase tracking-wider text-amber-300 transition hover:bg-amber-600/30"
+        >
+          💾 Salvar configuração
+        </button>
 
-            <button
-              type="button"
-              onClick={calculateDistribution}
-              className="mt-4 rounded-xl border border-amber-500/40 bg-amber-950/30 px-5 py-3 text-xs font-black text-amber-300 transition hover:bg-amber-900/30"
-            >
-              ⚖️ Calcular distribuição
-            </button>
+        {configSaved && (
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/30 px-4 py-3 text-[10px] font-bold text-emerald-300">
+            ✓ Configuração salva no protótipo.
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  /* ==========================================================
+     RENDER — PREFERÊNCIAS
+  ========================================================== */
+
+  function renderPreferencias() {
+    return (
+      <div className="space-y-6">
+        <div>
+          <div className="text-[9px] font-black uppercase tracking-[0.25em] text-amber-500">
+            📜 Livro das Preferências
           </div>
 
-          <div className="space-y-3">
-            {distributions
-              .filter((item) => item.status === "proposta")
-              .map((item) => (
-                <div
-                  key={`${item.studentId}-${item.tutorId}`}
-                  className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-[#11150f] p-4 lg:flex-row lg:items-center lg:justify-between"
-                >
-                  <div>
-                    <div className="font-black text-white">
-                      {item.studentName}
-                    </div>
-                    <div className="mt-1 text-[10px] text-emerald-300">
-                      → {item.tutorNome}
-                    </div>
-                  </div>
+          <h2 className="mt-1 text-2xl font-black text-white">
+            Preferências dos Alunos
+          </h2>
 
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-lg border border-indigo-800/40 bg-indigo-950/30 px-3 py-1.5 text-[9px] font-black text-indigo-300">
-                      {item.preferencia}ª preferência
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeProposal(item.studentId)}
-                      className="rounded-lg border border-rose-500/30 bg-rose-950/20 px-3 py-1.5 text-[9px] font-black text-rose-300"
+          <p className="mt-1 text-xs text-slate-500">
+            Visualização administrativa das
+            escolhas de Professor-Tutor.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="rounded-2xl border border-emerald-800/40 bg-emerald-950/20 p-5">
+            <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Responderam
+            </div>
+
+            <div className="mt-2 text-3xl font-black text-emerald-300">
+              {studentsWithPreferences}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-amber-800/40 bg-amber-950/20 p-5">
+            <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Sem preferência
+            </div>
+
+            <div className="mt-2 text-3xl font-black text-amber-300">
+              {studentsWithoutPreferences}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-purple-800/40 bg-purple-950/20 p-5">
+            <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Total de alunos
+            </div>
+
+            <div className="mt-2 text-3xl font-black text-purple-300">
+              {eligibleStudents.length}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input
+            type="text"
+            placeholder="🔎 Procurar aluno..."
+            value={preferenceSearch}
+            onChange={(event) =>
+              setPreferenceSearch(
+                event.target.value
+              )
+            }
+            className="rounded-xl border border-slate-800 bg-[#11150f] px-4 py-3 text-xs text-white outline-none placeholder:text-slate-600"
+          />
+
+          <select
+            value={preferenceClassFilter}
+            onChange={(event) =>
+              setPreferenceClassFilter(
+                event.target.value
+              )
+            }
+            className="rounded-xl border border-slate-800 bg-[#11150f] px-4 py-3 text-xs text-white outline-none"
+          >
+            <option value="Todas">
+              Todas as turmas
+            </option>
+
+            {classes.map((turma) => (
+              <option
+                key={turma}
+                value={turma}
+              >
+                {turma}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-[#11150f]">
+          <table className="w-full min-w-[1150px]">
+            <thead>
+              <tr className="border-b border-slate-800 bg-slate-950/50">
+                <th className="px-4 py-4 text-left text-[9px] font-black uppercase tracking-wider text-slate-500">
+                  Aluno
+                </th>
+
+                <th className="px-4 py-4 text-left text-[9px] font-black uppercase tracking-wider text-slate-500">
+                  Turma
+                </th>
+
+                <th className="px-4 py-4 text-left text-[9px] font-black uppercase tracking-wider text-slate-500">
+                  1ª preferência
+                </th>
+
+                <th className="px-4 py-4 text-left text-[9px] font-black uppercase tracking-wider text-slate-500">
+                  2ª preferência
+                </th>
+
+                <th className="px-4 py-4 text-left text-[9px] font-black uppercase tracking-wider text-slate-500">
+                  3ª preferência
+                </th>
+
+                <th className="px-4 py-4 text-left text-[9px] font-black uppercase tracking-wider text-slate-500">
+                  4ª preferência
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredPreferenceStudents.map(
+                (student) => {
+                  const preference =
+                    getPreference(
+                      student.id
+                    );
+
+                  return (
+                    <tr
+                      key={student.id}
+                      className="border-b border-slate-900"
                     >
-                      Remover
-                    </button>
-                  </div>
-                </div>
-              ))}
+                      <td className="px-4 py-4">
+                        <div className="font-bold text-white">
+                          {student.name}
+                        </div>
+                      </td>
 
-            {!distributions.some(
-              (item) => item.status === "proposta"
-            ) && (
-              <div className="rounded-xl border border-dashed border-slate-700 p-8 text-center text-xs text-slate-500">
-                Nenhuma proposta pendente. Calcule a distribuição após encerrar
-                a eleição.
-              </div>
-            )}
+                      <td className="px-4 py-4 text-xs text-slate-400">
+                        {student.turma ||
+                          "Sem Turma"}
+                      </td>
+
+                      {(
+                        [
+                          "first",
+                          "second",
+                          "third",
+                          "fourth",
+                        ] as const
+                      ).map(
+                        (position) => {
+                          const preferenceNumber =
+                            position ===
+                            "first"
+                              ? 1
+                              : position ===
+                                "second"
+                              ? 2
+                              : position ===
+                                "third"
+                              ? 3
+                              : 4;
+
+                          return (
+                            <td
+                              key={position}
+                              className="px-4 py-4"
+                            >
+                              <select
+                                value={
+                                  preference[
+                                    position
+                                  ] || ""
+                                }
+                                onChange={(
+                                  event
+                                ) =>
+                                  updatePreference(
+                                    student.id,
+                                    position,
+                                    event
+                                      .target
+                                      .value
+                                  )
+                                }
+                                disabled={
+                                  preferenceNumber >
+                                  maxPreferencias
+                                }
+                                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-[10px] text-white outline-none disabled:cursor-not-allowed disabled:opacity-30"
+                              >
+                                <option value="">
+                                  Não escolhida
+                                </option>
+
+                                {activeTutors.map(
+                                  (
+                                    tutor
+                                  ) => (
+                                    <option
+                                      key={
+                                        tutor.id
+                                      }
+                                      value={
+                                        tutor.id
+                                      }
+                                    >
+                                      {
+                                        tutor.nome
+                                      }
+                                    </option>
+                                  )
+                                )}
+                              </select>
+                            </td>
+                          );
+                        }
+                      )}
+                    </tr>
+                  );
+                }
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-[10px] text-slate-500">
+          ℹ️ Cada aluno poderá registrar até{" "}
+          <span className="font-black text-amber-300">
+            {maxPreferencias}
+          </span>{" "}
+          preferências de Professor-Tutor.
+          A distribuição definitiva depende da
+          capacidade dos tutores e da confirmação
+          da gestão.
+        </div>
+      </div>
+    );
+  }
+
+  /* ==========================================================
+     RENDER — DISTRIBUIÇÃO
+  ========================================================== */
+
+  function renderDistribuicao() {
+    return (
+      <div className="space-y-6">
+        <div>
+          <div className="text-[9px] font-black uppercase tracking-[0.25em] text-amber-500">
+            ⚔️ Câmara de Distribuição
           </div>
 
-          {distributions.some(
-            (item) => item.status === "proposta"
-          ) && (
+          <h2 className="mt-1 text-2xl font-black text-white">
+            Distribuição dos Tutorandos
+          </h2>
+
+          <p className="mt-1 text-xs text-slate-500">
+            Gere uma proposta de distribuição
+            a partir das preferências registradas.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-amber-800/40 bg-amber-950/20 p-5">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div className="font-black text-white">
+                Proposta de distribuição
+              </div>
+
+              <div className="mt-1 text-[10px] text-slate-500">
+                O sistema tenta atender a 1ª,
+                depois a 2ª, 3ª e 4ª preferência
+                dentro das vagas disponíveis.
+              </div>
+            </div>
+
             <button
               type="button"
-              onClick={confirmDistribution}
-              className="w-full rounded-xl border border-emerald-500/40 bg-emerald-950/30 px-5 py-3 text-xs font-black text-emerald-300 transition hover:bg-emerald-900/30"
+              onClick={
+                generateDistribution
+              }
+              className="rounded-xl border border-amber-500/40 bg-amber-600/20 px-5 py-3 text-[10px] font-black uppercase tracking-wider text-amber-300 hover:bg-amber-600/30"
             >
-              ✅ Confirmar distribuição
+              ⚔️ Gerar distribuição
             </button>
-          )}
-
-          <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6">
-            <div className="text-sm font-black text-white">
-              ➕ Inclusão manual durante o ano
-            </div>
-            <p className="mt-2 text-xs leading-6 text-slate-500">
-              Para novos alunos matriculados depois da eleição, não reabra a
-              eleição. Faça a atribuição diretamente e respeite a capacidade
-              máxima do Professor-Tutor.
-            </p>
-
-            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-              <select
-                value={manualStudentId}
-                onChange={(event) =>
-                  setManualStudentId(event.target.value)
-                }
-                className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-3 text-xs font-bold text-white outline-none"
-              >
-                <option value="">Selecionar novo aluno</option>
-                {eligibleStudents
-                  .filter((student) => !student.tutorId)
-                  .map((student) => (
-                    <option key={student.id} value={student.id}>
-                      {student.name}
-                    </option>
-                  ))}
-              </select>
-
-              <select
-                value={manualTutorId}
-                onChange={(event) =>
-                  setManualTutorId(event.target.value)
-                }
-                className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-3 text-xs font-bold text-white outline-none"
-              >
-                <option value="">Selecionar Professor-Tutor</option>
-                {activeTutors.map((tutor) => (
-                  <option key={tutor.id} value={tutor.id}>
-                    {tutor.nome} ({tutorCount(tutor.id)}/
-                    {tutor.capacidadeMaxima})
-                  </option>
-                ))}
-              </select>
-
-              <button
-                type="button"
-                onClick={assignManualTutor}
-                className="rounded-xl border border-purple-500/40 bg-purple-950/30 px-4 py-3 text-xs font-black text-purple-300 transition hover:bg-purple-900/30"
-              >
-                ➕ Adicionar tutorado
-              </button>
-            </div>
           </div>
         </div>
-      )}
 
-      {activeTab === "resultado" && (
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-emerald-800/40 bg-emerald-950/20 p-5">
-              <div className="text-[9px] uppercase tracking-wider text-slate-500">
-                Vínculos confirmados
-              </div>
-              <div className="mt-1 text-3xl font-black text-emerald-300">
-                {confirmedDistributions.length}
-              </div>
+        {!distributionGenerated ? (
+          <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-10 text-center">
+            <div className="text-5xl">
+              🗺️
             </div>
 
-            <div className="rounded-2xl border border-indigo-800/40 bg-indigo-950/20 p-5">
-              <div className="text-[9px] uppercase tracking-wider text-slate-500">
-                Sem tutor
-              </div>
-              <div className="mt-1 text-3xl font-black text-indigo-300">
-                {
-                  eligibleStudents.filter(
-                    (student) => !student.tutorId
-                  ).length
-                }
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-amber-800/40 bg-amber-950/20 p-5">
-              <div className="text-[9px] uppercase tracking-wider text-slate-500">
-                Professores ativos
-              </div>
-              <div className="mt-1 text-3xl font-black text-amber-300">
-                {activeTutors.length}
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-6">
-            <h3 className="text-xl font-black text-white">
-              🏆 Tutoria oficial
+            <h3 className="mt-3 font-black text-white">
+              Nenhuma distribuição gerada
             </h3>
 
-            <div className="mt-5 space-y-2">
-              {eligibleStudents.map((student) => (
-                <div
-                  key={student.id}
-                  className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-950/40 p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <div className="font-black text-white">
-                      {student.name}
+            <p className="mt-1 text-xs text-slate-500">
+              Registre as preferências e
+              gere uma proposta.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {activeTutors.map(
+                (tutor) => {
+                  const assigned =
+                    distributions.filter(
+                      (
+                        distribution
+                      ) =>
+                        distribution.tutorId ===
+                        tutor.id
+                    );
+
+                  const firstChoices =
+                    preferenceCounts[
+                      tutor.id
+                    ]?.first || 0;
+
+                  const capacidade =
+                    tutor.capacidadeMaxima ||
+                    CAPACIDADE_PADRAO_TUTOR;
+
+                  return (
+                    <div
+                      key={tutor.id}
+                      className="rounded-2xl border border-slate-800 bg-[#11150f] p-5"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="font-black text-white">
+                            {tutor.nome}
+                          </div>
+
+                          <div className="mt-1 text-[10px] text-slate-500">
+                            {firstChoices}{" "}
+                            primeira(s)
+                            preferência(s)
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg border border-amber-500/30 bg-amber-950/30 px-2 py-1 text-[9px] font-black text-amber-300">
+                          {
+                            assigned.length
+                          }{" "}
+                          /{" "}
+                          {capacidade}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 space-y-2">
+                        {assigned.length ===
+                        0 ? (
+                          <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-3 text-[10px] text-slate-600">
+                            Nenhum tutorando
+                            atribuído.
+                          </div>
+                        ) : (
+                          assigned.map(
+                            (
+                              distribution
+                            ) => {
+                              const student =
+                                eligibleStudents.find(
+                                  (
+                                    item
+                                  ) =>
+                                    item.id ===
+                                    distribution.studentId
+                                );
+
+                              if (!student)
+                                return null;
+
+                              return (
+                                <div
+                                  key={
+                                    distribution.studentId
+                                  }
+                                  className="flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2"
+                                >
+                                  <div>
+                                    <div className="text-[10px] font-bold text-white">
+                                      {
+                                        student.name
+                                      }
+                                    </div>
+
+                                    <div className="text-[9px] text-slate-600">
+                                      {
+                                        student.turma
+                                      }
+                                    </div>
+                                  </div>
+
+                                  <span className="text-[9px] text-emerald-400">
+                                    {distribution.status ===
+                                    "confirmado"
+                                      ? "✓"
+                                      : "Proposta"}
+                                  </span>
+                                </div>
+                              );
+                            }
+                          )
+                        )}
+                      </div>
                     </div>
-                    <div className="text-[9px] text-slate-500">
-                      {student.turma || "Sem turma"}
-                    </div>
+                  );
+                }
+              )}
+            </div>
+
+            {studentsWithoutDistribution.length >
+              0 && (
+              <div className="rounded-2xl border border-rose-800/40 bg-rose-950/20 p-5">
+                <div className="font-black text-rose-300">
+                  ⚠️ Alunos sem distribuição
+                </div>
+
+                <div className="mt-3 space-y-2">
+                  {studentsWithoutDistribution.map(
+                    (student) => (
+                      <div
+                        key={student.id}
+                        className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 rounded-xl border border-rose-900/30 bg-slate-950/30 p-3"
+                      >
+                        <div>
+                          <div className="text-xs font-bold text-white">
+                            {student.name}
+                          </div>
+
+                          <div className="text-[9px] text-slate-500">
+                            {student.turma ||
+                              "Sem Turma"}
+                          </div>
+                        </div>
+
+                        <select
+                          value={
+                            selectedStudentForDistribution ===
+                            student.id
+                              ? getDistribution(
+                                  student.id
+                                )
+                                  ?.tutorId ||
+                                ""
+                              : ""
+                          }
+                          onChange={(event) => {
+                            setSelectedStudentForDistribution(
+                              student.id
+                            );
+
+                            if (
+                              event.target
+                                .value
+                            ) {
+                              manuallyAssignTutor(
+                                student.id,
+                                event
+                                  .target
+                                  .value
+                              );
+                            }
+                          }}
+                          className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-[10px] text-white"
+                        >
+                          <option value="">
+                            Escolher tutor
+                          </option>
+
+                          {activeTutors.map(
+                            (tutor) => {
+                              const count =
+                                getAssignedCount(
+                                  tutor.id
+                                );
+
+                              const capacidade =
+                                tutor.capacidadeMaxima ||
+                                CAPACIDADE_PADRAO_TUTOR;
+
+                              return (
+                                <option
+                                  key={
+                                    tutor.id
+                                  }
+                                  value={
+                                    tutor.id
+                                  }
+                                  disabled={
+                                    count >=
+                                    capacidade
+                                  }
+                                >
+                                  {
+                                    tutor.nome
+                                  }{" "}
+                                  ({count}/
+                                  {
+                                    capacidade
+                                  })
+                                </option>
+                              );
+                            }
+                          )}
+                        </select>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-5">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <div className="font-black text-white">
+                    Confirmar distribuição
                   </div>
 
-                  <div
-                    className={
-                      student.tutorNome
-                        ? "rounded-lg border border-emerald-500/30 bg-emerald-950/30 px-3 py-2 text-[10px] font-black text-emerald-300"
-                        : "rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-[10px] font-black text-slate-500"
-                    }
-                  >
-                    {student.tutorNome ||
-                      "Aguardando atribuição"}
+                  <div className="mt-1 text-[10px] text-slate-500">
+                    Depois de confirmada, a
+                    distribuição passa a ser
+                    considerada definitiva.
                   </div>
                 </div>
-              ))}
+
+                <button
+                  type="button"
+                  onClick={
+                    confirmDistribution
+                  }
+                  disabled={
+                    distributionConfirmed
+                  }
+                  className="rounded-xl border border-emerald-500/40 bg-emerald-950/30 px-5 py-3 text-[10px] font-black uppercase tracking-wider text-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {distributionConfirmed
+                    ? "✓ Distribuição confirmada"
+                    : "👑 Confirmar distribuição"}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  /* ==========================================================
+     RENDER — RESULTADO
+  ========================================================== */
+
+  function renderResultado() {
+    const confirmed =
+      distributions.filter(
+        (distribution) =>
+          distribution.status ===
+          "confirmado"
+      );
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <div className="text-[9px] font-black uppercase tracking-[0.25em] text-amber-500">
+            👑 Registro Real
+          </div>
+
+          <h2 className="mt-1 text-2xl font-black text-white">
+            Resultado da Tutoria
+          </h2>
+
+          <p className="mt-1 text-xs text-slate-500">
+            Relação definitiva entre
+            Professores-Tutores e seus
+            tutorandos.
+          </p>
+        </div>
+
+        {!distributionConfirmed ? (
+          <div className="rounded-2xl border border-slate-800 bg-[#11150f] p-10 text-center">
+            <div className="text-5xl">
+              📜
+            </div>
+
+            <h3 className="mt-3 font-black text-white">
+              Distribuição ainda não
+              confirmada
+            </h3>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Confirme a distribuição na aba
+              correspondente para gerar o
+              resultado definitivo.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-5">
+              <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
+                ✓ Tutoria confirmada
+              </div>
+
+              <div className="mt-1 text-sm font-black text-white">
+                Ano letivo {ANO_LETIVO_ATUAL}
+              </div>
+
+              <div className="mt-1 text-[10px] text-slate-500">
+                {confirmed.length} aluno(s)
+                distribuído(s).
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {activeTutors.map(
+                (tutor) => {
+                  const tutorStudents =
+                    confirmed.filter(
+                      (
+                        distribution
+                      ) =>
+                        distribution.tutorId ===
+                        tutor.id
+                    );
+
+                  return (
+                    <div
+                      key={tutor.id}
+                      className="rounded-2xl border border-slate-800 bg-[#11150f] p-5"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <div className="font-black text-white">
+                            {tutor.nome}
+                          </div>
+
+                          <div className="mt-1 text-[10px] text-slate-500">
+                            Professor-Tutor
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg border border-amber-500/30 bg-amber-950/30 px-2 py-1 text-[9px] font-black text-amber-300">
+                          {
+                            tutorStudents.length
+                          }{" "}
+                          tutorando(s)
+                        </div>
+                      </div>
+
+                      <div className="mt-4 space-y-2">
+                        {tutorStudents.map(
+                          (
+                            distribution
+                          ) => {
+                            const student =
+                              eligibleStudents.find(
+                                (
+                                  item
+                                ) =>
+                                  item.id ===
+                                  distribution.studentId
+                              );
+
+                            if (!student)
+                              return null;
+
+                            return (
+                              <div
+                                key={
+                                  student.id
+                                }
+                                className="rounded-xl border border-slate-800 bg-slate-950/50 p-3"
+                              >
+                                <div className="font-bold text-white">
+                                  {
+                                    student.name
+                                  }
+                                </div>
+
+                                <div className="mt-1 text-[9px] text-slate-500">
+                                  {student.turma ||
+                                    "Sem Turma"}
+                                </div>
+                              </div>
+                            );
+                          }
+                        )}
+
+                        {tutorStudents.length ===
+                          0 && (
+                          <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 text-center text-[10px] text-slate-600">
+                            Nenhum tutorando
+                            atribuído.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  /* ==========================================================
+     RENDER PRINCIPAL
+  ========================================================== */
+
+  return (
+    <section className="space-y-6">
+      {/* CABEÇALHO */}
+
+      <div className="rounded-3xl border border-amber-900/40 bg-gradient-to-br from-[#1b1e17] via-[#11150f] to-[#0a0d0a] p-6 sm:p-8 shadow-2xl">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-500">
+              🏰 Administração do Reino
+            </div>
+
+            <h1 className="mt-1 text-3xl font-black text-white">
+              Gestão de Tutoria
+            </h1>
+
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
+              Organize as preferências dos
+              alunos, distribua os tutorandos
+              entre os Professores-Tutores e
+              confirme a composição da tutoria.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-amber-800/40 bg-amber-950/20 px-5 py-4">
+            <div className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+              Ano letivo
+            </div>
+
+            <div className="mt-1 text-2xl font-black text-amber-300">
+              {ANO_LETIVO_ATUAL}
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* NAVEGAÇÃO */}
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <button
+          type="button"
+          onClick={() =>
+            setActiveTab(
+              "configuracao"
+            )
+          }
+          className={`rounded-xl border px-3 py-3 text-[10px] font-black transition ${
+            activeTab ===
+            "configuracao"
+              ? "border-amber-500/40 bg-amber-950/40 text-amber-300"
+              : "border-slate-800 bg-[#11150f] text-slate-500 hover:text-white"
+          }`}
+        >
+          ⚙️ Configuração
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            setActiveTab(
+              "preferencias"
+            )
+          }
+          className={`rounded-xl border px-3 py-3 text-[10px] font-black transition ${
+            activeTab ===
+            "preferencias"
+              ? "border-amber-500/40 bg-amber-950/40 text-amber-300"
+              : "border-slate-800 bg-[#11150f] text-slate-500 hover:text-white"
+          }`}
+        >
+          📜 Preferências
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            setActiveTab(
+              "distribuicao"
+            )
+          }
+          className={`rounded-xl border px-3 py-3 text-[10px] font-black transition ${
+            activeTab ===
+            "distribuicao"
+              ? "border-amber-500/40 bg-amber-950/40 text-amber-300"
+              : "border-slate-800 bg-[#11150f] text-slate-500 hover:text-white"
+          }`}
+        >
+          ⚔️ Distribuição
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            setActiveTab(
+              "resultado"
+            )
+          }
+          className={`rounded-xl border px-3 py-3 text-[10px] font-black transition ${
+            activeTab ===
+            "resultado"
+              ? "border-amber-500/40 bg-amber-950/40 text-amber-300"
+              : "border-slate-800 bg-[#11150f] text-slate-500 hover:text-white"
+          }`}
+        >
+          👑 Resultado
+        </button>
+      </div>
+
+      {/* CONTEÚDO */}
+
+      {activeTab ===
+        "configuracao" &&
+        renderConfiguracao()}
+
+      {activeTab ===
+        "preferencias" &&
+        renderPreferencias()}
+
+      {activeTab ===
+        "distribuicao" &&
+        renderDistribuicao()}
+
+      {activeTab ===
+        "resultado" &&
+        renderResultado()}
     </section>
   );
 }

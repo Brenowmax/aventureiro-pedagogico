@@ -62,6 +62,10 @@ type StudentRecord = {
   tutorId?: string;
   tutorNome?: string;
 
+  // PREFERÊNCIAS DE TUTORIA
+  // Ordem: [1ª, 2ª, 3ª, 4ª preferência]
+  preferenciasTutoria: string[];
+
   // HISTÓRICO DE TUTORIA
   historicoTutorias: StudentTutorHistory[];
 
@@ -219,6 +223,7 @@ const mockClassStudents: StudentRecord[] = [
     tutorId: undefined,
     tutorNome: undefined,
     historicoTutorias: [],
+preferenciasTutoria: [],
     grades: {},
   },
   {
@@ -234,6 +239,7 @@ const mockClassStudents: StudentRecord[] = [
     tutorId: undefined,
     tutorNome: undefined,
     historicoTutorias: [],
+preferenciasTutoria: [],
     grades: {},
   },
   {
@@ -249,6 +255,7 @@ const mockClassStudents: StudentRecord[] = [
     tutorId: undefined,
     tutorNome: undefined,
     historicoTutorias: [],
+preferenciasTutoria: [],
     grades: {},
   },
   {
@@ -264,6 +271,7 @@ const mockClassStudents: StudentRecord[] = [
     tutorId: undefined,
     tutorNome: undefined,
     historicoTutorias: [],
+preferenciasTutoria: [],
     grades: {},
   },
 ];
@@ -272,37 +280,37 @@ const mockTutors: TutorRecord[] = [
   {
     id: "p1",
     nome: "Professor(a) Arcano",
-    capacidadeMaxima: 10,
+    capacidadeMaxima: 20,
     ativo: true,
   },
   {
     id: "p2",
     nome: "Mestre das Letras",
-    capacidadeMaxima: 10,
+    capacidadeMaxima: 20,
     ativo: true,
   },
   {
     id: "p3",
     nome: "Guardião dos Números",
-    capacidadeMaxima: 10,
+    capacidadeMaxima: 20,
     ativo: true,
   },
   {
     id: "p4",
     nome: "Cartógrafo do Reino",
-    capacidadeMaxima: 10,
+    capacidadeMaxima: 20,
     ativo: true,
   },
   {
     id: "p5",
     nome: "Mestre das Ciências",
-    capacidadeMaxima: 10,
+    capacidadeMaxima: 20,
     ativo: true,
   },
   {
     id: "p6",
     nome: "Mentor das Artes",
-    capacidadeMaxima: 10,
+    capacidadeMaxima: 20,
     ativo: true,
   },
 ];
@@ -849,7 +857,7 @@ const newStudent: StudentRecord = {
   tutorId: undefined,
   tutorNome: undefined,
   historicoTutorias: [],
-
+preferenciasTutoria: [],
   grades: {},
 };
 
