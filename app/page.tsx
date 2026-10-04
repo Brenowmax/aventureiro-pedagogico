@@ -3236,6 +3236,9 @@ const [itensComprados, setItensComprados] =
   const [selectedStudentId, setSelectedStudentId] =
     useState<string>("s1");
 
+const [preferenciasConfirmadas, setPreferenciasConfirmadas] =
+  useState(false);
+
 const [condutas, setCondutas] = useState<any[]>([]);
 
 useEffect(() => {
@@ -3837,6 +3840,214 @@ if (!authUserId || !role) {
       </div>
     )}
 
+    {/* ======================================================
+        ESCOLHA DO PROFESSOR-TUTOR
+    ====================================================== */}
+    <section className="rounded-2xl border border-amber-700/40 bg-[#10140f] p-5 shadow-lg">
+
+      <div className="mb-5 flex items-start gap-4">
+
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-amber-600/40 bg-amber-600/10 text-2xl">
+          🏰
+        </div>
+
+        <div>
+          <div className="text-[8px] font-black uppercase tracking-[0.2em] text-amber-500">
+            Conselho dos Tutores
+          </div>
+
+          <h2 className="mt-1 text-xl font-black text-white">
+            Escolha seu Professor-Tutor
+          </h2>
+
+          <p className="mt-1 text-xs leading-relaxed text-slate-400">
+            Escolha até 4 Professores-Tutores em ordem de preferência.
+          </p>
+        </div>
+
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+
+        {[0, 1, 2, 3].map((index) => (
+
+          <div
+            key={index}
+            className="rounded-xl border border-slate-800 bg-[#080b08] p-4"
+          >
+
+            <label className="mb-2 block text-[10px] font-black uppercase tracking-wider text-amber-500">
+              {index + 1}ª preferência
+            </label>
+
+            <select
+              value={
+                currentStudent.preferenciasTutoria?.[index] ?? ""
+              }
+              onChange={(e) => {
+
+                const tutorId = e.target.value;
+
+                const preferencias = [
+                  ...(currentStudent.preferenciasTutoria ?? []),
+                ];
+
+                while (preferencias.length < 4) {
+                  preferencias.push("");
+                }
+
+                // Impede escolher o mesmo Professor-Tutor duas vezes
+                const jaEscolhido = preferencias.some(
+                  (id, position) =>
+                    position !== index && id === tutorId
+                );
+
+                if (tutorId && jaEscolhido) {
+                  return;
+                }
+
+                preferencias[index] = tutorId;
+
+                setStudents((prev) =>
+                  prev.map((student) =>
+                    student.id === currentStudent.id
+                      ? {
+                          ...student,
+                          preferenciasTutoria: preferencias,
+                        }
+                      : student
+                  )
+                );
+
+                // Salva as preferências do aluno
+                try {
+                  localStorage.setItem(
+                    `aventureiro-preferencias-tutoria-${ANO_LETIVO_ATUAL}`,
+                    JSON.stringify({
+                      studentId: currentStudent.id,
+                      preferenciasTutoria: preferencias,
+                    })
+                  );
+                } catch {
+                  // Ignora falha de armazenamento no modo demonstração
+                }
+
+              }}
+              className="w-full rounded-xl border border-slate-700 bg-[#10140f] px-3 py-3 text-xs font-bold text-white outline-none transition focus:border-amber-600"
+            >
+
+              <option value="">
+                Selecione um Professor-Tutor...
+              </option>
+
+              {mockTutors
+                .filter((tutor) => tutor.ativo)
+                .map((tutor) => {
+
+                  const escolhidoEmOutraPosicao =
+                    currentStudent.preferenciasTutoria?.some(
+                      (id, position) =>
+                        position !== index &&
+                        id === tutor.id
+                    );
+
+                  if (escolhidoEmOutraPosicao) {
+                    return null;
+                  }
+
+                  return (
+                    <option
+                      key={tutor.id}
+                      value={tutor.id}
+                    >
+                      {tutor.nome}
+                    </option>
+                  );
+                })}
+
+            </select>
+
+          </div>
+
+        ))}
+
+      </div>
+
+      {/* ======================================================
+          CONFIRMAÇÃO DAS PREFERÊNCIAS
+      ====================================================== */}
+      <div className="mt-5 space-y-3">
+
+        <div className="rounded-xl border border-amber-900/40 bg-amber-950/10 px-4 py-3">
+
+          <p className="text-[10px] leading-relaxed text-amber-200/70">
+            💡 Suas escolhas podem ser alteradas enquanto o período de
+            eleição estiver aberto. A distribuição dos tutorandos será
+            realizada posteriormente pela Gestão de Tutoria.
+          </p>
+
+        </div>
+
+        {!preferenciasConfirmadas ? (
+
+          <button
+            type="button"
+            disabled={
+              !(currentStudent.preferenciasTutoria ?? []).some(
+                (preferencia) => Boolean(preferencia)
+              )
+            }
+            onClick={() => {
+
+              setPreferenciasConfirmadas(true);
+
+              try {
+                localStorage.setItem(
+                  `aventureiro-preferencias-confirmadas-${ANO_LETIVO_ATUAL}-${currentStudent.id}`,
+                  "true"
+                );
+              } catch {
+                // Ignora falha de armazenamento no modo demonstração
+              }
+
+            }}
+            className="w-full rounded-xl border border-amber-500/50 bg-amber-600/10 px-4 py-3 text-xs font-black uppercase tracking-wider text-amber-300 transition hover:border-amber-400 hover:bg-amber-600/20 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            ⚔️ Confirmar Preferências
+          </button>
+
+        ) : (
+
+          <div className="rounded-xl border border-emerald-700/40 bg-emerald-950/20 px-4 py-4">
+
+            <div className="flex items-center gap-3">
+
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-600/40 bg-emerald-600/10 text-lg text-emerald-400">
+                ✓
+              </div>
+
+              <div>
+
+                <div className="text-xs font-black uppercase tracking-wider text-emerald-400">
+                  Preferências registradas
+                </div>
+
+                <p className="mt-1 text-[10px] leading-relaxed text-emerald-200/60">
+                  Suas escolhas foram registradas para a distribuição
+                  de tutoria.
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        )}
+
+      </div>
+
+    </section>
 
     {/* ======================================================
         PAINÉIS DA GUILDA

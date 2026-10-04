@@ -45,6 +45,7 @@ type ManagerTab =
   | "events"
   | "objectives"
   | "tutoria"
+  | "tutorados"
   | "calendar";
 
 const tabs: {
@@ -107,6 +108,12 @@ const tabs: {
   label: "Gestão de Tutoria",
   group: "Escola",
 },
+  {
+    id: "tutorados",
+    icon: "🛡️",
+    label: "Meus Tutorados",
+    group: "Escola",
+  },
   {
     id: "calendar",
     icon: "📅",
@@ -280,7 +287,25 @@ export default function ManagerPanel({
   */
 
   const [tutorConfigs, setTutorConfigs] =
-    useState<Tutor[]>(tutors);
+    useState<Tutor[]>(() => {
+      const gestorJaCadastrado = tutors.some(
+        (tutor) => tutor.id === "gestor-1"
+      );
+
+      if (gestorJaCadastrado) {
+        return tutors;
+      }
+
+      return [
+        ...tutors,
+        {
+          id: "gestor-1",
+          nome: "Gestor Escolar",
+          capacidadeMaxima: 20,
+          ativo: true,
+        },
+      ];
+    });
 
 const [preferenciasTutoria, setPreferenciasTutoria] =
   useState<Record<string, string[]>>({});
@@ -2622,6 +2647,141 @@ const current =
     );
   }
 
+  function renderMeusTutorados() {
+    const meusTutorados = students.filter(
+      (student) =>
+        student.anoLetivo === 2026 &&
+        student.tutorId === "gestor-1"
+    );
+
+    const capacidade =
+      getTutorConfig("gestor-1")?.capacidadeMaxima ?? 20;
+
+    const vagas = Math.max(0, capacidade - meusTutorados.length);
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <div className="text-[9px] font-black uppercase tracking-[0.25em] text-purple-400">
+            Conselho da Guilda
+          </div>
+          <h3 className="mt-1 text-2xl font-black text-white">
+            🛡️ Meus Tutorados
+          </h3>
+          <p className="mt-1 text-xs text-slate-500">
+            Aventureiros que estão sob sua responsabilidade direta como Professor-Tutor.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-purple-800/40 bg-purple-950/20 p-5">
+            <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Meus Tutorados
+            </div>
+            <div className="mt-2 text-3xl font-black text-purple-300">
+              {meusTutorados.length}
+            </div>
+            <div className="mt-1 text-[10px] text-slate-500">
+              acompanhados neste ano letivo
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-amber-800/40 bg-amber-950/20 p-5">
+            <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Capacidade
+            </div>
+            <div className="mt-2 text-3xl font-black text-amber-300">
+              {capacidade}
+            </div>
+            <div className="mt-1 text-[10px] text-slate-500">
+              tutorados no máximo
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-emerald-800/40 bg-emerald-950/20 p-5">
+            <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Vagas restantes
+            </div>
+            <div className="mt-2 text-3xl font-black text-emerald-300">
+              {vagas}
+            </div>
+            <div className="mt-1 text-[10px] text-slate-500">
+              disponíveis para novos vínculos
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h4 className="text-sm font-black text-white">
+                Aventureiros sob sua tutela
+              </h4>
+              <p className="mt-1 text-[10px] text-slate-500">
+                O vínculo de tutoria é definido pela Gestão de Tutoria e pelos processos anuais de escolha.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              disabled
+              title="A adição manual será conectada ao fluxo de novos alunos posteriormente."
+              className="rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-2 text-[10px] font-black text-slate-600 cursor-not-allowed"
+            >
+              ➕ Adicionar tutorando
+            </button>
+          </div>
+
+          {meusTutorados.length === 0 ? (
+            <div className="mt-5 rounded-xl border border-dashed border-slate-800 bg-slate-900/30 p-8 text-center">
+              <div className="text-3xl">🧭</div>
+              <div className="mt-3 text-sm font-black text-slate-300">
+                Nenhum tutorando vinculado ainda
+              </div>
+              <div className="mt-1 text-[10px] text-slate-500">
+                Quando alunos forem vinculados ao Gestor como Professor-Tutor, eles aparecerão aqui.
+              </div>
+            </div>
+          ) : (
+            <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {meusTutorados.map((student) => (
+                <div
+                  key={student.id}
+                  className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 transition hover:border-purple-700/50"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-black text-white">
+                        {student.name}
+                      </div>
+                      <div className="mt-1 text-[10px] text-slate-500">
+                        {student.turma || "Turma não informada"} · {student.anoLetivo}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-purple-800/40 bg-purple-950/30 px-2 py-1 text-[9px] font-black text-purple-300">
+                      Tutorando
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedStudentId(student.id);
+                      setActiveTab("students");
+                    }}
+                    className="mt-4 w-full rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-[10px] font-black text-slate-300 transition hover:border-purple-600/50 hover:bg-purple-950/20 hover:text-purple-300"
+                  >
+                    👤 Ver ficha do aluno
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   /*
    ============================================================
    CONTEÚDO
@@ -2650,6 +2810,9 @@ const current =
 
       case "objectives":
         return renderObjectives();
+
+      case "tutorados":
+        return renderMeusTutorados();
 
       case "tutoria":
         return (
